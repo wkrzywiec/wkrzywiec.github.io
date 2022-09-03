@@ -1,0 +1,64 @@
+languageCode = "en"
+languageName = "English"
+displayName = "EN"
+isoCode = "en"
+weight = 1
+rtl = false
+
+title = "Wojciech Krzywiec"
+# logo = "img/avatar.jpg"
+description = "Wojciech Krzywiec's personal blog"
+# copyright = "Copy, _right?_ :thinking_face:"
+
+dateFormat = "2 January 2006"
+
+[author]
+  name = "Wojciech Krzywiec"
+  image = "img/avatar.jpg"
+  headline = "Software Developer, DevOps newbie, constant learner, podcast enthusiast."
+  bio = "A little bit about you"
+  links = [
+  { github = "https://github.com/wkrzywiec" },
+  { linkedin = "https://linkedin.com/in/wkrzywiec" },
+  { medium = "https://medium.com/wkrzywiec" },
+  { dev = "https://dev.to/wkrzywiec" },
+  { twitter = "https://twitter.com/wkrzywiec" },
+  { flickr = "https://www.flickr.com/photos/foidek/" },
+  
+
+  #   { email = "mailto:hello@your_domain.com" },
+  #   { link = "https://link-to-some-website.com/" },
+  #   { amazon = "https://www.amazon.com/hz/wishlist/ls/wishlist-id" },
+  #   { apple = "https://www.apple.com" },
+  #   { blogger = "https://username.blogspot.com/" },
+  #   { codepen = "https://codepen.io/username" },
+  #   { discord = "https://discord.com/channels/@me/wkrzywiec#9208" },
+  #   { dribbble = "https://dribbble.com/username" },
+  #   { facebook = "https://facebook.com/username" },
+  #   { foursquare = "https://foursquare.com/username" },
+  #   { gitlab = "https://gitlab.com/username" },
+  #   { google = "https://www.google.com/" },
+  #   { hashnode = "https://username.hashnode.dev" },
+  #   { instagram = "https://instagram.com/username" },
+  #   { keybase = "https://keybase.io/username" },
+  #   { kickstarter = "https://www.kickstarter.com/profile/username" },
+  #   { lastfm = "https://lastfm.com/user/username" },
+  #   { mastodon = "https://mastodon.instance/@username" },
+  #   { microsoft = "https://www.microsoft.com/" },
+  #   { orcid = "https://orcid.org/userid" },
+  #   { patreon = "https://www.patreon.com/username" },
+  #   { pinterest = "https://pinterest.com/username" },
+  #   { reddit = "https://reddit.com/user/username" },
+  #   { researchgate = "https://www.researchgate.net/profile/username" },
+  #   { slack = "https://workspace.url/team/userid" },
+  #   { snapchat = "https://snapchat.com/add/username" },
+  #   { soundcloud = "https://soundcloud.com/username" },
+  #   { stack-overflow = "https://stackoverflow.com/users/userid/username" },
+  #   { steam = "https://steamcommunity.com/profiles/userid" },
+  #   { telegram = "https://t.me/username" },
+  #   { tiktok = "https://tiktok.com/@username" },
+  #   { tumblr = "https://username.tumblr.com" },
+  #   { twitch = "https://twitch.tv/username" },
+  #   { whatsapp = "https://wa.me/phone-number" },
+  #   { youtube = "https://youtube.com/username" },
+  ]
