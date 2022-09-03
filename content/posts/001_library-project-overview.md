@@ -4,11 +4,15 @@ date: 2018-03-11
 summary: "The first blog entry on my new Spring MVC project — Library Portal"
 description: "This is my first blog entry on my new Spring MVC project — Library Portal — and also it is my first blog entry ever. I am a little bit nervous, but I hope you will gone like it."
 tags: ["java", "spring", "project"]
+canonicalUrl: "https://wkrzywiec.medium.com/library-portal-spring-project-overview-ddbf910dcb95"
 ---
 
-> Source: https://wkrzywiec.medium.com/library-portal-spring-project-overview-ddbf910dcb95
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/library-portal-spring-project-overview-ddbf910dcb95).
+{{< /alert >}}
 
 ![](https://miro.medium.com/max/700/0*uwHYGnR-0oNsDWDv.) *Photo by [Gabriel Ghnassia](https://unsplash.com/@gabrielghnassia) on [Unsplash](unsplash.com)*
+
 
 “A large library or study filled with lots of books, ornate ceilings, and two levels in Chantilly” by Gabriel Ghnassia on Unsplash
 
