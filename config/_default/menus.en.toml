@@ -16,8 +16,8 @@
   weight = 10
 
 [[main]]
-  name = "Categories"
-  pageRef = "categories"
+  name = "Series"
+  pageRef = "series"
   weight = 20
 
 [[main]]

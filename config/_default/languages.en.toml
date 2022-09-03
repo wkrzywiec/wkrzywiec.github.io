@@ -6,16 +6,16 @@ weight = 1
 rtl = false
 
 title = "Wojciech Krzywiec Site"
-# logo = "img/logo.jpg"
-description = "My awesome website"
+# logo = "img/avatar.jpg"
+description = "Wojciech Krzywiec's personal blog"
 # copyright = "Copy, _right?_ :thinking_face:"
 
 dateFormat = "2 January 2006"
 
 [author]
   name = "Wojciech Krzywiec"
-  # image = "img/author.jpg"
-  headline = "Software Engineer"
+  image = "img/avatar.jpg"
+  headline = "Software Developer, DevOps newbie, constant learner, podcast enthusiast."
   bio = "A little bit about you"
   links = [
   { github = "https://github.com/wkrzywiec" },

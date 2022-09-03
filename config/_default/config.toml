@@ -2,12 +2,12 @@
 # Refer to the theme docs for more details about each of these parameters.
 # https://jpanther.github.io/congo/docs/getting-started/
 
-# baseURL = "https://your_domain.com/"
+# baseURL = "https://wkrzywiec.github.io/"
 defaultContentLanguage = "en"
 
 enableRobotsTXT = true
 paginate = 10
-summaryLength = 0
+summaryLength = 100
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
