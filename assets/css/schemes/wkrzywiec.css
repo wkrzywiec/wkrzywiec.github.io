@@ -11,17 +11,18 @@
     --color-neutral-700: 68, 64, 60;
     --color-neutral-800: 41, 37, 36;
     --color-neutral-900: 28, 25, 23;
-    /* Orange */
-    --color-primary-50: 255, 247, 237;
-    --color-primary-100: 255, 237, 213;
-    --color-primary-200: 254, 215, 170;
-    --color-primary-300: 253, 186, 116;
-    --color-primary-400: 251, 146, 60;
-    --color-primary-500: 249, 115, 22;
-    --color-primary-600: 234, 88, 12;
-    --color-primary-700: 194, 65, 12;
-    --color-primary-800: 154, 52, 18;
-    --color-primary-900: 124, 45, 18;
+    /* Primary */
+    /* https://tailwindcss.com/docs/customizing-colors#color-palette-reference */
+    --color-primary-50: 254, 252, 232;
+    --color-primary-100: 254, 249, 195; /* yellow - alerts */ 
+    --color-primary-200: 254, 240, 138;
+    --color-primary-300: 253, 224, 71; /* underline table of content */
+    --color-primary-400: 250, 204, 21;
+    --color-primary-500: 234, 179, 8; /* underline links to posts/menus */
+    --color-primary-600: 202, 138, 4; /* orange 900 -  imports, methods, accessors, hover on link */
+    --color-primary-700: 161, 98, 7; /* rose - urls, hover on icon */
+    --color-primary-800: 133, 77, 14;   /* lime - string */
+    --color-primary-900: 113, 63, 18;
     /* Rose */
     --color-secondary-50: 255, 241, 242;
     --color-secondary-100: 255, 228, 230;
