@@ -1,10 +1,15 @@
-
-# Passing source folder path as parameter to query code in Power Query
-> Source: https://wkrzywiec.medium.com/passing-source-folder-path-as-parameter-to-query-code-in-power-query-19ec60797d94
-
-During Power Query report creation you probably face the problem that you need to change data source file directory. It requires to go to the editor and manually, change static value of the source directory. Usually this approach will works fine, but it could be time consuming and error prone. So to overcome it, I externalize path to a file from query code into Excel table, which makes changing path directory more simple.
+---
+title: "Passing source folder path as parameter to query code in Power Query"
+date: 2018-06-13
+summary: "How to face changing data source file in MS Excel Power Query"
+description: "During Power Query report creation you probably face the problem that you need to change data source file directory. It requires to go to the editor and manually, change static value of the source directory. Usually this approach will works fine, but it could be time consuming and error prone. So to overcome it, I externalize path to a file from query code into Excel table, which makes changing path directory more simple"
+tags: ["excel", "power-query"]
+canonicalUrl: "https://wkrzywiec.medium.com/passing-source-folder-path-as-parameter-to-query-code-in-power-query-19ec60797d94"
+---
 
 ![Photo by [Zoshua Colah](https://unsplash.com/@zoshuacolah?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/9796/0*m87beTMJlJZgvk6t)*Photo by [Zoshua Colah](https://unsplash.com/@zoshuacolah?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*During Power Query report creation you probably face the problem that you need to change data source file directory. It requires to go to the editor and manually, change static value of the source directory. Usually this approach will works fine, but it could be time consuming and error prone. So to overcome it, I externalize path to a file from query code into Excel table, which makes changing path directory more simple.*
 
 To fully understand what I want to achieve, please see my [previous post](https://medium.com/@wkrzywiec/getting-data-from-the-latest-file-in-a-folder-using-power-query-51dfa4bff711), where I explain my data-upload workflow.
 
@@ -24,9 +29,9 @@ My order table contains columns:
 
 * **Source** — my custom name of the folder
 
-* **Path — **folder, where files are stored
+* **Path** — folder, where files are stored
 
-* **Tab_name — **name of the tab, which contains necessary data
+* **Tab_name** — name of the tab, which contains necessary data
 
 ![](https://cdn-images-1.medium.com/max/2000/1*hr0IW52MZEHJ9EbD8OOD5g.png)
 
@@ -47,7 +52,6 @@ Once it is set up open **Advanced Editor** (should be in Home ribbon) and copy p
     let
 
          Source = Excel.CurrentWorkbook(){[Name=TableName]}[Content],
-
          value = Source{RowNumber-1}[Path]
 
     in
@@ -60,11 +64,11 @@ Above function contains two arguments:
 
 * **TableName** —name of the config table that contains folder path (this table was created in previous step),
 
-* **RowNumber **— number of the row, which contains specific folder path.
+* **RowNumber** — number of the row, which contains specific folder path.
 
-Notice, that in line 4 (value = Source{RowNumber-1}[Path]) text “*Path” *refers to column name in *tableConfig*. Other columns are only for my information, further implementation.
+Notice, that in line 4 (value = Source{RowNumber-1}[Path]) text “*Path*” refers to column name in *tableConfig*. Other columns are only for my information, further implementation.
 
-After clicking *Close & Load *new Worksheet will be created. You can delete it, the query will remain saved.
+After clicking *Close & Load* new Worksheet will be created. You can delete it, the query will remain saved.
 
 ### Step 4. Create intermediate query table to load folder content
 

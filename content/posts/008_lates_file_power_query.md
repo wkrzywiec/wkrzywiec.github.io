@@ -1,10 +1,16 @@
+---
+title: "Getting data from the latest file in a folder using Power Query"
+date: 2018-06-13
+summary: "Automate loading data from the latest file in MS Excel"
+description: "One of the most common tasks of Power Query is to set up automated data refresh from multiple sources. One of them are folders, which retrieve basic information about files (e.g. create date, extension, size, etc.), but also allows to enter one or more files, which is very powerful feature. On a daily basis I download/receive similar reports for processing so to avoid reoccuring tasks (copy/past, filtering and transforming data) I use Power Query to get the latest file from the folder and prepare it for me for further analysis."
+tags: ["excel", "power-query"]
+canonicalUrl: "https://wkrzywiec.medium.com/getting-data-from-the-latest-file-in-a-folder-using-power-query-51dfa4bff711"
+---
 
-# Getting data from the latest file in a folder using Power Query
-> Source: https://wkrzywiec.medium.com/getting-data-from-the-latest-file-in-a-folder-using-power-query-51dfa4bff711
+![“Charts with statistics on the screen of a laptop on a glossy surface” by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4852/0*fwxCIDYhu7pg61pS)*Photo by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
-One of the most common tasks of Power Query is to set up automated data refresh from multiple sources. One of them are folders, which retrieve basic information about files (e.g. create date, extension, size, etc.), but also allows to enter one or more files, which is very powerful feature. On a daily basis I download/receive similar reports for processing so to avoid reoccuring tasks (copy/past, filtering and transforming data) I use Power Query to get the latest file from the folder and prepare it for me for further analysis.
+*One of the most common tasks of Power Query is to set up automated data refresh from multiple sources. One of them are folders, which retrieve basic information about files (e.g. create date, extension, size, etc.), but also allows to enter one or more files, which is very powerful feature. On a daily basis I download/receive similar reports for processing so to avoid reoccuring tasks (copy/past, filtering and transforming data) I use Power Query to get the latest file from the folder and prepare it for me for further analysis.*
 
-![“Charts with statistics on the screen of a laptop on a glossy surface” by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4852/0*fwxCIDYhu7pg61pS)*“Charts with statistics on the screen of a laptop on a glossy surface” by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 Here is the process workflow, what I want to achieve.
 
@@ -12,7 +18,7 @@ Here is the process workflow, what I want to achieve.
 
 1. Next user opens prepared Power Query report and refresh it with the latest file that is in folder.
 
-Here are the steps describing how I have manged to achieve that.
+Here are the steps describing how I have managed to achieve that.
 
 ### Step 1. Create “Get Data from Folder” query
 
