@@ -11,7 +11,7 @@ canonicalUrl: "https://wkrzywiec.medium.com/full-text-search-with-hibernate-sear
 
 *How it happens that Google or any other browsers in on the websites know what I’ve meant by typing in a search bar? Clearly they are not using SQL approach, which is [table].[field] LIKE ‘query’. They are using special algorithms that, for me, are special kind of art and are called search engines. Basically it thanks to amazing search engine Google is nowadays the leader of IT sector. In my Library Portal project I want to take an advantage of some search engine to fetch users and books from database. Unfortunately, Google algorithm is their top secret asset, so I want be able to use it, but luckily there are other open-source engines, like Solr, Lucene and Elasticsearch that can be implemented with Hibernate.*
 
-### Introduction
+## Introduction
 
 In this blog post I want to focus on implementing full-text search only for users, because it is more simple to do, so it gives me a quick start in Hibernate Search. Full-text search of books I’ll cover later one, in another post.
 
@@ -31,7 +31,7 @@ In general, full-text search depends on two tasks: indexing and searching. First
 
 In next part I will try to focus showing a short walk-through full-text search engine capabilities and then I will move on to implementing it in my project.
 
-### Indexing
+## Indexing
 
 As mentioned before first stage is indexing specific fields in the database. To do define them we use annotations in entity classes— @Indexed, @Field, @DateBridge, @IndexedEmbedded. First one, **@Indexed**, must be added on top of the class name, which will tell that these entity must be tokenized.
 
@@ -125,7 +125,7 @@ fullTextEntityManager.createIndexer().startAndWait();
 
 After that indexes are present in initialized and from now on, when changes will be made in the database through Hibernate all indexes will be automatically updated. Please be aware that if you change data directly in database indexes won’t be updated. You need to explicitly tell Hibernate to updated it. More info can be found [here](https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#manual-index-changes).
 
-### Searching
+## Searching
 
 When we finally built indexes we can move on to building queries. Basic approach is to create a Lucene Query object and then wrap it into Hibernate Query Object and execute it.
 
@@ -199,7 +199,7 @@ org.apache.lucene.search.Query luceneQuery = queryBuilder
 
 It can be applied also to Strings or Dates.
 
-### Sorting
+## Sorting
 
 By default our results will be order by relevancy, but we can override it. For example users wants to display books by the date of their release. To do that we need to create new Sort object and then add it to the query object.
 
@@ -217,12 +217,13 @@ By default records are sorted ascending, but we can modify it by adding *.desc()
 
 In some specific situations we don’t want to index entity fields, but we want to be able to sort by them (for example in case of entity ID). To achieve it we can use **@SortableField** annotation on a property in the entity class.
 
-### Fuzzy Search
+## Fuzzy Search
 
 At this point I only want to make a note that Hibernate Search allows to configure and implement ‘intelligent’ search and it can be done via **@Analyzer** annotation. In this blog entry I don’t want to dive into this topic, as it won’t be useful for me for users search. Probably I will implement it in books search, but it is a story for another post.
 
 In my Library Portal I wanted to have possibility to search for users and edit their profiles through the admin account. Therefore I’ve created a simple page that has single search box to find proper user. So let’s move on to my implementation of this concept.
 
+## Creating index
 ### Step 1. Add dependencies to build.gradle file.
 
 As usual, first I need to add some external libraries using build.gradle. I already had Hibernate core lib, so only search is required.
