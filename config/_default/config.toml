@@ -11,3 +11,5 @@ summaryLength = 100
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
+
+googleAnalytics = "G-1XW1RWJPXH"
