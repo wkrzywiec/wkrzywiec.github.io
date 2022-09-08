@@ -7,6 +7,10 @@ tags: ["java", "software", "tools", "full-text-search", "lucene", "database", "s
 canonicalUrl: "https://wkrzywiec.medium.com/full-text-search-with-hibernate-search-lucene-part-1-e245b889aa8e"
 ---
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/full-text-search-with-hibernate-search-lucene-part-1-e245b889aa8e).
+{{< /alert >}}
+
 ![Photo by [Alex Block](https://unsplash.com/@alexblock?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/8504/0*uptWe3eK9q_vcDoK.)*Photo by [Alex Block](https://unsplash.com/@alexblock?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *How it happens that Google or any other browsers in on the websites know what I’ve meant by typing in a search bar? Clearly they are not using SQL approach, which is [table].[field] LIKE ‘query’. They are using special algorithms that, for me, are special kind of art and are called search engines. Basically it thanks to amazing search engine Google is nowadays the leader of IT sector. In my Library Portal project I want to take an advantage of some search engine to fetch users and books from database. Unfortunately, Google algorithm is their top secret asset, so I want be able to use it, but luckily there are other open-source engines, like Solr, Lucene and Elasticsearch that can be implemented with Hibernate.*

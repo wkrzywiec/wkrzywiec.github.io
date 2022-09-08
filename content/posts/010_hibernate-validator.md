@@ -7,6 +7,9 @@ tags: ["java", "database", "hibernate", "spring", "validation"]
 canonicalUrl: "https://wkrzywiec.medium.com/how-to-check-if-user-exist-in-database-using-hibernate-validator-eab110429a6"
 ---
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-check-if-user-exist-in-database-using-hibernate-validator-eab110429a6).
+{{< /alert >}}
 
 ![“A spread of various sliced fruits.” by [Brooke Lark](https://unsplash.com/@brookelark?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/7860/0*lChQ2_ikAmhCTGg_)*Photo by [Brooke Lark](https://unsplash.com/@brookelark?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 

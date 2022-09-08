@@ -7,6 +7,10 @@ tags: ["excel", "power-query"]
 canonicalUrl: "https://wkrzywiec.medium.com/getting-data-from-the-latest-file-in-a-folder-using-power-query-51dfa4bff711"
 ---
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/getting-data-from-the-latest-file-in-a-folder-using-power-query-51dfa4bff711).
+{{< /alert >}}
+
 ![“Charts with statistics on the screen of a laptop on a glossy surface” by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4852/0*fwxCIDYhu7pg61pS)*Photo by [Carlos Muza](https://unsplash.com/@kmuza?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *One of the most common tasks of Power Query is to set up automated data refresh from multiple sources. One of them are folders, which retrieve basic information about files (e.g. create date, extension, size, etc.), but also allows to enter one or more files, which is very powerful feature. On a daily basis I download/receive similar reports for processing so to avoid reoccuring tasks (copy/past, filtering and transforming data) I use Power Query to get the latest file from the folder and prepare it for me for further analysis.*

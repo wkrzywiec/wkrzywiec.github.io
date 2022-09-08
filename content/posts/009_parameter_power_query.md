@@ -7,6 +7,10 @@ tags: ["excel", "power-query"]
 canonicalUrl: "https://wkrzywiec.medium.com/passing-source-folder-path-as-parameter-to-query-code-in-power-query-19ec60797d94"
 ---
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/passing-source-folder-path-as-parameter-to-query-code-in-power-query-19ec60797d9).
+{{< /alert >}}
+
 ![Photo by [Zoshua Colah](https://unsplash.com/@zoshuacolah?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/9796/0*m87beTMJlJZgvk6t)*Photo by [Zoshua Colah](https://unsplash.com/@zoshuacolah?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *During Power Query report creation you probably face the problem that you need to change data source file directory. It requires to go to the editor and manually, change static value of the source directory. Usually this approach will works fine, but it could be time consuming and error prone. So to overcome it, I externalize path to a file from query code into Excel table, which makes changing path directory more simple.*

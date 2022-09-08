@@ -7,6 +7,10 @@ tags: ["java", "lombok"]
 canonicalUrl: "https://wkrzywiec.medium.com/project-lombok-how-to-make-your-model-class-simple-ad71319c35d5"
 ---
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/project-lombok-how-to-make-your-model-class-simple-ad71319c35d5).
+{{< /alert >}}
+
 ![No, not this kind of Lombok (Indonesian island) :( (by [Jeremy Bishop](https://unsplash.com/@tentides?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral))](https://cdn-images-1.medium.com/max/10944/0*fAF519zfEY1MVSJz.) *Photo by [Jeremy Bishop](https://unsplash.com/@tentides?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *Many Java frameworks nowadays requires to access Object values through standard getter/setter approach. It’s not recommended to create public fields through which we can access, but through these standard methods, so we have control of what data can come in and out from the Object. Another thing good to add, especially to model class, are toString() and hashCode() methods used to differ Object instances of the same class. These recommendations results in multiline code of even simple class. Also when we want to update such classes it will require to re-write comparing methods, which is time consuming and not really creative. Luckily there is Project Lombok!*

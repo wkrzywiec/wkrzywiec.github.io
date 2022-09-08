@@ -8,6 +8,10 @@ canonicalUrl: "https://wkrzywiec.medium.com/project-development-history-lesson-w
 ---
 
 
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/project-development-history-lesson-with-git-424b9940ad84).
+{{< /alert >}}
+
 ![“A person's hand holding a camera lens over a mountain lake” by [Paul Skorupskas](https://unsplash.com/@pawelskor?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/9528/0*7Z_aR22Yii_psnqo.)*Photo by [Paul Skorupskas](https://unsplash.com/@pawelskor?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *When I’ve started to learn programming I quickly come up with situations when small, tiny changes in the code that I made turned into some sort of error (compile, logical, etc.). In these kind of situations I simply tried to fix it or undo broken part of the code. If it was a simple project, it was pretty straight forward, but with complex application it was not. Moreover number of difficulties raised when I was collaborating on the same application with others. It was hardly to achieve common version of our program, when all of us was modifying it at the same time. Luckily there are Version Control Systems that helps with these issues, and the most popular one is called git.*
