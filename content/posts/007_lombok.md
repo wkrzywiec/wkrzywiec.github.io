@@ -3,7 +3,7 @@ title: "Project Lombok — how to make your model class simple"
 date: 2018-05-27
 summary: "Get rid of boilerplate code with Lombok"
 description: "Many Java frameworks nowadays requires to access Object values through standard getter/setter approach. It’s not recommended to create public fields through which we can access, but through these standard methods, so we have control of what data can come in and out from the Object. Another thing good to add, especially to model class, are toString() and hashCode() methods used to differ Object instances of the same class. These recommendations results in multiline code of even simple class. Also when we want to update such classes it will require to re-write comparing methods, which is time consuming and not really creative. Luckily there is Project Lombok!"
-tags: ["java", "lombok"]
+tags: ["java", "lombok", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/project-lombok-how-to-make-your-model-class-simple-ad71319c35d5"
 ---
 

@@ -3,7 +3,7 @@ title: "Full-text search with Hibernate Search (Lucene) — part 1"
 date: 2018-05-06
 summary: "Introduction to basic git operations used on a daily basis"
 description: "How it happens that Google or any other browsers in on the websites know what I’ve meant by typing in a search bar? Clearly they are not using SQL approach, which is [table].[field] LIKE ‘query’. They are using special algorithms that, for me, are special kind of art and are called search engines. Basically it thanks to amazing search engine Google is nowadays the leader of IT sector. In my Library Portal project I want to take an advantage of some search engine to fetch users and books from database. Unfortunately, Google algorithm is their top secret asset, so I want be able to use it, but luckily there are other open-source engines, like Solr, Lucene and Elasticsearch that can be implemented with Hibernate."
-tags: ["java", "software", "tools", "full-text-search", "lucene", "database", "spring"]
+tags: ["java", "software", "tools", "full-text-search", "lucene", "database", "spring", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/full-text-search-with-hibernate-search-lucene-part-1-e245b889aa8e"
 ---
 

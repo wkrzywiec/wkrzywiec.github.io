@@ -3,7 +3,7 @@ title: "Creating user logs with Apache Log4j2"
 date: 2018-03-21
 summary: "Storing user logs in a database using Log4j in Spring application"
 description: "One of the feature that I would like to implement in my Library Spring project is the ability to track some of the most important actions that can be made in the portal (like creating/modifying user, borrowing/adding the book, etc.). From the business perspective it is very common to use it, so the admins/managers can have some insight of the traffic on their websites."
-tags: ["java", "spring", "project", "logging", "log4j", "database", "audit"]
+tags: ["java", "spring", "project", "logging", "log4j", "database", "audit", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/creating-user-logs-with-apache-log4j2-90bfeb8a0d3f"
 ---
 

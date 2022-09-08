@@ -3,7 +3,7 @@ title: "Setting up Gradle web project in Eclipse (on Tomcat Server)"
 date: 2018-03-18
 summary: "Setting up Spring application with Gradle"
 description: "In this post I’ll focus on the most annoying part of the software project — configuration. I’m going to show you how I had set up basic environment to code, build, deploy and run my Spring MVC project — Library Portal. I ‘ll go thru each step of the whole process, from brand new web project to first ‘Hello World!’ that will show up on the test page. Let’s get hands dirty!"
-tags: ["java", "spring", "project", "gradle", "eclipse", "tomcat"]
+tags: ["java", "spring", "project", "gradle", "eclipse", "tomcat", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/setting-up-gradle-spring-project-in-eclipse-on-tomcat-server-77d68454fd8d"
 ---
 

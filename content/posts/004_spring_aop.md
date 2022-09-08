@@ -3,7 +3,7 @@ title: "Moving into next level in user log events with Spring AOP"
 date: 2018-04-02
 summary: "Implementing user logs with Spring AOP"
 description: "In my previous post I described how I had implemented Apache Log4j2 framework into my code. Last time, all Loggers were added directly to the method that triggered logging action, which might be problematic if we want to log different events all over the places in the code, because when there will be new request for some modification it will require to find all of them and copy-paste some amendments in it. And that’s so called code smell, that most of software developers want to avoid. If they do so am I. Thanks to Spring Aspect-Oriented Programming (Spring AOP) module it won’t be the problem as all the logging part will be gathered in one place, so there will be no need to perform unnecessary searching and modification."
-tags: ["java", "spring", "project", "logging", "log4j", "database", "audit"]
+tags: ["java", "spring", "project", "logging", "log4j", "database", "audit", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/moving-into-next-level-in-user-log-events-with-spring-aop-3b4435892f16"
 ---
 
