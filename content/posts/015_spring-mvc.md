@@ -1,46 +1,27 @@
+---
+title: "How to start with Spring MVC"
+date: 2018-09-07
+summary: "Step-by-step guide for creating a Spring MVC application"
+description: "In this blog post I would like to introduce you to the Spring MVC framework, how it works, what are the pros and what are the possibilities it gives to us, developers. At the end I will show most of the important features in a simple project."
+tags: ["java", "spring", "mvc", "library-project"]
+canonicalUrl: "https://wkrzywiec.medium.com/how-to-start-with-spring-mvc-309dec3c59fd"
+---
 
-# How to start with Spring MVC
-> Source: https://wkrzywiec.medium.com/how-to-start-with-spring-mvc-309dec3c59fd
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-start-with-spring-mvc-309dec3c59fd).
+{{< /alert >}}
 
-In this blog post I would like to introduce you to the Spring MVC framework, how it works, what are the pros and what are the possibilities it gives to us, developers. At the end I will show most of the important features in a simple project.
+![“green leafed plant” by [Ash from Modern Afflatus](https://unsplash.com/@modernafflatusphotography?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10368/0*bTMFaeE6_KP1raNf)*Photo by [Ash from Modern Afflatus](https://unsplash.com/@modernafflatusphotography?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
-![“green leafed plant” by [Ash from Modern Afflatus](https://unsplash.com/@modernafflatusphotography?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10368/0*bTMFaeE6_KP1raNf)*“green leafed plant” by [Ash from Modern Afflatus](https://unsplash.com/@modernafflatusphotography?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+*In this blog post I would like to introduce you to the Spring MVC framework, how it works, what are the pros and what are the possibilities it gives to us, developers. At the end I will show most of the important features in a simple project.*
 
-## Table of content
+## Introduction
 
-### Overview
-
-* [Structure](https://medium.com/p/309dec3c59fd#bc18)
-
-* [URI pattern syntax](https://medium.com/p/309dec3c59fd#9128)
-
-* [Return types](https://medium.com/p/309dec3c59fd#7329)
-
-* [Arguments](https://medium.com/p/309dec3c59fd#c48b)
-
-* [Exceptions handling](https://medium.com/p/309dec3c59fd#6198)
-
-### Writting code
-
-* [Create Gradle project in the Eclipse](https://medium.com/p/309dec3c59fd#49fc)
-
-* [Add dependencies to build.gradle](https://medium.com/p/309dec3c59fd#84c1)
-
-* [Spring MVC configuration](https://medium.com/p/309dec3c59fd#a35a)
-
-* [Prepare simple view](https://medium.com/p/309dec3c59fd#f8b0)
-
-* [Create Spring Controller](https://medium.com/p/309dec3c59fd#2d6e)
-
-* [Testing](https://medium.com/p/309dec3c59fd#6497)
-
-* [Add more features](https://medium.com/p/309dec3c59fd#7348)
-
-As you might guess it already, Spring MVC implements very common architecture pattern — *Model-View-Controller*. Its key concept is to organize entire application into three modules. **View **is responsible for User Interface, which in our case will be HTML page (or more specific JSP file). **Controller** is taking care of HTTP requests and delegates tasks (e.g. fetching data from database) to other components. And finally a **Model, **it structurises the data and represents business logic of an application. More information, presented in a funny way, about MVC pattern could be found [here](https://medium.freecodecamp.org/model-view-controller-mvc-explained-through-ordering-drinks-at-the-bar-efcba6255053).
+As you might guess it already, Spring MVC implements very common architecture pattern — *Model-View-Controller*. Its key concept is to organize entire application into three modules. **View** is responsible for User Interface, which in our case will be HTML page (or more specific JSP file). **Controller** is taking care of HTTP requests and delegates tasks (e.g. fetching data from database) to other components. And finally a **Model,** it structurises the data and represents business logic of an application. More information, presented in a funny way, about MVC pattern could be found [here](https://medium.freecodecamp.org/model-view-controller-mvc-explained-through-ordering-drinks-at-the-bar-efcba6255053).
 
 In Spring MVC View is represented by JSP files, the Controller by the class with special annotation and the Model are Beans. In this post I would like to concentrate on a key part of this framework — Controller.
 
-Before I jump to talk over the Controller class first I would need to explain how it really works under the hood. I don’t want to go much into details how it really works, because I want to keep it simple and that’s not aim of my post. But if you are interested in more in-depth explanation (with information about DispatacherServlet etc.) I would recommend this article [***How Spring Web MVC Really Works](https://stackify.com/spring-mvc/?utm_referrer=https%3A%2F%2Fmedium.com%2Fr%2F%3Furl%3Dhttps%253A%252F%252Fstackify.com%252Fspring-mvc%252F)***.
+Before I jump to talk over the Controller class first I would need to explain how it really works under the hood. I don’t want to go much into details how it really works, because I want to keep it simple and that’s not aim of my post. But if you are interested in more in-depth explanation (with information about DispatacherServlet etc.) I would recommend this article [How Spring Web MVC Really Works](https://stackify.com/spring-mvc/?utm_referrer=https%3A%2F%2Fmedium.com%2Fr%2F%3Furl%3Dhttps%253A%252F%252Fstackify.com%252Fspring-mvc%252F).
 
 In short, Spring MVC app works with a servlet thats receives HTTP requests and process it. In Spring MVC world it is called DispatcherServlet and it facilitate request mapping to certain methods from Controller class to process certain tasks (like connecting to the database, process forms, etc.).
 
@@ -50,11 +31,21 @@ NOTE: In a following section I’ll show few examples of the Controller. To keep
 
 ### Structure
 
-First thing first, **how Controller looks like? **It’s a really simple Java class with specific notifications and declaration rules regarding public methods (i.e. their return type and arguments). Below there is a code of a single method class that acts as a Controller.
+First thing first, **how Controller looks like?** It’s a really simple Java class with specific notifications and declaration rules regarding public methods (i.e. their return type and arguments). Below there is a code of a single method class that acts as a Controller.
 
-<iframe src="https://medium.com/media/9236efb44d09e769be7238e1cf7d4c9c" frameborder=0></iframe>
+```java
+@Controller
+public class LibraryController {
+ 
+    @GetMapping("/home")
+    public String showHome() {
+                // do something 
+        return "home";
+    }
+}
+```
 
-First, you see a@Controller annotation that lets Spring know that this class will be the controller. Next, in the body of class there is a single method named “showHome()”. It’s annotated with @GetMapping which means that it will be called when a servlet receives a GET request (type of HTTP request) that matches pattern “basicURI/home”. If you run your servlet on a local machine it probably looks as follows “http://localhost:8080**/home**” or if you run it on your server with bought domain “http://your-awsome-page.com**/home**”.
+First, you see a@Controller annotation that lets Spring know that this class will be the controller. Next, in the body of class there is a single method named `showHome()`. It’s annotated with @GetMapping which means that it will be called when a servlet receives a GET request (type of HTTP request) that matches pattern “basicURI/home”. If you run your servlet on a local machine it probably looks as follows “http://localhost:8080/home” or if you run it on your server with bought domain “http://your-awsome-page.com/home”.
 
 Accordingly, if you want to map any other type of HTTP request just use one of the followings: @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping.
 
@@ -63,12 +54,9 @@ Finally, above method has a simple String as a return value, which indicates wha
 And that’s it! Controller class structure is really simple and the whole process of defining each method could be sum up to following steps:
 
 1. Create public method
-
-1. Add HTTP request mapping to this method
-
-1. Add arguments to the method (if necessary)
-
-1. Write method body
+2. Add HTTP request mapping to this method
+3. Add arguments to the method (if necessary)
+4. Write method body
 
 ### URI pattern syntax
 
@@ -76,33 +64,52 @@ First things first, we need to to map HTTP requests to the methods in the Contro
 
 Sometimes those requests are rather simple, like as it’s in above code snippet. Whole request path is static, which means that in order to call this method we need to provide this exact path. What if we would like to make it more dynamic? For example we’ve got bunch of similar URIs that should be mapped to one method.
 
-To achieve that we can add ***?*** sign to the annotation path*** ***like:
+To achieve that we can add ***?*** sign to the annotation path like:
 
-    @GetMapping("/book?")
-
-Above we tell Spring that each URI that ends with “/book” + any other single sign should be processed by this method. So if it ends with “/*book1”, “/book^” *or whatever it will be handled by this.
+```java
+@GetMapping("/book?")
+```
+Above we tell Spring that each URI that ends with “/book” + any other single sign should be processed by this method. So if it ends with “/book1”, “/book^” or whatever it will be handled by this.
 
 Sometimes we want to match more than one character and for that we can use * or ** wildcard. First one matches all the characters within path segment (between two “/”), the latter can match multiple segments. To illustrate this see below examples:
 
-    @GetMapping("/book*")
+```java
+@GetMapping("/book*")
 
-    @GetMapping("/book**")
+@GetMapping("/book**")
+```
 
 First mapping will match the URI “/bookGameOfThrones” and second one will match “/book/GameOfThrones”.
 
 Ok, but what if I would like to get information from the URI? It could contains the name or id of the book that we want to fetch. How to solve it? Very easily, by using either @PathVariable or @RequestParam annotation.
 
-**@PathVariable — **some segments of the URI can be dynamize, for example if we want to get *bookId*=348 and *authorId*=2 from the path “*baseURI/book/348/author/2*” the mapping will look like this:
+**@PathVariable** — some segments of the URI can be dynamize, for example if we want to get *bookId*=348 and *authorId*=2 from the path “*baseURI/book/348/author/2*” the mapping will look like this:
 
-<iframe src="https://medium.com/media/49515a38c367c115dc1ff06ecf72d40e" frameborder=0></iframe>
+```java
+@GetMapping("/book/{book}/author/{author}")
+public String showBookAndAuthorDetails (  
+    @PathVariable("book") Long bookId,
+    @PathVariable("author") Long authorId) {
+  
+// do some stuff with bookId and authorId
+}
+```
 
-Both Ids are stored in their variables and can be used in the method’s body. Please notice that dynamic part of the URI must be surrounded with curly brackets *“{}” *in the mapping and this part should has the same name as the argument of the annotation.
+Both Ids are stored in their variables and can be used in the method’s body. Please notice that dynamic part of the URI must be surrounded with curly brackets *“{}”* in the mapping and this part should has the same name as the argument of the annotation.
 
 **@RequestParam** — another way to pass some information thru URI is by request parameter. You’ve probably see it in lots of them. For example, link “[https://www.youtube.com/watch?v=s7L2PVdrb_8&t=10s](https://www.youtube.com/watch?v=s7L2PVdrb_8&t=10s)” is made of two pieces. First is regular “https://www.youtube.com/watch”, which is static, and a second “[v=s7L2PVdrb_8&t=10s](https://www.youtube.com/watch?v=s7L2PVdrb_8&t=10s)”, which is dynamic and has two arguments: ***v*** — it’s video Id and ***t***-it’s a second when the video should starts. Both pieces are separated with ***?*** sign and arguments are separated with ***&*** character.
 
 If we wanted to get the *bookId* and *authorId*, as it was in the previous example, but this time using @RequestParam annotation the URI could look like this “*/book?id=348&author=2*”, so the mapping:
 
-<iframe src="https://medium.com/media/07a818ea07db959a03711258d0a93220" frameborder=0></iframe>
+```java
+@GetMapping("/book")
+public String showBookAndAuthorDetails (
+    @RequestParam(value="id", required=true) Long bookId,
+    @RequestParam(value="author", required=false) Long authorId) {
+  
+ //do some stuff with bookId and authorId 
+}
+```
 
 Notice that *author* request parameter is not required so mapped argument, *authorId*, might be null.
 
@@ -116,13 +123,38 @@ Depending on how much into detail we would like to go there are several return t
 
 **String** — this is the simplest case. By typing the JSP file name in return statement we can indicate which one we want to send. In other words it works the best when we don’t need to attach any model object into the HTTP response (it’s not 100% true because we can do that by adding special argument to the Controller method).
 
-<iframe src="https://medium.com/media/9236efb44d09e769be7238e1cf7d4c9c" frameborder=0></iframe>
+```java
+@Controller
+public class LibraryController {
+ 
+    @GetMapping("/home")
+    public String showHome() {
+                // do something 
+        return "home";
+    }
+}
+```
 
 In above example I provide simple “home” String, which means that as a Response I want to send a *home.jsp* file that is located somewhere in my project. How to configure Spring so by typing only the ‘main’ part of the file path we can get it? Please check [here](https://medium.com/p/309dec3c59fd#a35a).
 
-**ModelAndView — **as the name suggest it’s holding two types of objects: Model and View. First one, is some sort of container that holds information that will be displayed as a View (JSP file). Second is a model that wraps some information that can be used by a View. In other words View acts as a template and a Model populate it with a data (e.g. fetched from the database).
+**ModelAndView** — as the name suggest it’s holding two types of objects: Model and View. First one, is some sort of container that holds information that will be displayed as a View (JSP file). Second is a model that wraps some information that can be used by a View. In other words View acts as a template and a Model populate it with a data (e.g. fetched from the database).
 
-<iframe src="https://medium.com/media/1f48d84b547f632a3d529751cbab5986" frameborder=0></iframe>
+```java
+@Controller
+public class LibraryController {
+ 
+   @GetMapping("/home")
+    public ModelAndView showHome() {
+ 
+        ModelAndView mv = new ModelAndView()
+        mv.setViewName("home");  //indicates which view file will be sent
+        mv.getModel().put("message", "Hello friend! I hope you have a nice day!");  
+        //in above method model is added to the respond under key "message" with a second argument as a value
+      
+        return mv;
+    }
+}
+```
 
 In above code snippet, the View is set up to “home” (works similar to previous example) and the Model contains one key-value pair. First argument, “message”, is a key and the second is a value. Here its value is a String object, but it can any class that you want (for example book model that holds data about the book, like author, title, page count, etc.).
 
@@ -136,37 +168,111 @@ Another thing that you might want to add to controllers methods are arguments. T
 
 In this part I skipped those that I’ve already mentioned — @PathVariable and @RequestParam.
 
-**Model — **key role of the Model in HTTP Response is to provide data that can be used for rendering a view. In other words it a view (JSP file) takes some data from it and insert into its body. Data are usually fetched from the database using a service object, like it is shown below.
+**Model** — key role of the Model in HTTP Response is to provide data that can be used for rendering a view. In other words it a view (JSP file) takes some data from it and insert into its body. Data are usually fetched from the database using a service object, like it is shown below.
 
-<iframe src="https://medium.com/media/54d0eccc505f91ea6bf892ac34b2eb63" frameborder=0></iframe>
+```java
+@GetMapping("/user")
+public String showUserDetails( @RequestParam("id") Long userId,
+                               Model model) {
+    
+    UserDTO user = userService.getUser(userId);
+    model.addAttribute("user", user); 
+  
+    return "user-details";
+}
+```
 
-**ModelMap — **this one is similar to previous one. It has all functionality that *Model* has but also it allows to add request parameter to the output request. It is worth notice that *ModelMap *is actually an implementation of the *Model* interface, which is the reason of their similarities.
+**ModelMap** — this one is similar to previous one. It has all functionality that *Model* has but also it allows to add request parameter to the output request. It is worth notice that *ModelMap *is actually an implementation of the *Model* interface, which is the reason of their similarities.
 
 It might be useful when the user provide only partial URL, but the website requires some parameters. Therefore we can add default value using *put(key,value)* method. Like in the following example, list of all books is sorted descending by default.
 
-<iframe src="https://medium.com/media/a902621dee8a7a40c7c86deb03109208" frameborder=0></iframe>
+```java
+@GetMapping("/allBooks")
+public String showAllBooks(ModelMap map) {
+  
+    List<BookDTO> books = bookService.getAllBooks();
+    
+    map.addAttribute("books", books);
+    map.put("sort", "desc");  
+  
+    return "books";
+}
+```
 
-**@ModelAttribute — **is used to bind the object from the HTTP Request Model to the argument in the method. Chiefly it is used while processing form. For example, when registering new user we need to get the User object to retrieve data that were input.
+**@ModelAttribute** — is used to bind the object from the HTTP Request Model to the argument in the method. Chiefly it is used while processing form. For example, when registering new user we need to get the User object to retrieve data that were input.
 
-<iframe src="https://medium.com/media/db4c653cee7e9cc19036eae0aac1bfc3" frameborder=0></iframe>
+```java
+@PostMapping("/register-user")
+public String processRegisterForm(
+		@ModelAttribute("user") UserDTO userDTO) {
+		
+	userService.saveNewUser(userDTO);
+  
+  	return "loginPage";
+}
+```
 
-**BindingResult **— it is tightly connected with previous one and together with @Valid annotation is used for form detecting errors in a form (to be precise, object attached to the request). Thanks to that we can easily check if the form contains any error.
+**BindingResult** — it is tightly connected with previous one and together with @Valid annotation is used for form detecting errors in a form (to be precise, object attached to the request). Thanks to that we can easily check if the form contains any error.
 
 Also it is worth notice that this parameter needs to be right after the object that is validated.
 
-<iframe src="https://medium.com/media/7ffecff12a546ae7f0fe319889da6c9c" frameborder=0></iframe>
+```java
+@PostMapping("/register-user")
+public String processRegisterForm(
+		@Valid @ModelAttribute("user") UserDTO userDTO,
+		BindingResult bindingResult,
+		Model model) {
+		
+	if (bindingResult.hasErrors()){
+      		//there are some errors in the form, so go back
+		return "register-user";
+	} else {
+      		//everything is fine, so register new user
+		return "success";
+	}
+}
+```
 
-**RedirectAttributes — **sometimes we need to redirect HTTP request from one method to another method. To do so we can need to need add *“redirect:”* prefix followed by the request URL. If we want to redirect to a simple method, that’s fine. The problem begins when we want send also request parameters (attributes) to the next method. And therefore we’ve got RedirectAttributes object into which we can pass attributes that will be processed by target method.
+**RedirectAttributes** — sometimes we need to redirect HTTP request from one method to another method. To do so we can need to need add *“redirect:”* prefix followed by the request URL. If we want to redirect to a simple method, that’s fine. The problem begins when we want send also request parameters (attributes) to the next method. And therefore we’ve got RedirectAttributes object into which we can pass attributes that will be processed by target method.
 
-<iframe src="https://medium.com/media/5d9ce8ee95978ea87ac8f588f7c490f3" frameborder=0></iframe>
+```java
+@GetMapping("/add-book")
+public String addNewBook( @RequestParam("book") String googleBookId,
+                          RedirectAttributes attributes) {
+  
+  //fetch data from Google Book API
+  //add new book to the library
+  
+  attributes.addAttribute("googleBook", googleBookId);
+  
+  return "redirect:/book-details";
+}
+
+@GetMapping("/book-details")
+public String showBookDetails( @RequestParam("googleBook") String googleBookId,
+                          Model model) {
+  
+  //find book in the database using it's Google Book Id
+  //add it to the model
+  
+  return "book-details";
+}
+```
 
 Above code shows an example of such redirection. First method focus mainly on adding new book do the database (data are taken from Google Book API) and then it is redirected to the more general method that presents book detailed page.
 
-**@CookieValue — **in some cases we want to enter HTTP cookies that are included in the request. To access it just add this annotation to the argument (usually it will be String or numeric) which will be binded to cookie with specified name. In the following example a value of cookie with a name *“session”* is stored in a* sessionKey* String variable and then printed in the console.
+**@CookieValue** — in some cases we want to enter HTTP cookies that are included in the request. To access it just add this annotation to the argument (usually it will be String or numeric) which will be binded to cookie with specified name. In the following example a value of cookie with a name *“session”* is stored in a *sessionKey* String variable and then printed in the console.
 
-<iframe src="https://medium.com/media/4723706afd588980971b31ec85ac12c0" frameborder=0></iframe>
+```java
+@GetMapping("home")
+public String showHomePge(
+	@CookieValue(value = "session", defaultValue = "hash") String sessionKey) {
 
-**HttpServlerResponse — **this is one allows to enter the whole response that will be send, so you are able to modify almost everything, like the header, cookie, attached objects and more.
+	System.out.println(sessionKey);
+}
+```
+
+**HttpServlerResponse** — this is one allows to enter the whole response that will be send, so you are able to modify almost everything, like the header, cookie, attached objects and more.
 
 ### Exceptions handling
 
@@ -176,17 +282,41 @@ To achieve it basically we can choose one of two approaches. In a first one, we 
 
 If our project is rather small, we could do without making separate error handling class. Therefore we need to add **@ExceptionHandler** annotation to the particular method.
 
-<iframe src="https://medium.com/media/0b1c101ceadafe6b782d0530b5b50e1b" frameborder=0></iframe>
+```java
+@ExceptionHandler(NullPointerException.class)
+public String handleException() {
+      //maybe log something?
+      return "error-page";
+}
+```
 
 While the project become bigger and bigger it might be a good idea to split one main Controller into few smaller ones based on the concern. Together with that we would also need to create one global object that handles all the errors. In order to do that we need to create new class that is annotated with **@ControllerAdvice**. And the good thing about it is that works similar to Spring Controller (same return types, etc.).
 
-<iframe src="https://medium.com/media/58dd55efd882c8e4efc33ddd70914783" frameborder=0></iframe>
+```java
+@ControllerAdvice
+public class GlobalExceptionHandlerController {
+
+      @ExceptionHandler(NullPointerException.class)
+      public String handleException() {
+            //maybe log something?
+            return "error-page";
+      }
+
+      @ExceptionHandler(ResourceNotFoundException.class)
+      @ResponseStatus(HttpStatus.NOT_FOUND)
+      public String handleNoResourceFound() {
+
+            return "error-notfound";
+      }
+  
+}
+```
 
 Above example shows how to handle two types of errors. First, popular NullPointerException, returns 500 HTTP Status and second returns status 404. The main difference between those two is that in a latter I’ve added new annotation — **@ResponseStatus**. Using that we manually set a response status in the response header. In above case it is set up to 404, because without it the web browser would receive 200 (OK) status, because it was handled by ControllerAdvice class.
 
 And that’s it. All the basics were covered so let’s move to implementation of a simple example.
 
-## Writting code
+## Writing code
 
 ### Create Gradle project in the Eclipse
 
@@ -196,7 +326,53 @@ First we need to create a new Gradle project. In Eclipse (in my case, Oxygen ver
 
 Once the project is created we need to download some libraries. Except for obvious one, Spring MVC, I’ve decided to use a [Gradle-Tomcat plugin](https://github.com/bmuschko/gradle-tomcat-plugin) that allows to rapid deployment of the application on the Tomcat server. Moreover, [Eclipse-WTP](https://docs.gradle.org/current/userguide/eclipse_plugin.html) plugin was added to tell Gradle that we work in Eclipse.
 
-<iframe src="https://medium.com/media/63f4fe5a2d2c80c3e1e986315711cd3c" frameborder=0></iframe>
+```gradle
+apply plugin: 'java-library'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'eclipse-wtp'
+
+
+repositories {
+    jcenter()
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.4.1'
+    }
+}
+
+
+dependencies {
+    
+    	def tomcatVersion = '8.0.46'
+    	def springWebMvcVersion = '5.0.2.RELEASE'
+    
+    	tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+    
+    	providedCompile 'javax.servlet:javax.servlet-api:4.0.0'
+	compile 'javax.servlet:jstl:1.2'
+	compile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.1'
+	compile "org.springframework:spring-webmvc:${springWebMvcVersion}"
+	compile "org.springframework:spring-test:${springWebMvcVersion}"
+
+    	testImplementation 'junit:junit:4.12'
+}
+
+tomcat {
+
+	httpPort = 8080
+	enableSSL = true
+	contextPath = '/simple-spring-mvc'
+}
+```
 
 Finally refresh project by right-clicking on it’s name then **Gradle->Refresh Gradle Project**, so new libraries will be downloaded.
 
@@ -206,35 +382,107 @@ I know what you say. Why don’t you use Spring Boot for this task? Instead of f
 
 Therefore, create a new package, let’s call it config, an in it create simple Java class — AppConfig.
 
-<iframe src="https://medium.com/media/714a179bb028544dda1d01a4249db39f" frameborder=0></iframe>
+```java
+@Configuration
+@EnableWebMvc
+@ComponentScan(basePackages="com.wkrzywiec.simplespringmvc")
+public class AppConfig implements WebMvcConfigurer {
+
+	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		
+		viewResolver.setPrefix("/WEB-INF/views/");
+		viewResolver.setSuffix(".jsp");
+		return viewResolver;
+	}
+}
+@Configuration
+@EnableWebMvc
+@ComponentScan(basePackages="com.wkrzywiec.simplespringmvc")
+public class AppConfig implements WebMvcConfigurer {
+
+	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		
+		viewResolver.setPrefix("/WEB-INF/views/");
+		viewResolver.setSuffix(".jsp");
+		return viewResolver;
+	}
+}
+```
 
 @Configuration and @ComponentScan annotations are telling Spring context that it is a config class and where to scan for beans respectivaley. More intresting are @EnableWebMvc annotation with WebMvcConfigurer interface implementation that enables Spring MVC features in our project.
 
-Finally above config class contains one method for setting *ViewResolver* properties. In it, we provide prefix and sufix of a view name. So from now on, in Controller class you don’t need to provide full name of the view, just significant part of it. So instead of *“/WEB-INF/views/**home**.jsp” *we can provide short *“**home**” *and* ViewResolver *will know which JSP file to look for.
+Finally above config class contains one method for setting *ViewResolver* properties. In it, we provide prefix and sufix of a view name. So from now on, in Controller class you don’t need to provide full name of the view, just significant part of it. So instead of *“/WEB-INF/views/**home**.jsp”* we can provide short “**home**” and *ViewResolver* will know which JSP file to look for.
 
-<iframe src="https://medium.com/media/27c8e8deb56cde7cddf806ddaa84f5fb" frameborder=0></iframe>
+```java
+public class SimpleSpringMVCServletDispatcherInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-Another class that we need to add is that extends *DispatcherServletInitializer, *which replaces mandatory web.xml file in the project and makes it totaly XML-free.
+	@Override
+	protected Class<?>[] getRootConfigClasses() {
+		return null;
+	}
 
-### **Prepare simple view**
+	@Override
+	protected Class<?>[] getServletConfigClasses() {
+		return new Class[] {AppConfig.class};
+	}
+
+	@Override
+	protected String[] getServletMappings() {
+		return new String [] {"/"};
+	}
+
+}
+```
+
+Another class that we need to add is that extends *DispatcherServletInitializer*, which replaces mandatory web.xml file in the project and makes it totaly XML-free.
+
+### Prepare simple view
 
 After configuration we can focus on a fun part — views and controller. Therefore we create first, simple JSP file in Eclipse, which will look like follows.
 
-<iframe src="https://medium.com/media/32ccb5cdaa1bacb5cfbf621244fe1e74" frameborder=0></iframe>
+```html
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Home page</title>
+</head>
+<body>
+	<h1>Welcome!</h1>
+	<p>This is home page of Simple Spring MVC project!</p>
+</body>
+</html>
+```
 
-A file should be located in a directory:* src/main/webapp/WEB-INF/views/.*
+A file should be located in a directory: *src/main/webapp/WEB-INF/views/.*
 
 ### Create Spring Controller
 
 Finally we need to create new package, called controller, and add new class. For now it will contains only one method for the URL *http://localhost:8080/simple-spring-mvc/.*
 
-<iframe src="https://medium.com/media/a87a58c705164326e6cdcda10a0f8acc" frameborder=0></iframe>
+```java
+@Controller
+public class SimpleSpringMVCController {
+
+	@GetMapping("/")
+	public String showHomePage() {
+		
+		return "home";
+	}
+}
+```
 
 Note: If you don’t know where the base URL is defined check the Gradle file for Tomcat configuration.
 
 ### Testing
 
-To run it we need first we need to run a specific Gradle task called* tomcatTun. *To make it as easy as it could be go to ***Run/Run Configurations…, ***click **New** icon and enter following inputs:
+To run it we need first we need to run a specific Gradle task called* tomcatTun. *To make it as easy as it could be go to ***Run/Run Configurations…,*** click **New** icon and enter following inputs:
 
 * Name: *Simple Spring MVC — run*
 
@@ -244,7 +492,7 @@ To run it we need first we need to run a specific Gradle task called* tomcatTun.
 
 ![](https://cdn-images-1.medium.com/max/2052/1*-xj_8_DoNMWaeHFmgl2Zxg.png)
 
-We have now easy access to the task which can be started using **Run** button in Eclipse. Once you run this task and wait for all init jobs to be finished you can type URL *http://localhost:8080/simple-spring-mvc/ *in the browser and get following page:
+We have now easy access to the task which can be started using **Run** button in Eclipse. Once you run this task and wait for all init jobs to be finished you can type URL *http://localhost:8080/simple-spring-mvc/* in the browser and get following page:
 
 ![](https://cdn-images-1.medium.com/max/2000/1*HVdXMWn4SeX1qFR5rtcNcg.png)
 
@@ -254,23 +502,70 @@ Ok we now that everything is working so let’s make it more complex/cooler. I w
 
 **@PathVariable**
 
-Let’s make a new Controller method that will map URL [*http://localhost:8080/simple-spring-mvc/](http://localhost:8080/simple-spring-mvc/.)meme/{name} *which will direct us to a website that has certain meme depending on the name in the last part of URL. Therefore first we need to create 3 new views, one of them is:
+Let’s make a new Controller method that will map URL *[http://localhost:8080/simple-spring-mvc/](http://localhost:8080/simple-spring-mvc/.)meme/{name}* which will direct us to a website that has certain meme depending on the name in the last part of URL. Therefore first we need to create 3 new views, one of them is:
 
-<iframe src="https://medium.com/media/6a5e39034c1d8dc168bc2c57855f2cf5" frameborder=0></iframe>
+```html
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Works on my machine</title>
+</head>
+<body>
+	<div class="container" style="margin-top: 30px;">
+		<a href="${pageContext.request.contextPath}/">&#8592; Go back </a>
+	</div>
+	
+	<div class="container" style="margin: 50px 50px 50px 50px">
+		<img src="<c:url value="/resources/img/works.jpg" />"/>
+	</div>
+</body>
+</html>
+```
 
 Some of the lines requires some exaplanation. In 3 line we add new library to allow [JSTL](https://www.tutorialspoint.com/jsp/jsp_standard_tag_library.htm) features.
 
-Next, in line 12 there is a link to the home page, which is dynamic, so if we change our base URL (for example when we want to move the app from local to the server, we’ll don’t need to update all views). In our case it’s just telling to go to the [*http://localhost:8080/simple-spring-mvc/.](http://localhost:8080/simple-spring-mvc/.)*
+Next, in line 12 there is a link to the home page, which is dynamic, so if we change our base URL (for example when we want to move the app from local to the server, we’ll don’t need to update all views). In our case it’s just telling to go to the *[http://localhost:8080/simple-spring-mvc/.](http://localhost:8080/simple-spring-mvc/.)*
 
 Finally, in 16 line there is an image file path. To be able to use it first we need to do two things. First we need to add one method to AppConfig class that will map resource folder.
 
-<iframe src="https://medium.com/media/a66a982b9c0e21284aa7c4df37c4f983" frameborder=0></iframe>
+```java
+public class AppConfig implements WebMvcConfigurer {
+  
+  //other config
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+	}
+}
+```
 
 Second we need to add images to the project to a folder *src/main/webapp/resources/img.*
 
 Finally we need to add method to Controller class.
 
-<iframe src="https://medium.com/media/31497dbd140ffd67ea4d696595178a06" frameborder=0></iframe>
+```java
+@Controller
+public class SimpleSpringMVCController {
+  
+  //other methods
+  
+  @GetMapping("/meme/{name}")
+	public String showNotsure(@PathVariable("name") String name) {
+		
+		if (name.equals("notsure")) {
+			return "notsure";
+		} else if (name.equals("instead")) {
+			return "instead";
+		} else {
+			return "works";
+		}
+	}
+}
+```
 
 Here is the sample of one of these pages:
 
@@ -282,15 +577,84 @@ Moving forward, I’d like to add a box where we can input our name, than submit
 
 So first we need to create two views — one for a form and another for a result.
 
-<iframe src="https://medium.com/media/b150487b3a2a197ffba953e2b54ba85e" frameborder=0></iframe>
+```html
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Provide your name</title>
+</head>
+<body>
+	<form action="processNameForm" method="GET">
+		<div class="container" style="margin-left: 15px; margin-top: 15px;">
+			<div class="row">
+				<div class="col">
+					<input type="text" class="form-control" name="name" placeholder="What's your name?" />
+				</div>
+				<div class="col">
+					<input type="submit" class="btn btn-success" role="button"/ value="Submit">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="${pageContext.request.contextPath}/">&#8592; Go back </a>
+				</div>
+			</div>
+		</div>
+	</form>
+	
+	
+</body>
+</html>
+```
 
 Above is presented code of a form. The most important tag is <form> which wraps two inputs, one for a text box and another for submit button. This tag also have two attributes — action and method. First one indicates the URL of the result page (which will be *baseURL/processNameForm*) and second is telling what HTTP request to use.
 
-<iframe src="https://medium.com/media/b8194090709bc30d6a543e7d0bdd645b" frameborder=0></iframe>
+```html
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Your name is ${param.name}</title>
+</head>
+<body>
+		<h1>Hi ${param.name}!</h1>
+		<p>Your name in upper cases looks like this ${upperName}.</p>
+		<a href="${pageContext.request.contextPath}/name">&#8592; Go back </a>
+</body>
+</html>
+```
 
-HTML code of result page is shown above. Here, we will print the exact value of a request parameter with a name *“name” *that was passed using form on a previous page. Also we’ll get an attribute from the Model attached to the request — *“upperName”, *which you might already guess it, will be written using upper case letters. This attribute will be added from the Controller class.
+HTML code of result page is shown above. Here, we will print the exact value of a request parameter with a name *“name”* that was passed using form on a previous page. Also we’ll get an attribute from the Model attached to the request — *“upperName”*, which you might already guess it, will be written using upper case letters. This attribute will be added from the Controller class.
 
-<iframe src="https://medium.com/media/9be4cb68696fa158e668faa6f2c777a6" frameborder=0></iframe>
+```java
+@Controller
+public class SimpleSpringMVCController {
+	
+	//other methods
+
+	@GetMapping("/name")
+	public String showInputName() {
+		return "name";
+	}
+	
+	@GetMapping("/processNameForm")
+	public String processInputName(
+				@RequestParam("name") String name,
+				Model model) {
+		
+		String upperName = name.toUpperCase();
+		model.addAttribute("upperName", upperName);
+		
+		return "name-display";
+	}
+}
+```
 
 It contains two methods, one for each page. When we run the project we get
 
@@ -304,21 +668,129 @@ It contains two methods, one for each page. When we run the project we get
 
 Last thing that I want to test is handling very popular Exception — NullPointerException. I want to redirect user to the error page and also print the exception stack trace in the console. Therefore we need to add following method to the Controller.
 
-<iframe src="https://medium.com/media/ea0b2a73af448542b0199d73f764f2cf" frameborder=0></iframe>
+```java
+@Controller
+public class SimpleSpringMVCController {
+  
+  @ExceptionHandler(NullPointerException.class)
+	public ModelAndView handleNullException(NullPointerException ex) {
+	    
+	    ModelAndView modelView = new ModelAndView("error");
+	    modelView.addObject("message", "Some major error has occured.");
+	    System.out.println(ex.getMessage());
+	    
+	    return modelView;
+	}
+  
+  //other methods
+}
+```
 
 This time we use ModelAndView class to pass the view name and add an attribute that is required by the JSP file.
 
-<iframe src="https://medium.com/media/6400d3e50cfaac969600c730ebc89885" frameborder=0></iframe>
+```html
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>NullPointerException has been thrown!</title>
+</head>
+<body>
+		<h1>Aye yai yai yai yai yai yai! </h1>
+		<p>${message}</p>
+		<img src="<c:url value="/resources/img/error.jpg" />"/>
+		<a href="${pageContext.request.contextPath}/">&#8592; Go back </a>
+</body>
+</html>
+```
 
 Finally to test it we need to add button to the home page (with links to other features mentioned in this section).
 
-<iframe src="https://medium.com/media/897fdb6e05b3902fd670c93a43903b76" frameborder=0></iframe>
+```html
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<title>Home page</title>
+<style>
+	.container {
+		margin-left: 15px;
+		width: 500px;
+	}
+	
+	.row {
+		margin-bottom: 10px;
+	}
+</style>
+</head>
+<body>
+	<h1>Welcome!</h1>
+	<p>This is home page of Simple Spring MVC project!</p>
+	
+	<div class="container">
+		<div class="row">
+			<div class="col">
+				Test @PathVariable - show meme pages
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<a href="${pageContext.request.contextPath}/meme/notsure" class="btn btn-info" role="button">Not sure</a>
+			</div>
+			<div class="col">
+				<a href="${pageContext.request.contextPath}/meme/instead" class="btn btn-warning" role="button">Instead</a>
+			</div>
+			<div class="col">
+				<a href="${pageContext.request.contextPath}/meme/works" class="btn btn-light" role="button">Works on my machine!</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				Test @RequestParam & Model - get name from the box
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<a href="${pageContext.request.contextPath}/name" class="btn btn-success" role="button">Provide your name</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				Test Exception Handler
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<a href="${pageContext.request.contextPath}/exception" class="btn btn-danger" role="button">Throw Exception</a>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+```
 
 And finally, we need to map the request that will throw NullPointerException.
 
-<iframe src="https://medium.com/media/6bb471bc534ac6ff19aecc59dd923dd5" frameborder=0></iframe>
+```java
+@Controller
+public class SimpleSpringMVCController {
 
-All these features are now availbale from the main page.
+    //other methods
+  @GetMapping("/exception")
+  public void thoreNullPointerException() {
+   throw new NullPointerException(); 
+  }
+}
+```
+
+All these features are now available from the main page.
 
 ![](https://cdn-images-1.medium.com/max/2000/1*Q0GKJfu3DptCT7S9efGFag.png)
 
@@ -327,29 +799,19 @@ After clicking the last one we get an error page:
 ![](https://cdn-images-1.medium.com/max/2000/1*sq7UAlSY1nRYkrHTPBSwcw.png)
 
 Whole project can be found here:
-[**wkrzywiec/Simple-Spring-MVC**
-*Contribute to wkrzywiec/Simple-Spring-MVC development by creating an account on GitHub.*github.com](https://github.com/wkrzywiec/Simple-Spring-MVC)
+
+[**wkrzywiec/Simple-Spring-MVC** | github.com](https://github.com/wkrzywiec/Simple-Spring-MVC)
 
 ## References
-[**How Spring MVC Really Works**
-*Throughout this article, we'll use the latest and greatest Spring Framework 5. We're focusing here on the Spring's…*stackify.com](https://stackify.com/spring-mvc/)
-[**Quick Guide to Spring Controllers | Baeldung**
-*In this article we'll focus on a core concept in Spring MVC - Controllers. Let's start by taking a step back and having…*www.baeldung.com](https://www.baeldung.com/spring-controllers)
-[**Web on Servlet Stack**
-*This part of the documentation covers support for Servlet stack, web applications built on the Servlet API and deployed…*docs.spring.io](https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#spring-web)
-[**14 Tips for Writing Spring MVC Controller**
-*Details Last Updated on 14 November 2017 &nbsp | &nbsp Print Email Today we are going to share with you some…*www.codejava.net](http://www.codejava.net/frameworks/spring/14-tips-for-writing-spring-mvc-controller)
-[**Spring MVC Cookie example. Spring Http Cookie Tutorial**
-*In this post we will see how to access and modify http cookies of a webpage in Spring MVC framework. Spring 3 MVC…*viralpatel.net](https://viralpatel.net/blogs/spring-mvc-cookie-example/)
-[**Spring MVC and the @ModelAttribute Annotation | Baeldung**
-*One of the most important Spring-MVC annotations is the @ModelAttribute annotation. The @ModelAttribute is an…*www.baeldung.com](https://www.baeldung.com/spring-mvc-and-the-modelattribute-annotation)
-[**Model, ModelMap and ModelView in Spring MVC | Baeldung**
-*In this article, we'll look at the use of the core org.springframework.ui.Model , org.springframework.ui.ModelMap and…*www.baeldung.com](https://www.baeldung.com/spring-mvc-model-model-map-model-view)
-[**Error Handling for REST with Spring | Baeldung**
-*This article will illustrate how to implement Exception Handling with Spring for a REST API. We'll look at both the…*www.baeldung.com](https://www.baeldung.com/exception-handling-for-rest-with-spring)
-[**How to use Spring Exception Handler for SpringMVC: @ExceptionHandler, @ResponseStatus…**
-*Spring provides a cross-cutting concern solution for handling Java Excepion. So in the tutorial, JavaSampleApproach…*grokonez.com](https://grokonez.com/spring-framework/spring-mvc/use-spring-exception#1_ResponseStatus)
-[**Spring MVC: How to return custom 404 errorpages?**
-*I'm looking for a clean way to return customized 404 errorpages in Spring 4 when a requested resource was not found…*stackoverflow.com](https://stackoverflow.com/questions/21061638/spring-mvc-how-to-return-custom-404-errorpages)
-[**Using @ResponseStatus to Set HTTP Status Code | Baeldung**
-*In Spring MVC, we have many ways to set the status code of an HTTP response. In this short tutorial, we will see the…*www.baeldung.com](https://www.baeldung.com/spring-response-status)
+
+* [**How Spring MVC Really Works** | stackify.com](https://stackify.com/spring-mvc/)
+* [**Quick Guide to Spring Controllers | Baeldung** | baeldung.com](https://www.baeldung.com/spring-controllers)
+* [**Web on Servlet Stack** | docs.spring.io](https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#spring-web)
+* [**14 Tips for Writing Spring MVC Controller** | codejava.net](http://www.codejava.net/frameworks/spring/14-tips-for-writing-spring-mvc-controller)
+* [**Spring MVC Cookie example. Spring Http Cookie Tutorial** | viralpatel.net](https://viralpatel.net/blogs/spring-mvc-cookie-example/)
+* [**Spring MVC and the @ModelAttribute Annotation | Baeldung** | baeldung.com](https://www.baeldung.com/spring-mvc-and-the-modelattribute-annotation)
+* [**Model, ModelMap and ModelView in Spring MVC | Baeldung** | baeldung.com](https://www.baeldung.com/spring-mvc-model-model-map-model-view)
+* [**Error Handling for REST with Spring | Baeldung** | baeldung.com](https://www.baeldung.com/exception-handling-for-rest-with-spring)
+* [**How to use Spring Exception Handler for SpringMVC: @ExceptionHandler, @ResponseStatus…** | grokonez.com](https://grokonez.com/spring-framework/spring-mvc/use-spring-exception#1_ResponseStatus)
+* [**Spring MVC: How to return custom 404 errorpages?** | stackoverflow.com](https://stackoverflow.com/questions/21061638/spring-mvc-how-to-return-custom-404-errorpages)
+* [**Using @ResponseStatus to Set HTTP Status Code | Baeldung** | baeldung.com](https://www.baeldung.com/spring-response-status)

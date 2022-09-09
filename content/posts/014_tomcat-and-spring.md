@@ -1,7 +1,7 @@
 ---
 title: "Deployment of Spring MVC app on a local Tomcat server for beginners"
 date: 2018-08-20
-summary: "Useful tools and websites for front-end website development"
+summary: "Step-by-step deployment of WAR file on Tomcat server"
 description: "At last, you’ve done it. After several hours of design, coding and testing your application is ready to be published. And as it is a web application, it requires an HTTP server to host it. So in this blog entry I would like to describe how I’ve mange to do it with Apache Tomcat server."
 tags: ["java", "spring", "tomcat", "deployment", "database", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/deployment-of-spring-mvc-app-on-a-local-tomcat-server-for-beginners-3dfff9161908"
