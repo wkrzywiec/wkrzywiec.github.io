@@ -111,16 +111,14 @@
   {{/* Vendor */}}
   {{ partial "vendor.html" . }}
   {{/* Analytics */}}
-  {{ if hugo.IsProduction }}
-    {{ with .Site.Params.fathomAnalytics.site }}
-      {{ if isset $.Site.Params.fathomanalytics "domain" }}
-        <script defer src="https://{{ $.Site.Params.fathomanalytics.domain }}/script.js" data-site="{{ . }}"></script>
-      {{ else }}
-        <script defer src="https://cdn.usefathom.com/script.js" data-site="{{ . }}"></script>
-      {{ end }}
+  {{ with .Site.Params.fathomAnalytics.site }}
+    {{ if isset $.Site.Params.fathomanalytics "domain" }}
+      <script defer src="https://{{ $.Site.Params.fathomanalytics.domain }}/script.js" data-site="{{ . }}"></script>
+    {{ else }}
+      <script defer src="https://cdn.usefathom.com/script.js" data-site="{{ . }}"></script>
     {{ end }}
-    {{ template "_internal/google_analytics.html" . }}
   {{ end }}
+  {{ template "_internal/google_analytics.html" . }}
   {{/* Extend head - eg. for custom analytics scripts, etc. */}}
   {{ if templates.Exists "partials/extend-head.html" }}
     {{ partialCached "extend-head.html" .Site }}
