@@ -1,12 +1,21 @@
+---
+title: "How to fetch REST API every 2 seconds with RxJava 2"
+date: 2019-03-05
+summary: "Basic usage of RxJava 2 library"
+description: "During my work on one of my Android application I’ve stomped on a problem where I needed to call some REST API every 10 seconds to check whether some data have changed or not. And with this blog post I would like to share with you how I’ve managed to achieve that."
+tags: ["java", "reactive", "async", "rxjava", "android"]
+canonicalUrl: "https://wkrzywiec.medium.com/how-to-fetch-rest-api-every-2-seconds-with-rxjava-2-9289c33fd045"
+---
 
-# How to fetch REST API every 2 seconds with RxJava 2
-> Source: https://wkrzywiec.medium.com/how-to-fetch-rest-api-every-2-seconds-with-rxjava-2-9289c33fd045
-
-*During my work on one of my Android application I’ve stomped on a problem where I needed to call some REST API every 10 seconds to check whether some data have changed or not. And with this blog post I would like to share with you how I’ve managed to achieve that.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-fetch-rest-api-every-2-seconds-with-rxjava-2-9289c33fd045).
+{{< /alert >}}  
 
 ![Photo by [Matthew Smith](https://unsplash.com/@whale?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10000/0*PBBBY4qMSeX-5NJ_)*Photo by [Matthew Smith](https://unsplash.com/@whale?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
-### Prerequisites
+*During my work on one of my Android application I’ve stomped on a problem where I needed to call some REST API every 10 seconds to check whether some data have changed or not. And with this blog post I would like to share with you how I’ve managed to achieve that.*
+
+## Prerequisites
 
 First of all, I don’t want to show the Android code, because due to some code around it it may blur the solution. Instead for this demo I go with a simple command line app.
 
@@ -19,6 +28,8 @@ Even though my application is very small I use couple tools that helps me develo
 * **RxJava 2 & Retrofit** — both libraries are used to perform API call and make it asynchronous. They are very popular in Android app development.
 
 * **Lombok** — it helps to skip writting boring parts of model class like, getters, setter, constructor and so on. You only need to add some annotation above the class name and it’ll work. More info: [Project Lombok](https://medium.com/@wkrzywiec/project-lombok-how-to-make-your-model-class-simple-ad71319c35d5).
+
+## Implementation
 
 ### Step 1. Set up app structure
 

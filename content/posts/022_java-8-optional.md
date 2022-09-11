@@ -1,10 +1,19 @@
+---
+title: "What was added to Java 8? Optional<T> class"
+date: 2018-12-02
+summary: "Handling nulls with Optional class in Java"
+description: "As a Java developer you’ve probably stomped on NullPointerException many times and usually handling this kind of error takes some time. Luckily thanks to new Optional class it’s much easier now."
+tags: ["java", "streams", "optional", "syntax-sugar"]
+canonicalUrl: "https://wkrzywiec.medium.com/what-was-added-to-java-8-optional-t-class-97d87728a537"
+---
 
-# What was added to Java 8? Optional<T> class
-> Source: https://wkrzywiec.medium.com/what-was-added-to-java-8-optional-t-class-97d87728a537
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/what-was-added-to-java-8-optional-t-class-97d87728a537).
+{{< /alert >}}  
+
+![“top view photography of mug with black liquid” by [Isaac Benhesed](https://unsplash.com/@isaacbenhesed?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4884/0*eFP8QMp8QbojNSTA)*Photo by [Isaac Benhesed](https://unsplash.com/@isaacbenhesed?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *As a Java developer you’ve probably stomped on NullPointerException many times and usually handling this kind of error takes some time. Luckily thanks to new Optional class it’s much easier now.*
-
-![“top view photography of mug with black liquid” by [Isaac Benhesed](https://unsplash.com/@isaacbenhesed?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4884/0*eFP8QMp8QbojNSTA)*“top view photography of mug with black liquid” by [Isaac Benhesed](https://unsplash.com/@isaacbenhesed?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 This is a three-part series on Java 8 new features, other blog posts can be found here:
 

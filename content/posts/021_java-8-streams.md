@@ -1,10 +1,20 @@
+---
+title: "What was added to Java 8? Streams"
+date: 2018-11-18
+summary: "Introduction to Streams from standard library from Java"
+description: "Many programming tasks can be described as data processing i.e. we’ve got a collection of values which we want modify, like filter, transform or group. Until Java 8 this task was really painful (required multiple loops) and was not such efficient. Luckily there is new concept — Streams."
+tags: ["java", "streams", "syntax-sugar"]
+canonicalUrl: "https://wkrzywiec.medium.com/what-was-added-to-java-8-streams-1d1f86c0628f"
+---
 
-# What was added to Java 8? Streams
-> Source: https://wkrzywiec.medium.com/what-was-added-to-java-8-streams-1d1f86c0628f
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/what-was-added-to-java-8-streams-1d1f86c0628f).
+{{< /alert >}}  
 
-*Many programming tasks can be described as data processing i.e. we’ve got a collection of values which we want modify, like filter, transform or group. Until Java 8 this task was really painful (required multiple loops) and was not such efficient. Luckily there is new concept — Streams.*
 
 ![Photo by [Samuel Sianipar](https://unsplash.com/@samthewam24?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10422/0*HPS68K6O8U_93aOo)*Photo by [Samuel Sianipar](https://unsplash.com/@samthewam24?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*Many programming tasks can be described as data processing i.e. we’ve got a collection of values which we want modify, like filter, transform or group. Until Java 8 this task was really painful (required multiple loops) and was not such efficient. Luckily there is new concept — Streams.*
 
 This is a three-part series on Java 8 new features, other blog posts can be found here:
 
