@@ -12,6 +12,8 @@ autoSwitchAppearance = false
 enableSearch = true
 enableCodeCopy = true
 
+googleAnalytics = "G-1XW1RWJPXH"
+
 # mainSections = ["section1", "section2"]
 # robots = ""
 
