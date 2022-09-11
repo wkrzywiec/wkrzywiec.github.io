@@ -111,14 +111,16 @@
   {{/* Vendor */}}
   {{ partial "vendor.html" . }}
   {{/* Analytics */}}
-  {{ with .Site.Params.fathomAnalytics.site }}
-    {{ if isset $.Site.Params.fathomanalytics "domain" }}
-      <script defer src="https://{{ $.Site.Params.fathomanalytics.domain }}/script.js" data-site="{{ . }}"></script>
-    {{ else }}
-      <script defer src="https://cdn.usefathom.com/script.js" data-site="{{ . }}"></script>
-    {{ end }}
+  {{ if hugo.IsProduction }}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ .Site.Params.GoogleAnalyticsID }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '{{ .Site.Params.GoogleAnalyticsID }}');
+    </script>
   {{ end }}
-  {{ template "_internal/google_analytics.html" . }}
   {{/* Extend head - eg. for custom analytics scripts, etc. */}}
   {{ if templates.Exists "partials/extend-head.html" }}
     {{ partialCached "extend-head.html" .Site }}
