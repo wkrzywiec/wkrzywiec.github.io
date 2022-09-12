@@ -1,10 +1,20 @@
+---
+title: "What’s Docker? And how to start with it"
+date: 2019-03-20
+summary: "Basic Docker commands"
+description: "During the last couple of years Docker has became a thing in software developer world. With this post I would like to explain what problem does it solve, how to install it and test on a simple examples. Apart from the technical topics I also would like to elaborate a little bit on the containerization concept of a software."
+tags: ["docker", "container", "cloud", "devops"]
+canonicalUrl: "https://medium.com/faun/whats-docker-and-how-to-start-with-it-b13ff51013d0"
+---
 
-# What’s Docker? And how to start with it
-> Source https://medium.com/faun/whats-docker-and-how-to-start-with-it-b13ff51013d0
+{{< alert "link" >}}
+This article was originally published on [Medium](https://medium.com/faun/whats-docker-and-how-to-start-with-it-b13ff51013d0).
+{{< /alert >}}  
 
-*During the last couple of years Docker has became a thing in software developer world. With this post I would like to explain what problem does it solve, how to install it and test on a simple examples. Apart from the technical topics I also would like to elaborate a little bit on the containerization concept of a software.*
 
 ![Photo by [Tim Easley]](https://cdn-images-1.medium.com/max/9824/0*BoNcPSDhYjhDsufq) *Photo by [Tim Easley](https://unsplash.com/@timeasley) on [Unsplash](https://unsplash.com)*
+
+*During the last couple of years Docker has became a thing in software developer world. With this post I would like to explain what problem does it solve, how to install it and test on a simple examples. Apart from the technical topics I also would like to elaborate a little bit on the containerization concept of a software.*
 
 This blog post is a first one in a series of articles dedicated to Docker. The other entries are:
 
@@ -15,7 +25,7 @@ This blog post is a first one in a series of articles dedicated to Docker. The o
 * Build a portable Spring Boot app with database in a Docker container *(COMING SOON)*
 
 
-### Container technology. What problem does it solve?
+## Container technology. What problem does it solve?
 
 Imagine this scenario. You, as a developer, has finished a new amazing app. Everything was tested and it could be a next big thing. Now your boss is asking you to move it from your development machine (usually local PC) to company’s server (production).
 
@@ -35,19 +45,19 @@ Moreover the microservice architecture helps with agile approach. For instance i
 
 And finally, containers technology enables some of the cloud features (like scalability, self-healing), it reduce solution’s time to market, reduce IT infrastructure or issue time resolving.
 
-### What is a role of Docker?
+## What is a role of Docker?
 
 Ok, so now, what is a role of the Docker in container technology? Basically it’s a tool that allows us to develop, deploy and run software in a container. With Docker we can package up the application with all libraries and dependencies, and unlike virtual machine they don’t require so much resources, so they are faster and more easy to use.
 
 Let’s move on to show you how Docker really works, but first we must install it on your local machine.
 
-### How to install Docker?
+## How to install Docker?
 
 Depending on the system you have the installation might be a slightly different. If you’re using a Linux, you’ll be able to install Docker in a terminal, but if you’re using Windows or MacOS you will need to install a Docker Desktop app which is a lightweight Linux virtual machine.
 
 Here are the instructions how to install Docker on [Ubuntu (Linux)](https://docs.docker.com/install/linux/docker-ce/ubuntu/), [Windows](https://docs.docker.com/docker-for-windows/install/) and [MacOS.](https://docs.docker.com/docker-for-mac/install/)
 
-### Running first, hello-world, Docker container
+## Running first, hello-world, Docker container
 
 Everything is set up, so open a terminal (on Windows and Macs, first make sure that Docker is up and running) and type following command:
 

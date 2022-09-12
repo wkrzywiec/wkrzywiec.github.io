@@ -1,9 +1,9 @@
 ---
 title: "How to check if user exist in database using Hibernate Validator"
 date: 2018-06-22
-summary: "How to face changing data source file in MS Excel Power Query"
+summary: "Input validation for database row modification using Hibernate"
 description: "During work on my current project, Library Portal, I have encounter a problem with checking if a user is already in the database during registering new one, i.e. if her/his username or email is used by another user. There are many approaches to solve this, but I’ve decided to create custom Hibernate Validator annotation that will take care of this (as it is also taking care of other validation aspects in my application)."
-tags: ["java", "database", "hibernate", "spring", "validation"]
+tags: ["java", "database", "hibernate", "spring", "validation", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/how-to-check-if-user-exist-in-database-using-hibernate-validator-eab110429a6"
 ---
 

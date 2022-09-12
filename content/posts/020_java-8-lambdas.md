@@ -1,10 +1,19 @@
+---
+title: "What was added to Java 8? Lambda expressions"
+date: 2018-11-05
+summary: "Introduction to lambda expressions in Java"
+description: "With this article I start a short series that will explain what features were added to Java 8 update. Today I’ll focus on the major buzz of this release — lambda expression (a.k.a. lambdas)."
+tags: ["java", "lambda", "syntax-sugar"]
+canonicalUrl: "https://wkrzywiec.medium.com/what-was-added-to-java-8-lambda-expressions-7b2735efb287"
+---
 
-# What was added to Java 8? Lambda expressions
-> Source: https://wkrzywiec.medium.com/what-was-added-to-java-8-lambda-expressions-7b2735efb287
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/what-was-added-to-java-8-lambda-expressions-7b2735efb287).
+{{< /alert >}}  
+
+![“person standing on grass field near mountain” by [Iswanto Arif](https://unsplash.com/@iswanto?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10368/0*UrWaLnPnSFgqFo_F)*Photo by [Iswanto Arif](https://unsplash.com/@iswanto?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *With this article I start a short series that will explain what features were added to Java 8 update. Today I’ll focus on the major buzz of this release — lambda expression (a.k.a. lambdas).*
-
-![“person standing on grass field near mountain” by [Iswanto Arif](https://unsplash.com/@iswanto?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/10368/0*UrWaLnPnSFgqFo_F)*“person standing on grass field near mountain” by [Iswanto Arif](https://unsplash.com/@iswanto?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 These series will be divided into three parts (links will be updated once each blog post will be published):
 

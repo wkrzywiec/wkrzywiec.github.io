@@ -3,7 +3,7 @@ title: "Library Portal — Spring Project Overview"
 date: 2018-03-11
 summary: "The first blog entry on my new Spring MVC project — Library Portal"
 description: "This is my first blog entry on my new Spring MVC project — Library Portal — and also it is my first blog entry ever. I am a little bit nervous, but I hope you will gone like it."
-tags: ["java", "spring", "project"]
+tags: ["java", "spring", "library-project"]
 canonicalUrl: "https://wkrzywiec.medium.com/library-portal-spring-project-overview-ddbf910dcb95"
 ---
 

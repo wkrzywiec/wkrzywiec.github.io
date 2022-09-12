@@ -1,10 +1,20 @@
+---
+title: "How to put your Java application into Docker container"
+date: 2019-04-16
+summary: "Running Java app in Docker"
+description: "The main purpose of enormous popularity of Docker nowadays is that it’s really easy to use and it allows developers to create a portable application that could be run on every machine in a nick of time. With this blog post I would like to present how simple is to create your own Docker image with your own Java app inside."
+tags: ["docker", "container", "cloud", "devops", "java", "spring-boot"]
+canonicalUrl: "https://wkrzywiec.medium.com/how-to-put-your-java-application-into-docker-container-5e0a02acdd6b"
+---
 
-# How to put your Java application into Docker container
-> Source: https://wkrzywiec.medium.com/how-to-put-your-java-application-into-docker-container-5e0a02acdd6b
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-put-your-java-application-into-docker-container-5e0a02acdd6b).
+{{< /alert >}}  
 
-*The main purpose of enormous popularity of Docker nowadays is that it’s really easy to use and it allows developers to create a portable application that could be run on every machine in a nick of time. With this blog post I would like to present how simple is to create your own Docker image with your own Java app inside.*
 
 ![Photo by [Benjamin Voros]](https://cdn-images-1.medium.com/max/8192/0*VyzL_41RYLZj7_Lu) *Photo by [Benjamin Voros](https://unsplash.com/@vorosbenisop?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*The main purpose of enormous popularity of Docker nowadays is that it’s really easy to use and it allows developers to create a portable application that could be run on every machine in a nick of time. With this blog post I would like to present how simple is to create your own Docker image with your own Java app inside.*
 
 Haven’t you heard of Docker yet? Or maybe you’re not comfortable with what exactly it is? Don’t worry, you can check [my previous article in which I elaborate on that](https://dev.to/wkrzywiec/what-s-docker-and-how-to-start-with-it-2eai).
 
@@ -121,7 +131,7 @@ Now if you want to stop the application just use **Ctrl + C** combination on you
 
 ```
 
-### Export Docker image to a file
+## Export Docker image to a file
 
 Until this point everything was done on a single PC, but usually we would like to share our work with others and this would require to generate a file that could be sent via email, copied to Dopbox, fttp or so on. Docker allows to save an image as .tar file and to do so just type following command:
 
@@ -139,7 +149,7 @@ As we now have an exported image you can share it and then to open it use follow
 
 After that new image will be extracted and available to run (the same way as it was done previously).
 
-### Publishing image on Docker Hub
+## Publishing image on Docker Hub
 
 Previous method works fine, but let be honest. It’s not 21st century approach. We get used to be able to download everything from the Internet in the matter of seconds. Therefore exchanging files with Docker images might not to be the so convenient.
 

@@ -1,18 +1,28 @@
+---
+title: "I‘m going back to my old project — WaWa Tabor"
+date: 2018-10-19
+summary: "Going back to my old Android app"
+description: "More than a year ago (in late 2017) I was working on my first, Android app. It taught me a lot, but honestly it wasn’t a good product. Now I want to fix it, and here is my “big” plan what I want to do."
+tags: ["java", "android", "project"]
+canonicalUrl: "https://wkrzywiec.medium.com/i-m-going-back-to-my-old-project-wawa-tabor-599c5cdeebf4"
+---
 
-# I‘m going back to my old project — WaWa Tabor
-> Source: https://wkrzywiec.medium.com/i-m-going-back-to-my-old-project-wawa-tabor-599c5cdeebf4
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/i-m-going-back-to-my-old-project-wawa-tabor-599c5cdeebf4).
+{{< /alert >}}  
 
-More than a year ago (in late 2017) I was working on my first, Android app. It taught me a lot, but honestly it wasn’t a good product. Now I want to fix it, and here is my “big” plan what I want to do.
 
-![“tower clock building” by [silviannnm](https://unsplash.com/@silvianm?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4896/0*9ChLr4WoGK6TJAjK)*“tower clock building” by [silviannnm](https://unsplash.com/@silvianm?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+![“tower clock building” by [silviannnm](https://unsplash.com/@silvianm?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/4896/0*9ChLr4WoGK6TJAjK)*Photo by [silviannnm](https://unsplash.com/@silvianm?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*More than a year ago (in late 2017) I was working on my first, Android app. It taught me a lot, but honestly it wasn’t a good product. Now I want to fix it, and here is my “big” plan what I want to do.*
 
 ### WaWa Tabor — what’s that?
 
 First, you may wander what’s the project. The app was designed to show users the location of buses and trams around Warsaw (Poland). It helps finding a nearest bus or tram in order to get to your destination as fast as you could.
 
 You can check it on your own by downloading it from the Google Play store:
-[**WaWa Tabor - Apps on Google Play**
-*WaWa Tabor to aplikacja, która umożliwia określenie pozycji warszawskich autobusów i tramwajów, które obecnie są na…*play.google.com](https://play.google.com/store/apps/details?id=com.wawa_applications.wawa_tabor)
+
+[**WaWa Tabor - Apps on Google Play** | play.google.com](https://play.google.com/store/apps/details?id=com.wawa_applications.wawa_tabor)
 
 ### Background
 
@@ -40,11 +50,12 @@ As a result of the third phase I would like to have following ecosystem of the W
 
 ![](https://cdn-images-1.medium.com/max/27868/1*BYfW3n2OKybuyBmwnjNvmw.png)
 
-**WaWa Tabor — **the core product, that will be downloaded by the user. It ill be getting information from the API (GPS location) and my microservices (calculated properties, like bus direction).
+* **WaWa Tabor** — the core product, that will be downloaded by the user. It ill be getting information from the API (GPS location) and my microservices (calculated properties, like bus direction).
 
-[**ZTM API](https://api.um.warszawa.pl/) **— open API, which provides on-line data about bus/tram locations.
+* [**ZTM API**](https://api.um.warszawa.pl/)— open API, which provides on-line data about bus/tram locations.
 
-**Microservices — **these will be fetching the data from the API (scheduled task) and also it will be providing calculated values to the mobile app.
+* 
+**Microservices** — these will be fetching the data from the API (scheduled task) and also it will be providing calculated values to the mobile app.
 
 Moreover, I would like to add [Firebase](https://firebase.google.com/) chiefly for [Google Analytics](https://firebase.google.com/products/analytics/) and [A/B Testing](https://firebase.google.com/products/ab-testing/) to play around with them a little bit.
 
@@ -65,9 +76,7 @@ As it is possible to mix Java and Kotlin in one project I’ll plan to successiv
 You can track the development progress on my [Kanban board](https://trello.com/b/k5JcwEmt/wawa-tabor), check what I’m currently working on and what are my further steps.
 
 Apart from that after each phase, or major change (like migration to MVVM architecture) I plan to write a blog post with some retrospectives thoughts. All of them will be listed in this blog post below.
-[**wkrzywiec/WaWa-Tabor**
-*Android app that presents location of Warsaw buses and trams. - wkrzywiec/WaWa-Tabor*github.com](https://github.com/wkrzywiec/WaWa-Tabor)
-[**Trello — WaWa Tabor Board**
-*Organize anything, together. Trello is a collaboration tool that organizes your projects into boards. In one glance…*trello.com](https://trello.com/b/k5JcwEmt/wawa-tabor)
-[**WaWa Tabor - Apps on Google Play**
-*WaWa Tabor to aplikacja, która umożliwia określenie pozycji warszawskich autobusów i tramwajów, które obecnie są na…*play.google.com](https://play.google.com/store/apps/details?id=com.wawa_applications.wawa_tabor&hl=en)
+
+* [**wkrzywiec/WaWa-Tabor** | github.com](https://github.com/wkrzywiec/WaWa-Tabor)
+* [**Trello — WaWa Tabor Board** | trello.com](https://trello.com/b/k5JcwEmt/wawa-tabor)
+* [**WaWa Tabor - Apps on Google Play** | play.google.com](https://play.google.com/store/apps/details?id=com.wawa_applications.wawa_tabor&hl=en)
