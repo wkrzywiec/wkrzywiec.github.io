@@ -1,27 +1,36 @@
+---
+title: "GitHub Actions for Android: First Approach"
+date: 2019-10-24
+summary: "Spin up multiple applications with Docker Compose"
+description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
+tags: ["java", "android", "github-action", "devops", "ci-cd", "github"]
+canonicalUrl: "https://wkrzywiec.medium.com/github-actions-for-android-first-approach-f616c24aa0f9"
+---
 
-# GitHub Actions for Android: First Approach
-> Source: https://wkrzywiec.medium.com/github-actions-for-android-first-approach-f616c24aa0f9
-
-In this blog post I would like to show you a simple set up for my Android project of GitHub Actions — new feature of well-known host of Git repositories — which can help you automate test execution and build your application.
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/github-actions-for-android-first-approach-f616c24aa0f9).
+{{< /alert >}}  
 
 ![Photo by [Ant Rozetsky](https://unsplash.com/@rozetsky?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/11168/0*72pUuXCLIR1JFwPI)*Photo by [Ant Rozetsky](https://unsplash.com/@rozetsky?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
-### The problem
+*In this blog post I would like to show you a simple set up for my Android project of GitHub Actions — new feature of well-known host of Git repositories — which can help you automate test execution and build your application.*
+
+## The problem
 
 Before jumping to the GitHub Actions let me first explain what problem does it solves.
 
-You’ve may heard of **CI/CD**, which stands for *Continuous Integration* and *Continuous Delivery. *Both relates to broader topic which is ***DevOps** — a** ***set of practices that’s main goal is to create and release software in smaller peaces, faster and more reliably. The key concepts of it are based on [Lean Manufacturing](https://en.wikipedia.org/wiki/Lean_manufacturing), firstly introduced in the Japanese manufacturing industry. If you want more about the *DevOps* I recommend you to read [*The Project Phoenix](https://www.amazon.com/Phoenix-Project-DevOps-Helping-Business/dp/0988262592)* and [*The DevOps Handbook](https://www.amazon.com/DevOps-Handbook-World-Class-Reliability-Organizations/dp/1942788002)*, or find more information on the Internet.
+You’ve may heard of **CI/CD**, which stands for *Continuous Integration* and *Continuous Delivery.* Both relates to broader topic which is ***DevOps*** — a set of practices that’s main goal is to create and release software in smaller peaces, faster and more reliably. The key concepts of it are based on [Lean Manufacturing](https://en.wikipedia.org/wiki/Lean_manufacturing), firstly introduced in the Japanese manufacturing industry. If you want more about the *DevOps* I recommend you to read [The Project Phoenix](https://www.amazon.com/Phoenix-Project-DevOps-Helping-Business/dp/0988262592) and [The DevOps Handbook](https://www.amazon.com/DevOps-Handbook-World-Class-Reliability-Organizations/dp/1942788002), or find more information on the Internet.
 
-As I mentioned, one of the fundamental goals of *DevOp*s is to make release of the software fast. And such can be reached by automating its building process. To achieve it *CI/CD* practice can be introduced which covers frequently commits to the main application branch, testing it and then releasing it. Some companies, [like *Facebook](https://engineering.fb.com/web/rapid-release-at-massive-scale/)*, with this approach has reached hundreds of releases on production environment per day!
+As I mentioned, one of the fundamental goals of *DevOp*s is to make release of the software fast. And such can be reached by automating its building process. To achieve it *CI/CD* practice can be introduced which covers frequently commits to the main application branch, testing it and then releasing it. Some companies, [like Facebook](https://engineering.fb.com/web/rapid-release-at-massive-scale/), with this approach has reached hundreds of releases on production environment per day!
 
-Nowadays there are several tools that can help us, developers, automate all this stuff. One of the most popular are [*Jenkins](https://jenkins.io/)*, [*GitLab](https://about.gitlab.com/)*, [*Travis CI](https://travis-ci.org/)*, [*CircleCI](https://circleci.com/)* or [*TeamCity](https://www.jetbrains.com/teamcity/)*. And lately a new-old player has joined the market - ***GitHub*** with its ***GitHub Actions***.
+Nowadays there are several tools that can help us, developers, automate all this stuff. One of the most popular are [Jenkins](https://jenkins.io/), [GitLab](https://about.gitlab.com/), [Travis CI](https://travis-ci.org/), [CircleCI](https://circleci.com/) or [TeamCity](https://www.jetbrains.com/teamcity/). And lately a new-old player has joined the market - ***GitHub*** with its ***GitHub Actions***.
 
-### GitHub Actions
+## GitHub Actions
 > - So what the GitHub Actions really is?
 
 I like to think about it as an assembly line in a factory. For instance, in the Ford automobile factory there was a moving **assembly line** on which there was a car which goes thru **several workstations** in each different parts were added to the car.
 
-<iframe src="https://medium.com/media/88836c8d87aaa5cae206062273cc64aa" frameborder=0></iframe>
+<iframe src="https://giphy.com/embed/l46Cmju4v7jLWSJFe" width="480" height="230" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/producthunt-tesla-factory-automation-l46Cmju4v7jLWSJFe">via GIPHY</a></p>
 
 In our case the car is a software application and the assembly line is the *CI/CD* tool. With *GitHub Actions* we can define workflow(s) how our application can be build, tested and then deployed (e.g. on *AWS*, *GCP*, etc.).
 
@@ -40,7 +49,7 @@ Such approach is one of the common practice in the business for development team
 
 ![](https://cdn-images-1.medium.com/max/2000/1*oe58qC1cN87Ak-Y18OT4XA.png)
 
-Now, *GitHub Actions* introduces **workflows** that can have multiple **jobs** and such workflows can be triggered by an **event **(commit, pull request, etc.) or can be scheduled.
+Now, *GitHub Actions* introduces **workflows** that can have multiple **jobs** and such workflows can be triggered by an **event** (commit, pull request, etc.) or can be scheduled.
 
 What I try to achieve is to have two types of such *workflows* which will be triggered depending on which git branch the new code is committed. First for *master* branch and when creating a pull requests, second for all other branches (features and bug fixes).
 
@@ -54,7 +63,31 @@ You can add there multiple YAML files which will hold definitions of all workflo
 
 So, create a first one and call it android-feature.yml and copy paste lines:
 
-<iframe src="https://medium.com/media/fd55492101eca9aff7a98114b08731c2" frameborder=0></iframe>
+```yaml
+name: Android Feature Branch CI
+
+on:
+  push:
+    branches:
+      - '*'
+      - '!master'
+      - '!release*'
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Unit tests
+      run: bash ./gradlew test --stacktrace
+```
+
 > But what they mean?
 
 No worrier, I’ll cover it. Or if you prefer you can go right away and check this syntax in [the official documentation](https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions).
@@ -99,7 +132,7 @@ Second step is more complex, but have simple goal — set up a JDK version to be
 Finally a third step runs unit tests located in the project. As it is the Android project it uses [Gradle](https://gradle.org/) for build lifecycle, therefore to run the test we need to use *Gradle Wrapper *file. The command is the same as you would do it in the terminal on your PC.
 
     - name: Unit tests
-      run: **bash ./gradlew test --stacktrace**
+      run: bash ./gradlew test --stacktrace
 
 Everything is set up, so let’s test it! To do so, we need to create a new branch and make a commit. For presentation purposes I’m doing a simple change in the R*EADME.md* file directly in GitHub editor, but if you prefer you can make changes on your PC and then push it to GitHub. The outcome will be same — workflow will run.
 
@@ -117,7 +150,50 @@ First workflow is done, so we can move ahead to second one. Just to remind you, 
 
 Similarly to previous one, we need to create a new android-master.yml file in the same directory .github/workflows.
 
-<iframe src="https://medium.com/media/f4c1d525e1390562b38114dad9e19eb0" frameborder=0></iframe>
+```yaml
+
+name: Android Pull Request & Master CI
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Unit tests
+        run: bash ./gradlew test --stacktrace
+
+  apk:
+    name: Generate APK
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build debug APK
+        run: bash ./gradlew assembleDebug --stacktrace
+      - name: Upload APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app
+          path: app/build/outputs/apk/debug/app-debug.apk
+```
 
 Similarly to previous one it starts with its name .
 
@@ -150,7 +226,7 @@ Then there are the steps. First two are the same as in test job — we allow wor
 A third job is a new one, but similar to the last from test. This time we’re not running the test Gradle task, but assembleDebug which will result with built Android APK file.
 
     - name: Build debug APK
-      run: **bash ./gradlew assembleDebug --stacktrace**
+      run: bash ./gradlew assembleDebug --stacktrace
 
 The last step ensures that the built APK file will be persisted (not removed) after workflow finishes. In the with element we indicate which file (in path) should be saved. GitHub calls such persisted files **artifacts**.
 
@@ -172,14 +248,14 @@ After successfully passed workflow you can download the artifact with APK file, 
 
 And that’s everything for today!
 
-My workflows are still pretty simple, but I’m planning to change it in near future. Maybe I’ll add some jobs for **static code analysis** (e.g. with [*Sonar Cloud](https://sonarcloud.io/about)*), generating nice looking **test results report** (e.g. in [*Allure Test Reports](http://allure.qatools.ru/)*), mail notification or which might be tricky, but there helpful — introduce the job for **instrumented unit tests** (in [*Firebase Test Lab](https://firebase.google.com/docs/test-lab/?authuser=2)*).
+My workflows are still pretty simple, but I’m planning to change it in near future. Maybe I’ll add some jobs for **static code analysis** (e.g. with [Sonar Cloud](https://sonarcloud.io/about)), generating nice looking **test results report** (e.g. in [Allure Test Reports](http://allure.qatools.ru/)), mail notification or which might be tricky, but there helpful — introduce the job for **instrumented unit tests** (in [Firebase Test Lab](https://firebase.google.com/docs/test-lab/?authuser=2)).
 
 But let’s see, I’ll work now on it and definitely share with you my results.
 
 You can try my progress in this matter in my project:
-[**wkrzywiec/WaWa-Tabor**
-*WaWa Tabor is a small app that is desiganted to provide online location of all buses and trams in Warsaw each 10 - 15…*github.com](https://github.com/wkrzywiec/WaWa-Tabor)
+
+[wkrzywiec/WaWa-Tabor | github.com](https://github.com/wkrzywiec/WaWa-Tabor)
 
 ## References
-[**Automating your workflow with GitHub Actions**
+* [**Automating your workflow with GitHub Actions**
 help.github.com](https://help.github.com/en/github/automating-your-workflow-with-github-actions)

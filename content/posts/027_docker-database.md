@@ -1,10 +1,19 @@
+---
+title: "Database in a Docker container — how to start and what’s it about"
+date: 2019-07-06
+summary: "Running database in Docker"
+description: "With this blog post I would like to present to you how easily you can run database, PostgreSQL as an example, Docker container. Moreover this entry cover pros and cons of such solution. And in the end you’ll find out what is Docker Volume."
+tags: ["docker", "database", "postgresql", "devops", "cloud"]
+canonicalUrl: "https://wkrzywiec.medium.com/database-in-a-docker-container-how-to-start-and-whats-it-about-5e3ceea77e50"
+---
 
-# Database in a Docker container — how to start and what’s it about
-> Source: https://wkrzywiec.medium.com/database-in-a-docker-container-how-to-start-and-whats-it-about-5e3ceea77e50
-
-*With this blog post I would like to present to you how easily you can run database, PostgreSQL as an example, Docker container. Moreover this entry cover pros and cons of such solution. And in the end you’ll find out what is Docker Volume.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/database-in-a-docker-container-how-to-start-and-whats-it-about-5e3ceea77e50).
+{{< /alert >}}  
 
 ![Photo by [Radek Grzybowski](https://unsplash.com/@rgrzybowski?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/8000/0*sQ2EwdDqR8WSJHiE)*Photo by [Radek Grzybowski](https://unsplash.com/@rgrzybowski?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*With this blog post I would like to present to you how easily you can run database, PostgreSQL as an example, Docker container. Moreover this entry cover pros and cons of such solution. And in the end you’ll find out what is Docker Volume.*
 
 Without further ado let’s run PostgreSQL database in a Docker container!
 
@@ -13,7 +22,7 @@ In order to follow next steps you need to have installed Docker on your PC. The 
 To quick start open a terminal and run the command:
 
 ```bash
-> docker run --name postgres-docker -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+docker run --name postgres-docker -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
 Basically what it does:
 
@@ -42,7 +51,7 @@ Ok, but what if you’re such a nerd 😜 that you don’t like to use such fanc
 Nothing easier, just type this command in the terminal:
 
 ```bash
-> docker exec -it postgres-docker bash
+docker exec -it postgres-docker bash
 ```
 
 And with `exec` we’ve entered a `postgres-docker` image in detached mode `-it` and started to run it’s bash app ( `bash` ).
