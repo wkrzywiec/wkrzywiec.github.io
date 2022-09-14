@@ -3,7 +3,7 @@ title: "Write better code with SonarQube"
 date: 2019-09-16
 summary: "Spin up multiple applications with Docker Compose"
 description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
-tags: ["java", "quality", "static-code-analysis", "devops", "ci-cd"]
+tags: ["java", "quality", "static-code-analysis", "devops", "ci-cd", "sonar"]
 canonicalUrl: "https://wkrzywiec.medium.com/write-better-code-with-sonarqube-5e9aa4a11fe6"
 ---
 

@@ -1,8 +1,8 @@
 ---
 title: "GitHub Actions for Android: First Approach"
 date: 2019-10-24
-summary: "Spin up multiple applications with Docker Compose"
-description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
+summary: "Automate building and testing Android application with GitHub Actions"
+description: "In this blog post I would like to show you a simple set up for my Android project of GitHub Actions — new feature of well-known host of Git repositories — which can help you automate test execution and build your application."
 tags: ["java", "android", "github-action", "devops", "ci-cd", "github"]
 canonicalUrl: "https://wkrzywiec.medium.com/github-actions-for-android-first-approach-f616c24aa0f9"
 ---
@@ -26,7 +26,7 @@ As I mentioned, one of the fundamental goals of *DevOp*s is to make release of t
 Nowadays there are several tools that can help us, developers, automate all this stuff. One of the most popular are [Jenkins](https://jenkins.io/), [GitLab](https://about.gitlab.com/), [Travis CI](https://travis-ci.org/), [CircleCI](https://circleci.com/) or [TeamCity](https://www.jetbrains.com/teamcity/). And lately a new-old player has joined the market - ***GitHub*** with its ***GitHub Actions***.
 
 ## GitHub Actions
-> - So what the GitHub Actions really is?
+> So what the GitHub Actions really is?
 
 I like to think about it as an assembly line in a factory. For instance, in the Ford automobile factory there was a moving **assembly line** on which there was a car which goes thru **several workstations** in each different parts were added to the car.
 
@@ -37,7 +37,7 @@ In our case the car is a software application and the assembly line is the *CI/C
 When I’m writing this post *GitHub Actions* is in the limited public beta phase, which means that for now it’s not recommended to use it for crucial business purposes. But I think it’s starting to have its momentum and is worth to learn, especially because it’s so easy!
 
 Please keep in mind that it’s still beta version, so some of the solutions and pricing (now it’s free with some limitations) might be different at the time you’re reading this.
-> - So finally, the last question before moving to the example. How to get it?
+> So finally, the last question before moving to the example. How to get it?
 
 For now you need to sign up to be a beta tester. It’s free (with some limitations) but still you might wait couple of days for the approval (as it was in my case) and it can be done here: [https://github.com/features/actions](https://github.com/features/actions).
 
@@ -105,7 +105,7 @@ Next, we need to provide on what event workflow will be triggered. In my case I 
          - '!master' 
          - '!release*'
 
-Than we can move to defining jobs. Each workflow can have multiple **jobs **which by default are running in parallel, but it could be changed to have specific sequence of them (for instance if one step relays on the outcome of the previous one).
+Than we can move to defining jobs. Each workflow can have multiple **jobs** which by default are running in parallel, but it could be changed to have specific sequence of them (for instance if one step relays on the outcome of the previous one).
 
 What is worth to know that each job runs on a different instance of a virtual machine. At this point you can pick from ubuntu , windows and macOS .
 
@@ -129,14 +129,14 @@ Second step is more complex, but have simple goal — set up a JDK version to be
           with:
             java-version: 1.8
 
-Finally a third step runs unit tests located in the project. As it is the Android project it uses [Gradle](https://gradle.org/) for build lifecycle, therefore to run the test we need to use *Gradle Wrapper *file. The command is the same as you would do it in the terminal on your PC.
+Finally a third step runs unit tests located in the project. As it is the Android project it uses [Gradle](https://gradle.org/) for build lifecycle, therefore to run the test we need to use *Gradle Wrapper* file. The command is the same as you would do it in the terminal on your PC.
 
     - name: Unit tests
       run: bash ./gradlew test --stacktrace
 
 Everything is set up, so let’s test it! To do so, we need to create a new branch and make a commit. For presentation purposes I’m doing a simple change in the R*EADME.md* file directly in GitHub editor, but if you prefer you can make changes on your PC and then push it to GitHub. The outcome will be same — workflow will run.
 
-So, after committing small change I go immediately to **Actions **tab in my project to check whether the workflow has been triggered:
+So, after committing small change I go immediately to **Actions** tab in my project to check whether the workflow has been triggered:
 
 ![](https://cdn-images-1.medium.com/max/2000/1*Zvq1leBicfn2s59VtWXBVA.gif)
 
