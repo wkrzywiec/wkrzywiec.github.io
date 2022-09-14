@@ -1,10 +1,19 @@
+---
+title: "How to declaratively run Helm charts using helmfile"
+date: 2020-04-16
+summary: "Practical introduction to Helm"
+description: "Have you ever wonder how to achieve fully Infrastructure as a Code approach for deployment of your applications on Kubernetes cluster? No matter if you’ve already achieve it or just started to looking for the best tool, helmfile might be the answer for you. In this blog post I’ll present how you can set up your first helmfile."
+tags: ["kubernetes","helmfile", "helm", "cloud", "devops", "minikube", "kanban-project"]
+canonicalUrl: "https://medium.com/swlh/how-to-declaratively-run-helm-charts-using-helmfile-ac78572e6088"
+---
 
-# How to declaratively run Helm charts using helmfile
-> Source: https://medium.com/swlh/how-to-declaratively-run-helm-charts-using-helmfile-ac78572e6088
-
-*Have you ever wonder how to achieve fully Infrastructure as a Code approach for deployment of your applications on Kubernetes cluster? No matter if you’ve already achieve it or just started to looking for the best tool, helmfile might be the answer for you. In this blog post I’ll present how you can set up your first helmfile.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://medium.com/swlh/how-to-declaratively-run-helm-charts-using-helmfile-ac78572e6088).
+{{< /alert >}}
 
 ![Photo by [Kevin Ku](https://unsplash.com/@ikukevk?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/6706/0*SrbvagT3PdsrNp6E)*Photo by [Kevin Ku](https://unsplash.com/@ikukevk?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*Have you ever wonder how to achieve fully Infrastructure as a Code approach for deployment of your applications on Kubernetes cluster? No matter if you’ve already achieve it or just started to looking for the best tool, helmfile might be the answer for you. In this blog post I’ll present how you can set up your first helmfile.*
 
 This post is a third, and the last, from my series on Kubernetes. In each one of them I present how to deploy applications on a Kubernetes cluster using one of the approaches:
 
@@ -13,6 +22,8 @@ This post is a third, and the last, from my series on Kubernetes. In each one of
 * *using **Helm** — [How to deploy application on Kubernetes with Helm](https://medium.com/@wkrzywiec/how-to-deploy-application-on-kubernetes-with-helm-39f545ad33b8),*
 
 * *using **helmfile** — this one.*
+
+## Kanban project
 
 If you haven’t read first two I would recommend to do that before diving into this one. But it’s not the must, I’ll briefly introduce you to an environment which will be built.
 
@@ -23,6 +34,8 @@ Above picture presents the target solution. Inside the cluster there will be dep
 Additionally I’ve added an *adminer* application, which is a GUI client for getting inside the database.
 
 The above picture shows not only applications that will be deployed on *Kubernetes* cluster, but also objects that are required to run them, like *Deployments* or *Services*. With classic, *kubectl* approach, we were forced to create definition files for each one of them. Even if in most cases, for example in case of *ClusterIPs*, these objects haven’t differ that much between applications.
+
+## Why helmfile?
 
 Definitely this approach doesn’t scale in microservice world, where usually there is a need to deploy dozens or even hundreds of applications. And if for each one of them we would be require to create couple YAML files it would really quick become a nightmare. But this problem might be solved with *Kubernetes* templating engine — *[Helm](https://helm.sh)*. We can define a generic *Helm* chart (template) and reused it across multiple applications only by injecting specific values into the template.
 
@@ -47,6 +60,8 @@ The best approach would be to show how it works on an example. Before that we ne
 * [Helm (v3)](https://helm.sh/docs/intro/install/),
 
 * [helmfile](https://github.com/roboll/helmfile#installation).
+
+## Using helmfile
 
 When everything is installed you can start up the *minikube* cluster and enable ingress addon:
 
