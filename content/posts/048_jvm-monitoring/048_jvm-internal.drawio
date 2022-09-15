@@ -1,0 +1,67 @@
+<mxfile>
+    <diagram id="tV0wpxy9KH7cyTp71wRt" name="Page-1">
+        <mxGraphModel dx="752" dy="439" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="22" value="&lt;font color=&quot;#000000&quot; style=&quot;font-size: 19px&quot;&gt;&amp;nbsp;Java Virtual Machine&lt;br style=&quot;font-size: 19px&quot;&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#333333;strokeColor=#666666;opacity=60;align=left;verticalAlign=top;fontStyle=1;fontSize=19;fillColor=#DBDBDB;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="295" width="750" height="535" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="&lt;font color=&quot;#000000&quot; style=&quot;font-size: 19px&quot;&gt;&amp;nbsp;Execution Engine&lt;br style=&quot;font-size: 19px&quot;&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#E9AFA3;strokeColor=#523D39;opacity=60;align=left;verticalAlign=top;fontStyle=1;fontSize=19;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="450" width="540" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="&lt;font color=&quot;#262626&quot; style=&quot;line-height: 120%&quot; size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 19px&quot;&gt;&amp;nbsp;Runtime Data Area&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;opacity=50;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="600" width="540" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.015;entryY=0.498;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="2" target="6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="&lt;font color=&quot;#ffe5e3&quot;&gt;&lt;b&gt;JAVAC&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Compiles .java to .class&lt;/span&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#3A405A;strokeColor=#1F2230;" parent="1" vertex="1">
+                    <mxGeometry x="255" y="145" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="3" target="2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="&lt;b&gt;.java&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px&quot;&gt;human-readable&lt;/font&gt;" style="shape=card;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="115" y="130" width="90" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="&lt;b&gt;.class&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px&quot;&gt;byte code,&lt;br&gt;&amp;nbsp;JVM readable&lt;/font&gt;" style="shape=card;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="415" y="130" width="90" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="&lt;font color=&quot;#383838&quot;&gt;&lt;b&gt;CLASS LOADER&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Loads .class files into memory&lt;/span&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#F9DEC9;strokeColor=#75695F;" parent="1" vertex="1">
+                    <mxGeometry x="255" y="340" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;METHOD AREA&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Class level data storage &lt;br&gt;(shared)&lt;/span&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="630" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="&lt;font color=&quot;#e6e6e6&quot;&gt;&lt;b&gt;JAVA NATIVE INTERFACE&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Bridge between JVM and native code libraries&amp;nbsp;&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#685044;strokeColor=#1C1612;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="550" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;INTERPRETER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Executes byte code&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#E9AFA3;strokeColor=#523D39;" parent="1" vertex="1">
+                    <mxGeometry x="105" y="490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;HEAP AREA&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Objects storage&lt;br&gt;&lt;/span&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;(shared)&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="630" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;STACK AREA&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Stack Frames storage&lt;br&gt;&lt;/span&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;(per Thread)&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="720" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;PC REGISTER&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Information about currently executed code&lt;br&gt;&lt;/span&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;(per Thread)&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;" parent="1" vertex="1">
+                    <mxGeometry x="90" y="720" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;NATIVE METHOD STACK&lt;br&gt;&lt;/b&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Stack of native methods&lt;br&gt;&lt;/span&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;(per Thread)&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#99B2DD;strokeColor=#485469;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="720" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;JIT COMPILER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Compiles byte code to native code&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#E9AFA3;strokeColor=#523D39;" parent="1" vertex="1">
+                    <mxGeometry x="265" y="490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="&lt;font color=&quot;#000000&quot;&gt;&lt;b&gt;GARBAGE COLLECTOR&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px&quot;&gt;Removes unused Objects&lt;/span&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#E9AFA3;strokeColor=#523D39;" parent="1" vertex="1">
+                    <mxGeometry x="415" y="490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="&lt;font color=&quot;#e6e6e6&quot;&gt;&lt;b&gt;NATIVE METHOD LIBRARIES&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Collection of native code libraries&lt;/font&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#685044;strokeColor=#1C1612;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="650" width="120" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

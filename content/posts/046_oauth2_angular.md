@@ -1,12 +1,24 @@
-# Step-by-step guide how integrate Keycloak with Angular application
+---
+title: "Step-by-step guide how integrate Keycloak with Angular application"
+date: 2021-03-22
+summary: "Integrate Angular application with Keycloak"
+description: "If you're building a large enterprise application or an application that is publicly available you may want to introduce a concept of users, so that they will be able login to their accounts, put their information and do some stuff with your app, if they're allowed to. With this blog post I would like to show how it could be implemented in Angular application using OAuth 2.0 and OpenID Connect frameworks which is implemented in a popular, open source identity provider - Keycloak."
+tags: ["oauth2", "authorization", "authentication", "security", "keycloak", "jwt", "angular", "ui", "javascript"]
+canonicalUrl: "https://wkrzywiec.medium.com/step-by-step-guide-how-integrate-keycloak-with-angular-application-d96b05f7dfdd"
+---
 
-*If you're building a large enterprise application or an application that is publicly available you may want to introduce a concept of users, so that they will be able login to their accounts, put their information and do some stuff with your app, if they're allowed to. With this blog post I would like to show how it could be implemented in Angular application using OAuth 2.0 and OpenID Connect frameworks which is implemented in a popular, open source identity provider - Keycloak.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/step-by-step-guide-how-integrate-keycloak-with-angular-application-d96b05f7dfdd).
+{{< /alert >}}
 
-This is a fourth and the last part of my series on OAuth 2.0. If you're not familiar with I would recommend to stop here and go check the first one ????? link ?????. 
+![Cover](https://miro.medium.com/max/2400/0*IasJ3mZO7qdt0nNv)
+> Cover image by [Kelly Sikkema](https://unsplash.com/@kellysikkema) on [Unsplash](https://unsplash.com)
+
+*If you're building a large enterprise application or an application that is publicly available you may want to introduce a concept of users, so that they will be able login to their accounts, put their information and do some stuff with your app, if they're allowed to. With this blog post I would like to show how it could be implemented in Angular application using OAuth 2.0 and OpenID Connect frameworks which is implemented in a popular, open source identity provider - Keycloak.* 
 
 The aim of this post is to show you a basic set up an *Angular* application so that it will be integrated with *Keycloak* and it will be able to consume protected HTTP resource that requires an access token. A full description of how to set up *Keycloak* instance and how to create a simple protected resource with *Spring Boot* I've described in previous two articles. But don't worry if you don't want to do that, I'll explain it later how.
 
-### The goal
+## The goal
 
 For a purpose of this article I've prepared a very simple application which could be used to find out information about movies and display them in a table. Application supports two actions - either fetch all the data or select a single movie by its id.
 
@@ -52,7 +64,7 @@ This step is necessary because the address of Keycloak server is different depen
 
 If you like you can add similar entries for `frontend` and `backend` (IP address remains the same), because the side effect of it will be that instead of using for example `http://localhost:4200` you can use more meaningful `http://frontend:4200`. But it's totally optional and depends on your preferences.
 
-### Register frontend application in Keycloak
+## Register frontend application in Keycloak
 
 > If you're running my preconfigured Keycloak instance you can skip this part or just quickly go thru it.
 
@@ -85,7 +97,7 @@ The last thing that needs to be configured is *Web Origins* parameter and here I
 
 After that click **Save** button at the bottom of the screen to finish Keycloak configuration (all other steps, like user and roles definition was already covered in previous blog posts).
 
-### Main view of a page
+## Main view of a page
 
 Now we can deep dive into Angular project. It has only one component (apart from `AppComponent`) - `ContentComponent`.
 
@@ -245,7 +257,7 @@ The `http://backend:9000/movies` is an address of the backend service (if a back
 
 Having all of that we can now proceed with adding and configuring Keycloak libraries.
 
-### Basic configuration of Keycloak libraries
+## Basic configuration of Keycloak libraries
 
 First step would be to add [keycloak-angular](https://github.com/mauriciovigolo/keycloak-angular) dependencies to the project, therefore in a terminal run following command:
 
@@ -430,7 +442,7 @@ This toast message inform the user that she/he doesn't have sufficient roles. Bu
 
 First of all after successful login OAuth2.0 tokens were fetched from the Keycloak server and stored in your web browser. Now if there is any request made to the backend service our great Keycloak library is adding the `Authorization` HTTP header with an access token. And such is required to be consumed by the backend application. It validates a content of a token and returns OK response if everything is fine, or returns an error if token is corrupted or user is not allowed to consume specific endpoint (because she/he doesn't have sufficient roles).
 
-### Productionize Keycloak configuration
+## Productionize Keycloak configuration
 
 So far so good, we've got a working piece of code. But there is one problem with this approach. If we would need to change the Keycloak's URL, realm name or client (development, test and production environment can be different) we would be forced to change it in the code for each version, as all these values are hardcoded.
 
@@ -794,10 +806,8 @@ The entire code for this project can be found in my GitHub repository:
 
 * https://github.com/wkrzywiec/keycloak-security-example
 
-??? Lista pozostałych blogów ???
-
 ## References
 
-* [**mauriciovigolo/keycloak-angular** on github.com](https://github.com/mauriciovigolo/keycloak-angular)
-
-https://medium.com/@ryanchenkie_40935/angular-authentication-using-route-guards-bf7a4ca13ae3    
+* [**mauriciovigolo/keycloak-angular** | github.com](https://github.com/mauriciovigolo/keycloak-angular)
+* [Angular Authentication: Using Route Guards | medium.com](https://medium.com/@ryanchenkie_40935/angular-authentication-using-route-guards-bf7a4ca13ae3   )
+ 
