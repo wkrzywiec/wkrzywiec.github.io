@@ -1,16 +1,25 @@
+---
+title: "Ports & Adapters architecture on example"
+date: 2020-06-14
+summary: "Learn how to implement ports & adapters"
+description: "How you can write your application accordingly to Ports & Adapters (aka Hexagonal) architecture and why you should give it a try."
+tags: ["java", "architecture", "ports-and-adapters", "hexagonal"]
+canonicalUrl: "https://wkrzywiec.medium.com/ports-adapters-architecture-on-example-19cab9e93be7"
+---
 
-# Ports & Adapters architecture on example
-> Source: https://wkrzywiec.medium.com/ports-adapters-architecture-on-example-19cab9e93be7
-
-How you can write your application accordingly to Ports & Adapters (aka Hexagonal) architecture and why you should give it a try.
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/ports-adapters-architecture-on-example-19cab9e93be7).
+{{< /alert >}}
 
 ![Photo by [Bonniebel B](https://unsplash.com/@bonniebelb?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/8064/0*1rZARCVapOCMRiAf)*Photo by [Bonniebel B](https://unsplash.com/@bonniebelb?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*How you can write your application accordingly to Ports & Adapters (aka Hexagonal) architecture and why you should give it a try.*
 
 ## Introduction
 
 Let’s assume that you’re a freshman at university and you’ve just got first internship in a software engineer company. Or maybe you’re more experience developer who have joined a new company. It doesn’t matter.
 
-Following story is written from the perspective of a newcomer, who makes her/his first steps into new project. Probably it’s a very common for you and I would like to introduce you in this as a way into the *Ports & Adapters *architecture pattern.
+Following story is written from the perspective of a newcomer, who makes her/his first steps into new project. Probably it’s a very common for you and I would like to introduce you in this as a way into the *Ports & Adapters* architecture pattern.
 
 As my primary technology is Java, all examples are presented in this language.
 
@@ -131,31 +140,146 @@ John said that our team analyst, Irene will contact me, and together we will wor
 
 When she comes we have moved straight away to implement the problem. First we defined a new interface class which will be responsible for checking for overdue reservation and making them back available.
 
-<iframe src="https://medium.com/media/8fd1683266646561847fc89373ac1b8f" frameborder=0></iframe>
+```java
+package io.wkrzywiec.hexagonal.library.domain.borrowing.core.ports.incoming;
+
+public interface CancelOverdueReservations {
+    void cancelOverdueReservations();
+}
+```
 
 Nothing complicated. Then we have added this port to the BorrowingFacade.java class (which is an adapter for above port):
 
-<iframe src="https://medium.com/media/f30a84e34a1ffa89e6a466d8520a0373" frameborder=0></iframe>
+```java
+import io.wkrzywiec.hexagonal.library.domain.borrowing.core.ports.incoming.CancelOverdueReservations;
+
+public class BorrowingFacade implements CancelOverdueReservations{
+
+  @Override
+    public void cancelOverdueReservations() {
+       // here will be an implementation
+    }
+}
+```
 
 Then we started to discuss what we should do here. Irene told me that we need to find all books that are kept as reserved for more than 3 days and then make them automatically available. And we’ve ended up with this code.
 
-<iframe src="https://medium.com/media/21a3bc8eb0e0d8fec39fde881c205b7d" frameborder=0></iframe>
+```java
+import io.wkrzywiec.hexagonal.library.domain.borrowing.core.ports.incoming.CancelOverdueReservations;
+import io.wkrzywiec.hexagonal.library.domain.borrowing.core.ports.outgoing.BorrowingDatabase;
+
+public class BorrowingFacade implements CancelOverdueReservations{
+    
+    private final BorrowingDatabase database;
+    
+    @Override
+    public void cancelOverdueReservations() {
+        List<OverdueReservation> overdueReservationList = database.findReservationsForMoreThan(3L);
+        overdueReservationList.forEach(
+                overdueBook -> database.save(
+                    new AvailableBook(overdueBook.getBookIdentificationAsLong())
+                ));
+    }
+}
+```
 
 It’s really simple and it’s using the two methods from the database. One of them, to make book available, is already declared an implemented. The second one — database.findReservationsForMoreThan was not declared yet, therefore I’ve added it to the database outgoing port.
 
-<iframe src="https://medium.com/media/70bf3777382426bab21b7594aac0170a" frameborder=0></iframe>
+```java
+public interface BorrowingDatabase {
+    void save(AvailableBook availableBook);
+    List<OverdueReservation> findReservationsForMoreThan(Long days);
+}
+```
 
 For now we didn’t care about how it will be implemented (in other words what SQL query we need to use get these).
 
 And right away we moved on to prepare some unit tests. We have prepared two simple tests, one for overdue reservation, and second when a reservation has not reached due date:
 
-<iframe src="https://medium.com/media/5cc35049b66d66bf6096c0151fde23ba" frameborder=0></iframe>
+```java
+
+public class BorrowingFacadeTest {
+    
+    private InMemoryBorrowingDatabase database;
+    
+    @BeforeEach
+    public void init(){
+        database = new InMemoryBorrowingDatabase();
+        facade = new BorrowingFacade(database);
+    }
+
+    @Test
+    @DisplayName("Cancel reservation after 3 days")
+    public void givenBookIsReserved_when3daysPass_thenBookIsAvailable(){
+        //given
+        ReservedBook reservedBook = ReservationTestData.anyReservedBook(100L, 100L);
+        changeReservationTimeFor(reservedBook, Instant.now().minus(4, ChronoUnit.DAYS));
+        database.reservedBooks.put(100L, reservedBook);
+
+        //when
+        facade.cancelOverdueReservations();
+
+        //then
+        assertEquals(0, database.reservedBooks.size());
+    }
+
+    @Test
+    @DisplayName("Do not cancel reservation after 2 days")
+    public void givenBookIsReserved_when2daysPass_thenBookIsStillReserved(){
+        //given
+        ReservedBook reservedBook = ReservationTestData.anyReservedBook(100L, 100L);
+        changeReservationTimeFor(reservedBook, Instant.now().minus(2, ChronoUnit.DAYS));
+        database.reservedBooks.put(100L, reservedBook);
+
+        //when
+        facade.cancelOverdueReservations();
+
+        //then
+        assertEquals(1, database.reservedBooks.size());
+    }
+  
+  private void changeReservationTimeFor(ReservedBook reservedBook, Instant reservationDate) {
+        try {
+            FieldUtils.writeField(reservedBook, "reservedDate", reservationDate, true);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+  }
+}
+```
 
 In above class we were forced to use Java reflection because a filed reservedDate is a private field which can not be changed after creating the ReservedBook object.
 
 To make above code work, we also needed to create an InMemoryBorrowingDatabase class which has implementation of two outgoing, database ports which are required for business logic.
 
-<iframe src="https://medium.com/media/8c7bf6148c6f05b2ae57f382c8435015" frameborder=0></iframe>
+```java
+
+public class InMemoryBorrowingDatabase implements BorrowingDatabase {
+    
+    ConcurrentHashMap<Long, AvailableBook> availableBooks = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, ReservedBook> reservedBooks = new ConcurrentHashMap<>();
+  
+    @Override
+    public void save(AvailableBook availableBook) {
+        availableBooks.put(availableBook.getIdAsLong(), availableBook);
+        reservedBooks.remove(availableBook.getIdAsLong());
+        borrowedBooks.remove(availableBook.getIdAsLong());
+    }
+  
+  @Override
+    public List<OverdueReservation> findReservationsForMoreThan(Long days) {
+        return reservedBooks.values().stream()
+                .filter(reservedBook ->
+                                Instant.now().isAfter(
+                                        reservedBook.getReservedDateAsInstant().plus(days, ChronoUnit.DAYS)))
+                .map(reservedBook ->
+                        new OverdueReservation(
+                            1L,
+                            reservedBook.getIdAsLong()))
+                .collect(Collectors.toList());
+    }
+}
+```
 
 From code above we can see that the “database” implementation for unit tests is a just a simple map, which makes them execute really really fast. Something which is worth fighting for 😉.
 
@@ -165,15 +289,73 @@ After that my session with Irene has came to the end, as she needed to move to a
 
 I’ve started a new day with reminding myself what I need to do. Therefore I’ve went to the database port definition once again and checks that a findReservationsForMoreThan method is still not implemented.
 
-<iframe src="https://medium.com/media/70bf3777382426bab21b7594aac0170a" frameborder=0></iframe>
+```java
+public interface BorrowingDatabase {
+    void save(AvailableBook availableBook);
+    List<OverdueReservation> findReservationsForMoreThan(Long days);
+}
+```
 
 Therefore I’ve opened a class named BorrowingDatabaseAdapter and added implementation for a new method. All methods there were using Spring’s JdbcTemplate and I figure out that in my case it will also be the most suitable. After struggling for couple of minutes with an SQL query I’ve come across with a solution:
 
-<iframe src="https://medium.com/media/bc3986e4d7c4ee4088a75d3579ad8ad5" frameborder=0></iframe>
+```java
+@RequiredArgsConstructor
+public class BorrowingDatabaseAdapter implements BorrowingDatabase {
+
+    private final JdbcTemplate jdbcTemplate;
+  
+    @Override
+    public List<OverdueReservation> findReservationsForMoreThan(Long days) {
+        List<OverdueReservationEntity> entities = jdbcTemplate.query(
+                "SELECT id AS reservationId, book_id AS bookIdentification FROM reserved WHERE DATEADD(day, ?, reserved_date) > NOW()",
+                new BeanPropertyRowMapper<OverdueReservationEntity>(OverdueReservationEntity.class),
+               days);
+        return entities.stream()
+                .map(entity -> new OverdueReservation(entity.getReservationId(), entity.getBookIdentification()))
+                .collect(Collectors.toList());
+    }
+}
+```
 
 And then I’ve prepared an integration test for it (as in it I want to touch an H2 database) in which I’ve used some test helpers and SQL scripts to set up the state of a database before running actual test.
 
-<iframe src="https://medium.com/media/b63da2417b6f195b5050e2e4622d546c" frameborder=0></iframe>
+```java
+@SpringBootTest
+public class BorrowingDatabaseAdapterITCase {
+  
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    private DatabaseHelper databaseHelper;
+    private BorrowingDatabaseAdapter database;
+  
+    @BeforeEach
+    public void init(){
+        database = new BorrowingDatabaseAdapter(jdbcTemplate);
+        databaseHelper = new DatabaseHelper(jdbcTemplate);
+    }
+
+    @Test
+    @DisplayName("Find book after 3 days of reservation")
+    @Sql({"/book-and-user.sql"})
+    @Sql(scripts = "/clean-database.sql", executionPhase = AFTER_TEST_METHOD)
+    public void shouldFindOverdueReservations(){
+        //given
+        Long overdueBookId = databaseHelper.getHomoDeusBookId();
+        Long johnDoeUserId = databaseHelper.getJohnDoeUserId();
+        jdbcTemplate.update(
+                "INSERT INTO public.reserved (book_id, user_id, reserved_date) VALUES (?, ?, ?)",
+                overdueBookId,
+                johnDoeUserId,
+                Instant.now().plus(4, ChronoUnit.DAYS));
+
+        //when
+        OverdueReservation overdueReservation = database.findReservationsForMoreThan(3L).get(0);
+
+        //then
+        assertEquals(overdueBookId, overdueReservation.getBookIdentificationAsLong());
+    }
+}
+```
 
 Ohhh right! Everything went green! Nice 😏.
 
@@ -181,13 +363,40 @@ The last thing that I need to do is to write the code for **application** part, 
 
 I decided to use the Spring Scheduler, which in every 1 minute will check for overdue books:
 
-<iframe src="https://medium.com/media/a20ce055c54f2737a57e5d9a73e4c1ca" frameborder=0></iframe>
+```java
+@RequiredArgsConstructor
+public class OverdueReservationScheduler {
+
+    @Qualifier("CancelOverdueReservations")
+    private final CancelOverdueReservations overdueReservations;
+
+    @Scheduled(fixedRate = 60 * 1000)
+    public void checkOverdueReservations(){
+        overdueReservations.cancelOverdueReservations();
+    }
+}
+```
 
 The OverdueReservationScheduler class is very simple. In every minute it runs the method cancelOverdueReservations on the incoming port CancelOverdueReservations which is an API of the *business core*.
 
 But there is here one more thing to do. CancelOverdueReservations object is just an interface, it’s not an implementation. Therefore we need to inject it thru the dependency injection in a configuration class.
 
-<iframe src="https://medium.com/media/af2c6cf0fd774b86a49b017b300101f3" frameborder=0></iframe>
+```java
+@Configuration
+public class BorrowingDomainConfig {
+    
+    @Bean
+    public BorrowingDatabase borrowingDatabase(JdbcTemplate jdbcTemplate) {
+        return new BorrowingDatabaseAdapter(jdbcTemplate);
+    }
+    
+    @Bean
+    @Qualifier("CancelOverdueReservations")
+    public CancelOverdueReservations cancelOverdueReservations(BorrowingDatabase database){
+        return new BorrowingFacade(database);
+    }
+}
+```
 
 With that we tell Spring context, that implementation of that interface should be taken from the BorrowingFacade class. Which in turn, requires to have an implementation of BorrowingDatabase interface, which is done in the BorrowingDatabaseAdapter class.
 
@@ -206,27 +415,18 @@ I hope you enjoy this “story”. I would like to point couple of things that s
 * writing unit tests for the core is very simple and fast, we don’t need to create framework-specific test set up (e.g. in Spring, we don’t need to add @SpringBootTest annotation and build the entire Spring context just to test small part of an application), simple Java will be enough.
 
 As usual a full code is available on GitHub.
-[**wkrzywiec/library-hexagonal**
-*written in Hexagonal (Ports & Adapters) Architecture This is a small application that provides basic REST endpoints for…*github.com](https://github.com/wkrzywiec/library-hexagonal)
+
+[**wkrzywiec/library-hexagonal** | github.com](https://github.com/wkrzywiec/library-hexagonal)
 
 ## References
-[**DDD, Hexagonal, Onion, Clean, CQRS, ... How I put it all together**
-*In my last posts I've been writing about many of the concepts and principles that I've learned and a bit about how I…*herbertograca.com](https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/)
-[**Ports and Adapters in a monolith - DEVelopments**
-*Some time ago I wrote about Ports and Adapters architecture, where domain logic is completely separated from…*lmonkiewicz.com](https://lmonkiewicz.com/posts/ports-and-adapters-in-a-monolith/)
-[**Hexagonal Architecture with Java and Spring**
-*The term "Hexagonal Architecture" has been around for a long time. Long enough that the primary source on this topic…*reflectoring.io](https://reflectoring.io/spring-hexagonal/)
-[**Domain-Driven Design and the Hexagonal Architecture**
-*Learn how to use the hexagonal architecture to turn your domain model into a complete application*vaadin.com](https://vaadin.com/learn/tutorials/ddd/ddd_and_hexagonal)
-[**Hexagonal Architecture, DDD, and Spring | Baeldung**
-*In this tutorial, we'll implement a Spring application using DDD. Additionally, we'll organize layers with the help of…*www.baeldung.com](https://www.baeldung.com/hexagonal-architecture-ddd-spring)
-[**Title**
-*Edit description*jakubn.gitlab.io](https://jakubn.gitlab.io/keepitclean/#1)
-[**ddd-by-examples/library**
-*This is a project of a library, driven by real business requirements. We use techniques strongly connected with Domain…*github.com](https://github.com/ddd-by-examples/library)
-[**alien11689/ports-and-adapters-example**
-*Contribute to alien11689/ports-and-adapters-example development by creating an account on GitHub.*github.com](https://github.com/alien11689/ports-and-adapters-example)
-[**hirannor/spring-boot-hexagonal-architecture**
-*Spring-Boot application based on hexagonal architecture - POC - hirannor/spring-boot-hexagonal-architecture*github.com](https://github.com/hirannor/spring-boot-hexagonal-architecture)
-[**gshaw-pivotal/spring-hexagonal-example**
-*A spring-boot based example of hexagonal design (also known as the ports and adapters design). Through the use of…*github.com](https://github.com/gshaw-pivotal/spring-hexagonal-example)
+
+* [**DDD, Hexagonal, Onion, Clean, CQRS, ... How I put it all together** | herbertograca.com](https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/)
+* [**Ports and Adapters in a monolith - DEVelopments** | lmonkiewicz.com](https://lmonkiewicz.com/posts/ports-and-adapters-in-a-monolith/)
+* [**Hexagonal Architecture with Java and Spring** | reflectoring.io](https://reflectoring.io/spring-hexagonal/)
+* [**Domain-Driven Design and the Hexagonal Architecture** | vaadin.com](https://vaadin.com/learn/tutorials/ddd/ddd_and_hexagonal)
+* [**Hexagonal Architecture, DDD, and Spring | Baeldung** | baeldung.com](https://www.baeldung.com/hexagonal-architecture-ddd-spring)
+* [**keep IT clean** | jakubn.gitlab.io](https://jakubn.gitlab.io/keepitclean/#1)
+* [**ddd-by-examples/library** | github.com](https://github.com/ddd-by-examples/library)
+* [**alien11689/ports-and-adapters-example** | github.com](https://github.com/alien11689/ports-and-adapters-example)
+* [**hirannor/spring-boot-hexagonal-architecture** | github.com](https://github.com/hirannor/spring-boot-hexagonal-architecture)
+* [**gshaw-pivotal/spring-hexagonal-example** | github.com](https://github.com/gshaw-pivotal/spring-hexagonal-example)
