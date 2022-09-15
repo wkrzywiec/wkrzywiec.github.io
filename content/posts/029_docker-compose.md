@@ -1,12 +1,21 @@
+---
+title: "How to run database, backend and frontend in a single-click with Docker Compose"
+date: 2019-08-31
+summary: "Spin up multiple applications with Docker Compose"
+description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
+tags: ["docker", "compose", "full-stack", "devops", "cloud"]
+canonicalUrl: "https://wkrzywiec.medium.com/how-to-run-database-backend-and-frontend-in-a-single-click-with-docker-compose-4bcda66f6de"
+---
 
-# How to run database, backend and frontend in a single-click with Docker Compose
-> Source: https://wkrzywiec.medium.com/how-to-run-database-backend-and-frontend-in-a-single-click-with-docker-compose-4bcda66f6de
-
-In this blog post I would like to show you how easy you can run 3 different Docker containers all at once using single command.
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-run-database-backend-and-frontend-in-a-single-click-with-docker-compose-4bcda66f6de).
+{{< /alert >}}  
 
 ![](https://cdn-images-1.medium.com/max/3580/1*-L68QxYG_Y4IKshk_zKADA.png)
 
-### Docker Compose
+*In this blog post I would like to show you how easy you can run 3 different Docker containers all at once using single command.*
+
+## Docker Compose
 
 In order to understand what problem Docker Compose solves you need to understand what Docker, or more general containerization, do.
 
@@ -24,7 +33,7 @@ This tool can help you build Docker images and run containers based on a single 
 
 How it looks like and how you can use it? This is what I would like to show you, but first let me introduce my project which should help you understand the idea of Docker Compose.
 
-### Kanban Application
+## Kanban Application
 
 [Kanban Board](https://github.com/wkrzywiec/kanban-board) — is a simple implementation of a kanban board, tool that was first introduced in Toyota automotive and now it’s widely used software development for managing tasks. If you want to know more about it go check [What is a Kanban Board?](https://www.youtube.com/watch?v=Bcid33tgq8A) video to help you understand it basic concept.
 
@@ -38,7 +47,7 @@ My small application is made of 3 smaller pieces:
 
 * *kanban-ui* — [Angular](https://angular.io/), frontend application, it consumes the REST endpoints provided by the backend service.
 
-### Prerequisites
+## Prerequisites
 
 In order to follow me you will need to have Docker installed on your machine. The best part is that you don’t need to have installed all the dependencies, like PostgreSQL, Java or Angular to run the app. The only thing that you need to install is Docker!
 
@@ -46,18 +55,18 @@ Instructions how to install Docker on [Ubuntu](https://docs.docker.com/install/l
 
 Docker Compose is already included in installation packs for *Windows* and *Mac*, so only Ubuntu users needs to follow [this instructions](https://docs.docker.com/compose/install/).
 
-### Let’s run it!
+## Let’s run it!
 
 Now the fun part. First git clone my project from my GitHub repository, it can be done with a command (in the terminal):
 
 ```bash
-> git clone https://github.com/wkrzywiec/kanban-board.git
+git clone https://github.com/wkrzywiec/kanban-board.git
 ```
 
 Next, in the terminal enter the root folder of the project and type the command:
 
 ```bash
-> docker-compose up
+docker-compose up
 ```
 
 Now, you need to wait couple minutes so all 3 Docker containers will be up and running. After that you’ll be able to enter a frontend in a browser with a link: [http://localhost:4200](http://localhost:4200/).
@@ -83,7 +92,7 @@ And if you’re a database geek you can also connect to it using PgAdmin, Dbeave
 If you want to stop all these apps all at once you can run the command:
 
 ```bash
-> docker-compose down
+docker-compose down
 ```
 
 ### docker-compose.yml
@@ -255,7 +264,7 @@ Similar to Java container it has two build stages, first one for compilation and
 When you’ll be playing around with Docker Compose you might want to use also different CLI commands that it offers. The full list can be found on the [official website](https://docs.docker.com/compose/reference/overview/), but found these the most useful during development of my app:
 
 ```bash
-> docker-compose up -d --force-recreate
+docker-compose up -d --force-recreate
 ```
 
 The `-d` flag runs all the containers in the detach mode — all containers run in the background, so you can use a terminal for other purposes.
@@ -263,7 +272,7 @@ The `-d` flag runs all the containers in the detach mode — all containers run 
 The `--force-recreate` flag will stop all old containers that are running and will create them from scratch. It was very useful when I’ve done some changes to several application at once.
 
 ```bash
-> docker-compose down --rmi all
+docker-compose down --rmi all
 ```
 
 Above command stops and removes all images.

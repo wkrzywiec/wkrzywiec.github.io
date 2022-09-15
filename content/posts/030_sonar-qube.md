@@ -1,10 +1,19 @@
+---
+title: "Write better code with SonarQube"
+date: 2019-09-16
+summary: "Spin up multiple applications with Docker Compose"
+description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
+tags: ["java", "quality", "static-code-analysis", "devops", "ci-cd", "sonar"]
+canonicalUrl: "https://wkrzywiec.medium.com/write-better-code-with-sonarqube-5e9aa4a11fe6"
+---
 
-# Write better code with SonarQube
-> Source: https://wkrzywiec.medium.com/write-better-code-with-sonarqube-5e9aa4a11fe6
-
-*In this blog post I introduce a SonnarQube, a static code analytic tool, which can help you write more secured, less buggy and cleaner code. I show how to run it and play around with it.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/write-better-code-with-sonarqube-5e9aa4a11fe6).
+{{< /alert >}}  
 
 ![Photo by [Khai Sze Ong](https://unsplash.com/@oks_ong95?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/12000/0*cC0eiExPtiMPZ133)*Photo by [Khai Sze Ong](https://unsplash.com/@oks_ong95?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*In this blog post I introduce a SonnarQube, a static code analytic tool, which can help you write more secured, less buggy and cleaner code. I show how to run it and play around with it.*
 
 Have you recently started to code in your free time? Or maybe you’re a full-time senior developer with couple years experience? No matter how long you’re in software engineering sometimes it’s hard to write nice and clean code. Especially when you’re working on a complex project.
 
@@ -113,7 +122,7 @@ In a nutshell it tells Docker to create two containers: `sonarqube` and `sonar-d
 Now you can start the server, therefore open the terminal in a folder where *docker-compose.yml* is located and type:
 
 ```bash
-> docker-compose up -d
+docker-compose up -d
 ```
 
 After few minutes you should be able to enter the main page: [http://localhost:9000](http://localhost:9000/).
@@ -194,7 +203,7 @@ Everything should be set up now, so let’s run our first analysis!
 But before that, make sure that your SonarQube Server is running. Then go to your project and either in your IDE or in the terminal run following command:
 
 ```bash
-> mvn clean verify sonar:sonar
+mvn clean verify sonar:sonar
 ```
 
 And then enter the SonarQube — [http://localhost:9000](http://localhost:9000/) and you probably see the number of projects that was analyzed.
@@ -252,7 +261,7 @@ Once you know which methods are not tested yet, roll up your sleeves and start t
 After you’re finished with unit tests, rerun the analysis, with the same terminal command
 
 ```bash
-> mvn clean verify sonar:sonar
+mvn clean verify sonar:sonar
 ```
 
 And refresh the SonarQube report page and you should get a new report.
@@ -264,10 +273,9 @@ As you can see my test coverage is still pretty low, but with SonarQube I’ll b
 And that’s it! If you want to see a full code of my project you can go to my GitHub repositories:
 
 * with SonarQube Docker Compose
-* [**wkrzywiec/develop-env** on github.com](https://github.com/wkrzywiec/develop-env/tree/ec04677e102e4d69af2c91bc0129aed3bee3c64a)
-
+  * [**wkrzywiec/develop-env** on github.com](https://github.com/wkrzywiec/develop-env/tree/ec04677e102e4d69af2c91bc0129aed3bee3c64a)
 * with kanban-app
-* [**wkrzywiec/kanban-board** on github.com](https://github.com/wkrzywiec/kanban-board/tree/master/kanban-app)
+  * [**wkrzywiec/kanban-board** on github.com](https://github.com/wkrzywiec/kanban-board/tree/master/kanban-app)
 
 ## References
 * [**Why SonarQube: An Introduction to Static Code Analysis - DZone Performance** on dzone.com](https://dzone.com/articles/why-sonarqube-1)

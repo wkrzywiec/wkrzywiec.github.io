@@ -1,10 +1,20 @@
+---
+title: "How to write good quality Python code with GitHub Actions"
+date: 2020-03-04
+summary: "Automate quality check for Python projects"
+description: "In this blog post I want to share with you how you can set up GitHub Actions workflows in your Python project to make sure that the code you write is elegant, aligned with all best practices and it’s well tested."
+tags: ["python", "github-action", "devops", "ci-cd", "github", "static-code-analysis", "codefactor", "codecov"]
+canonicalUrl: "https://wkrzywiec.medium.com/how-to-write-good-quality-python-code-with-github-actions-2f635a2ab09a"
+---
 
-# How to write good quality Python code with GitHub Actions
-> Source: https://wkrzywiec.medium.com/how-to-write-good-quality-python-code-with-github-actions-2f635a2ab09a
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-write-good-quality-python-code-with-github-actions-2f635a2ab09a).
+{{< /alert >}}
+
+![Photo by [Valdemaras D.](https://unsplash.com/@deko_lt?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/8000/0*37-QmQ8yxVjq3lCL)*Photo by [Valdemaras D.](https://unsplash.com/@deko_lt?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 *In this blog post I want to share with you how you can set up GitHub Actions workflows in your Python project to make sure that the code you write is elegant, aligned with all best practices and it’s well tested.*
 
-![Photo by [Valdemaras D.](https://unsplash.com/@deko_lt?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/8000/0*37-QmQ8yxVjq3lCL)*Photo by [Valdemaras D.](https://unsplash.com/@deko_lt?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
 
 Lately I’ve decided to start to learn Python. Nowadays it’s one of the most popular programming language so it was no-brainer decision to try it out. Especially that I’m still bad at algorithms so I was hoping that I’ll kill two birds with one stone — learn Python and practice it with solving some algorithmic exercises.
 
@@ -44,7 +54,7 @@ And that’s it! You should be now redirected to a dashboard with a list of all 
 
 ![](https://cdn-images-1.medium.com/max/3322/1*jq97OVjvvrkG_oPlKV4ycw.png)
 
-### **wemake-python-styleguide**
+### wemake-python-styleguide
 
 Let’s move on to the second tool which will check if a code is written accordingly to the official Python style guide.
 

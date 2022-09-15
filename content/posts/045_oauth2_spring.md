@@ -1,8 +1,22 @@
-# Implementing OAuth 2.0 access token validation with Spring Security
+---
+title: "Implementing OAuth 2.0 access token validation with Spring Security"
+date: 2021-03-15
+summary: "Validate JWT in Spring Boot application"
+description: "Would you like to know some basic concepts of Spring Security that can be implemented in a modern, micorservice application? If so this article is for you! In it I'll guide you how to add step-by-step OAuth 2.0 access token validation to REST API endpoints of your Spring Boot application."
+tags: ["oauth2", "authorization", "authentication", "security", "keycloak", "jwt", "java", "spring-boot"]
+canonicalUrl: "https://wkrzywiec.medium.com/implementing-oauth-2-0-access-token-validation-with-spring-security-64c797b42b36"
+---
+
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/implementing-oauth-2-0-access-token-validation-with-spring-security-64c797b42b36).
+{{< /alert >}}
+
+![Cover](https://miro.medium.com/max/2400/0*QjMKXAltDg8GiEeY)
+> Cover image by [Lucas Gallone](https://unsplash.com/@lucasgallone) on [Unsplash](https://unsplash.com)
 
 *Would you like to know some basic concepts of Spring Security that can be implemented in a modern, micorservice application? If so this article is for you! In it I'll guide you how to add step-by-step OAuth 2.0 access token validation to REST API endpoints of your Spring Boot application.*
 
-This is part 3 of my series on OAuth 2.0 in which I'm describing how *OAuth 2.0* works and give an example implementations of key actors. If you're looking for theoretical introduction to it, go check my first blog post - ?????? tytuł i link ?????. 
+This is part 3 of my series on OAuth 2.0 in which I'm describing how *OAuth 2.0* works and give an example implementations of key actors. If you're looking for theoretical introduction to it, go check my first blog post. 
 
 In a second article of this series I've described how to set a Keycloak server which works as an authorization server and in short is responsible for issuing an access token. It's not necessary for you to read a previous article, but be aware that you might require to do that if you would like to manually test the authorization logic of what will be build in this post.
 

@@ -1,10 +1,19 @@
+---
+title: "Build and run Angular application in a Docker container"
+date: 2019-07-27
+summary: "Running an Angular application in Docker"
+description: "In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated."
+tags: ["docker", "database", "ui", "angular", "devops", "cloud"]
+canonicalUrl: "https://wkrzywiec.medium.com/build-and-run-angular-application-in-a-docker-container-b65dbbc50be8"
+---
 
-# Build and run Angular application in a Docker container
-> Source: https://wkrzywiec.medium.com/build-and-run-angular-application-in-a-docker-container-b65dbbc50be8
-
-In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated.
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/build-and-run-angular-application-in-a-docker-container-b65dbbc50be8).
+{{< /alert >}}  
 
 ![Photo by [Alice Achterhof](https://unsplash.com/@alicegrace?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/7874/0*XuvtM9msowqAOxNM)*Photo by [Alice Achterhof](https://unsplash.com/@alicegrace?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*In this blog post I would like to show you how to run your Angular application in a Docker container, then I’ll introduce a multi-stage Docker build which will make the container smaller and your work more automated.*
 
 Without further introduction, let’s get hands dirty and put an Angular app into the Docker container. For purpose of this blog post I’ll use my old project — [aston-villa-app](https://github.com/wkrzywiec/aston-villa-app). It’s a simple dashboard with league standings of one of my favourite football club — Aston Villa.
 

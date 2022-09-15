@@ -1,10 +1,19 @@
+---
+title: "Introduction to Kubernetes: what problems does it solve?"
+date: 2020-08-28
+summary: "Basic Kubernetes concepts"
+description: "Nowadays Kubernetes is one of the most popular tool which is used to build large, distributed system in the cloud. Many companies decide to use it in their new projects or are migrating already existing one. Despite of that, if you still don’t know what Kubernetes is, this blog post is definitely for you."
+tags: ["kubernetes", "cloud", "devops"]
+canonicalUrl: "https://wkrzywiec.medium.com/introduction-to-kubernetes-what-problems-does-it-solve-8a72400cfb2e "
+---
 
-# Introduction to Kubernetes: what problems does it solve?
-> Source: https://wkrzywiec.medium.com/introduction-to-kubernetes-what-problems-does-it-solve-8a72400cfb2e 
-
-Nowadays Kubernetes is one of the most popular tool which is used to build large, distributed system in the cloud. Many companies decide to use it in their new projects or are migrating already existing one. Despite of that, if you still don’t know what Kubernetes is, this blog post is definitely for you.
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/introduction-to-kubernetes-what-problems-does-it-solve-8a72400cfb2e ).
+{{< /alert >}}
 
 ![Photo by [Manuel Nägeli](https://unsplash.com/@gwundrig?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/9792/0*w2qJgL2iSZTtkM6x)*Photo by [Manuel Nägeli](https://unsplash.com/@gwundrig?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*Nowadays Kubernetes is one of the most popular tool which is used to build large, distributed system in the cloud. Many companies decide to use it in their new projects or are migrating already existing one. Despite of that, if you still don’t know what Kubernetes is, this blog post is definitely for you.*
 
 Let’s imagine that we know use a time machine and go back in time to 2000s (to help you with that, try to remind what music band you’ve listened then or what clothes you’ve been wearing). We’re working in a big company, in a software development department. And we’ve got a new brilliant idea for an application.
 
@@ -12,7 +21,7 @@ Let’s imagine that we know use a time machine and go back in time to 2000s (to
 
 It would depend on a company, but in general it wasn’t a trivial task. Chiefly because in large organizations a software/hardware infrastructure was either not well organized or the process for requesting for software tools, servers, databases etc. was so long that it blocks new projects right from the start. Development teams instead of focusing on delivering a business value from day one, were forced to first answer to questions like: *where and how to run database?, how to deploy an application on a server?, how to set up network traffic?* and so on. Figuring out it could take months of waiting for infrastructure teams to resolve it.
 
-<iframe src="https://medium.com/media/0724a54b0de13f728921a70e9e16af74" frameborder=0></iframe>
+<iframe src="https://giphy.com/embed/26BRuo6sLetdllPAQ" width="480" height="335" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/siliconvalleyhbo-watching-goodbye-window-26BRuo6sLetdllPAQ">via GIPHY</a></p>
 
 Believe it or not, at that time many companies were struggling with that (some are also struggling even today). One company in particular was really feeling a pain of it, when they tried to build a new product in couple on months, but ended up exceeding the deadline. The company was called *Amazon*.
 
@@ -44,7 +53,7 @@ With both of these concepts gaining its momentum it became even more crucial to 
 
 But before diving into it let me just said, that *Kubernetes* is not the only, so called *container orchestration tool*. There are others available, like [*Docker Swarm*](https://docs.docker.com/engine/swarm/), [*Apache Mesos*](http://mesos.apache.org) or [*Rancher*](https://rancher.com). Some time ago it wasn’t sure which one of them will emerge as a leader technology, but today we can say that *Kubernetes* become a *de facto* standard. It becomes even a part of [*Cloud Native Computing Foundation*](https://www.cncf.io) — organization that is helping to establish standard tooling for software used in a cloud.
 
-### Birth of Kubernetes
+## Birth of Kubernetes
 
 *Kubernetes* was created at *Google* in 2014. There is no actual date of creation of this project, but usually it’s referred to [the first commit on GitHub](https://github.com/kubernetes/kubernetes/commit/2c4b3a562ce34cddc3f8218a2c4d11c7310e6d56).
 
@@ -54,7 +63,7 @@ From the beginning it was designed as an open source project which overlaps func
 
 Based on that experience couple of Google developers decided to create a new open source tool that will do similar job, but in a better, more fresh way.
 
-### How it works?
+## How it works?
 
 At this point, I hope you understand what problem *Kubernetes* tries to solve i.e. it abstracts (virtualize) underlying hardware infrastructure, so that you don’t need to know how it’s build when you deploy an application. It makes easier work for developers and people responsible for infrastructure.
 

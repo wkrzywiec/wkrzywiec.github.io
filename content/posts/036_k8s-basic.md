@@ -1,10 +1,19 @@
+---
+title: "Deployment of multiple apps on Kubernetes cluster — Walkthrough"
+date: 2020-04-05
+summary: "Practical introduction to Kubernetes"
+description: "With this blog post I would like to show you how you can deploy couple applications on minikube (local Kubernetes) cluster."
+tags: ["kubernetes", "cloud", "devops", "minikube", "kanban-project"]
+canonicalUrl: "https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1"
+---
 
-# Deployment of multiple apps on Kubernetes cluster — Walkthrough
-> Source: https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1
-
-*With this blog post I would like to show you how you can deploy couple applications on minikube (local Kubernetes) cluster.*
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1).
+{{< /alert >}}
 
 ![Photo by [Joseph Barrientos](https://unsplash.com/@jbcreate_?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/11150/0*eDn1mKn541bfWHv-)*Photo by [Joseph Barrientos](https://unsplash.com/@jbcreate_?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
+
+*With this blog post I would like to show you how you can deploy couple applications on minikube (local Kubernetes) cluster.*
 
 This is second part one of my series on Kubernetes where I compare how to run applications on Kubernetes cluster using 3 approaches:
 
@@ -14,7 +23,7 @@ This is second part one of my series on Kubernetes where I compare how to run ap
 
 In the first article I've described some [basic concepts of Kubernetes and what kind of a problem does it solves](https://dev.to/wkrzywiec/introduction-to-kubernetes-what-problems-does-it-solve-4n3d). 
 
-### Architecture
+## Architecture
 
 Before making hands dirty let’s see the overall architecture that we want to deploy:
 
@@ -39,7 +48,7 @@ The picture above is simplified, just for you to understand the main idea behind
 
 If you don’t know what some of these objects are, like *Ingress* or *ClusterIP*, don’t worry. I’ll explain all of that in a minute 😉.
 
-### Install Docker, kubectl & minikube
+## Install Docker, kubectl & minikube
 
 First you need to install all necessary dependencies. Here are links to official documentations which are covering most of popular OSes:
 
@@ -47,7 +56,7 @@ First you need to install all necessary dependencies. Here are links to official
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (a CLI tool to interact with cluster),
 * [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) (locally installed, lightweight *Kubernetes* cluster).
 
-### Start minikube
+## Start minikube
 
 Once you’ve got everything installed you can start the *minikube* cluster by running the CLI command in terminal:
 ```bash
@@ -86,7 +95,7 @@ KubeDNS is running at [https://127.0.0.1:32768/api/v1/namespaces/kube-system/ser
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-### Modify hosts file
+## Modify hosts file
 
 To make the [http://adminer.k8s.com](http://adminer.k8s.com) & [http://kanban.k8s.com](http://kanban.k8s.com) work you need to edit the **hosts** file on your PC.
 
@@ -103,7 +112,7 @@ When you find it, add following lines:
 ```
 It will map your `localhost` IP address to both hostnames and makes them accessible after running the `minikube tunnel` command.
 
-### Add Adminer
+## Add Adminer
 
 Finally everything is set up and we can start with deploying applications. First one will be *Adminer* app.
 
@@ -246,7 +255,7 @@ kubernetes ClusterIP  10.96.0.1     <none>       443/TCP   3m34s
 
 Of course not 😜. We need to do one more thing.
 
-### Add Ingress Controller
+## Add Ingress Controller
 
 As it was mentioned before, *ClusterIP* exposes the app only for other apps inside the cluster. And in order to get to it from outside of it we need to use a different approach.
 
@@ -314,7 +323,7 @@ And finally after typing [http://adminer.k8s.com](http://adminer.k8s.com) in a w
 
 > Awesome! But how to login to the database? Wait, but what database? We don’t have any database at all!
 
-### Add PostgreSQL database
+## Add PostgreSQL database
 
 Right, we need to set up our database. To do that we need to create another pair of *Deployment-ClusterIP*, but this time with *PostgreSQL*.
 
@@ -493,7 +502,7 @@ You should be able to login to a page:
 
 Awesome! The database is set up, so we can move on to kanban-app (backend) and kanban-ui (frontend) services.
 
-### Add kanban-app
+## Add kanban-app
 
 First let’s provide all necessary definitions for backend service. As it was for *Adminer,* we need also to have create *Deployment* and *Service* for backend service.
 
@@ -617,7 +626,7 @@ You can also go to the Adminer ([http://adminer.k8s.com](http://adminer.k8s.com)
 
 ![kanban db](https://dev-to-uploads.s3.amazonaws.com/i/9a980gabb9eor3nsojsp.png)
 
-### Add kanban-ui
+## Add kanban-ui
 
 And at last, we can add the UI application. Again, we need to define the *Deployment* and *ClusterIP*.
 
