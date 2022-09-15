@@ -1,4 +1,15 @@
-# Create and configure Keycloak OAuth 2.0 authorization server
+---
+title: "Create and configure Keycloak OAuth 2.0 authorization server"
+date: 2021-03-08
+summary: "Spin up Keycloak with Docker"
+description: "If you want to know how to set up and configure Keycloak as an authorization server (for OAuth 2.0 framework) with Docker this article is for you."
+tags: ["oauth2", "authorization", "authentication", "security", "keycloak", "jwt", "docker"]
+canonicalUrl: "https://wkrzywiec.medium.com/create-and-configure-keycloak-oauth-2-0-authorization-server-f75e2f6f6046"
+---
+
+{{< alert "link" >}}
+This article was originally published on [Medium](https://wkrzywiec.medium.com/create-and-configure-keycloak-oauth-2-0-authorization-server-f75e2f6f6046).
+{{< /alert >}}
 
 ![Cover](https://dev-to-uploads.s3.amazonaws.com/i/mqc2c123ryv8whyq7e4c.jpg)
 > Cover image by [Frank](https://unsplash.com/@franckinjapan) on [Unsplash](https://unsplash.com)

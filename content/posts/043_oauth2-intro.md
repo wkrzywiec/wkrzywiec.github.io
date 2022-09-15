@@ -1,4 +1,15 @@
-# Introduction to OAuth 2.0
+---
+title: "Introduction to OAuth 2.0"
+date: 2021-03-01
+summary: "Basic concepts and flows of OAuth 2.0"
+description: "Authorization framework - OAuth 2.0 - is a very popular nowadays. With this blog post I try to explain how it works and its basic concepts so in following article I could show how to implement it in a full stack app."
+tags: ["oauth2", "authorization", "authentication", "security", "jwt"]
+canonicalUrl: "https://medium.com/nerd-for-tech/introduction-to-oauth-2-0-7aa885a3db36"
+---
+
+{{< alert "link" >}}
+This article was originally published on [Medium](https://medium.com/nerd-for-tech/introduction-to-oauth-2-0-7aa885a3db36).
+{{< /alert >}}
 
 ![Cover](https://dev-to-uploads.s3.amazonaws.com/i/mqc2c123ryv8whyq7e4c.jpg)
 > Cover image by [Frank](https://unsplash.com/@franckinjapan) on [Unsplash](https://unsplash.com)
