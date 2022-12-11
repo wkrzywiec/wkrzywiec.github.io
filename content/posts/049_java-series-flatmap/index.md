@@ -7,13 +7,13 @@ tags: ["java", "stream", "data", "java-series", "data-processing", "optional", "
 ---
 
 {{< alert "link" >}}
-This article is part of "Java Series", which covers useful Java functions from standard and popular Java libraries. More posts on that can be found [here](https://wkrzywiec.is-a.dev/tags/java-series/).
+This article is part of the "Java Series", which covers useful Java functions from standard and popular Java libraries. More posts on that can be found [here](https://wkrzywiec.is-a.dev/tags/java-series/).
 {{< /alert >}}
 
 ![Cover](jason-leung-V-HPvi4B4G0-unsplash.jpg)
 > Cover image by [Jason Leung](https://unsplash.com/@ninjason) on [Unsplash](https://unsplash.com)
 
-*Java 8 was a great step forward towards modern programing language. One of the key feature added in this release was Java streams. It provides convenient operations for data processing. One of them is a `flatMap()` used very widely to unwrap and merge multiple collections into one.*
+*Java 8 was a great step forward toward modern programing language. One of the key features added in this release was Java streams. It provides lots of convenient operations for data processing. One of them is a `flatMap()` used very widely to unwrap and merge multiple collections into one.*
 
 ## Problem statement
 
@@ -22,7 +22,7 @@ Many times when we work with Java code we end up with a following Plain Old Java
 ```java
 public record Parent(List<Child> childs) {}
 ```
-They can represent entities from a database or data transfer objects (DTOs). In general they're used to structure data. Let's say that we got the list of `Parent` objects, but we want to operate on a list of all `Child` that are part of the `Parent`. How we could extract `Child` objects from all `Parent` objects and combine into a single list? The naive approach would be to use a loop:
+They can represent entities from a database or data transfer objects (DTOs). In general, they're used to structure data. Let's say that we got the list of `Parent` objects, but we want to operate on a list of all `Child` that are part of the `Parent`. How we could extract `Child` objects from all `Parent` objects and combine them into a single list? The naive approach would be to use a loop:
 
 ```java
 List<Child> children = new ArrayList<>();
@@ -33,9 +33,7 @@ for (Parent parent: parents) {
 }
 ```
 
-But it doesn't look nice and clean. Instead we could use the Java stream:
-
-This problem is even more severe when we would like to do it with Java stream, because it requires to end stream processing.
+But it doesn't look nice and clean. Instead, we could use the Java stream:
 
 ```java
 List<Child> children = new ArrayList<>();
@@ -45,31 +43,31 @@ parents.stream()
     .forEach(list -> children.addAll(list));
 ```
 
-But it has a drawback too. Let's say that once we get a list of all `Child` objects we would like to modify them, aggregate or do some calculations. Most of it can be achieved with a Java stream. Unfortunately the `forEach()` method in above example is ending the stream processing, which makes it impossible to process `Child` records in the same stream.
+But it has a drawback too. Let's say that once we get a list of all `Child` objects we would like to modify them, aggregate them, or do some calculations. Most of it can be achieved with a Java stream. Unfortunately, the `forEach()` method in the above example is ending the stream processing, which makes it impossible to process `Child` records in the same stream.
 
-It would be nice chain all operations starting from a list of `Parent` objects till the modified `Child` objects in a single stream.
+It would be nice to chain all operations starting from a list of `Parent` objects to the modified `Child` objects in a single stream.
 
 ## Solution
 
-Luckily Java creators foreseen this problem and introduced a `flatMap()` function that is part of a `java.util.stream.Stream` class.
+Luckily Java creators foresaw this problem and introduced a `flatMap()` function that is part of a `java.util.stream.Stream` class.
 
-The idea is pretty straight forward. It does two things with every element of a stream:
+The idea is pretty straightforward. It does two things with every element of a stream:
 
 * maps - transforms one element from a stream into multiple streams, so as a result there would be a stream of streams,
-* flattens - results of a previous operation are merged into a one stream.
+* flattens - results of a previous operation are merged into one stream.
 
-To visualize it consider following situation:
+To visualize it consider the following situation:
 
 ![Map function](map-fx.png)
 
-Let's say that we have a stream or `Author` objects, that has a methods called `books()` which returns a list of `Book` objects. And now let's say that we would like to have access to all books written by all authors to make further operations on them. If we would use the `map()` function within which we would call the `books()` method we would get a stream of lists of `Book` objects. This is not what we want to have. 
+Let's say that we have a stream or `Author` objects, that has a method called `books()` which returns a list of `Book` objects. And now let's say that we would like to have access to all books written by all authors to make further operations on them. If we would use the `map()` function within which we would call the `books()` method we would get a stream of lists of `Book` objects. This is not what we want to have. 
 
-What we would like is a stream of `Book` objects, not stream of their lists. How we can overcome it? Using `flatmap()` instead:
+What we would like to have is a stream of `Book` objects, not a stream of their lists. How we can overcome it? Using `flatmap()` instead:
 
 
 ![Flatmap function](flatmap-fx.png)
 
-As previously we need to invoke `books()` method of `Author` class to get a list of `Books`. The only difference is that an input needs to be converted into multiple values represented by a Java stream. This is the requirement of the `flatMap()` method. Whatever operations we do within it needs to return a `Stream<T>` object.
+As previously we need to invoke the `books()` method of the `Author` class to get a list of `Books`. The only difference is that input needs to be converted into multiple values represented by a Java stream. This is the requirement of the `flatMap()` method. Whatever operations we do within it needs to return a `Stream<T>` object.
 
 The same situation can be reflected with a code:
 
@@ -100,7 +98,7 @@ public record Book(String title) {}
 public record Author(String name, List<Book> books) {}
 ```
 
-Now let's say that we want to create a method that takes a list of `Author` objects as an input and produces the list of all book titles that these authors wrote:
+Now let's say that we want to create a method that takes a list of `Author` objects as input and produces the list of all book titles that these authors wrote:
 
 
 ```java
@@ -112,9 +110,9 @@ return authors.stream()
 }
 ```
 
-After making a list of `Author` a stream the `flatMap()` operation is used in which first the `books()` method is invoked to get their list and then it's changed into stream. The `flatMap()` is then merging all resulting streams into one so next the `title()` is called to get a String representation of a book title. Finally the results of each element in a stream is collected into the list.
+After making a list of `Author` in a stream the `flatMap()` operation is used in which first the `books()` method is invoked to get their list and then it's changed into the stream. The `flatMap()` is then merging all resulting streams into one so next the `title()` is called to get a String representation of a book title. Finally, the results of each element in a stream are collected into the list.
 
-Above method can be written a little bit different. We can split invoking `books()` and `stream()` methods into two operations - `map()` and `flatMap()` respectively - to get a nice looking code: 
+The above method can be written a little bit differently. We can split invoking `books()` and `stream()` methods into two operations - `map()` and `flatMap()` respectively - to get a nice looking code: 
 
 ```java
 List<String> getAllBookTitles(List<Author> authors) {
@@ -138,7 +136,7 @@ return Stream.of(left, right)
 }
 ```
 
-A big plus for this approach is that after `flatMap()` we don't need to close the stream immediately. Instead we can apply other operations on every object, like filtering, mapping, aggregating etc. Which makes it cleaner and more efficient.
+A big plus for this approach is that after `flatMap()` we don't need to close the stream immediately. Instead, we can apply other operations on every object, like filtering, mapping, aggregating, etc. Which makes it cleaner and more efficient.
 
 how java stream is processed and efficient
 
@@ -146,7 +144,7 @@ how java stream is processed and efficient
 
 Apart from Java streams `flatMap()` method can be invoked on an `Optional` object. It's used to unwrap an `Optional` from inside another `Optional`. 
 
-Let's say that we've got a following record:
+Let's say that we've got the following record:
 
 ```java
 public record Address(String street, String buildingNo, Optional<String> apartmentNo) {}
@@ -164,7 +162,7 @@ String extractApartmentNo(Optional<Address> address) {
 }
 ```
 
-First step is to unwrap value from the `Optional`, which might be empty. Only after checking it we can proceed with unwrapping (and handling empty values) an apartment address. 
+The first step is to unwrap the value from the `Optional`, which might be empty. Only after checking it, we can proceed with unwrapping (and handling empty values) an apartment address. 
 
 This approach is ok, but can be done better with `flatMap()`:
 
@@ -176,11 +174,11 @@ return address
 }
 ```
 
-This approach is much cleaner. Both Optionals - parent and child - are validated wheather they hold a `null` value in a single expression. 
+This approach is much cleaner. Both Optionals - parent and child - are validated whether they hold a `null` value in a single expression. 
 
 ## Summary
 
-Introducing streams into Java made Data processing easier. It brings us a lot of handy operations. `flatMap()` is one of them which gives us a possibility to merge multiple streams into one or flatten a nested streams into a one. It's a very common pattern and is used many times in a real projects.  
+Introducing streams into Java made Data processing easier. It brings us a lot of handy operations. `flatMap()` is one of them which gives us the possibility to merge multiple streams into one or flatten nested streams into one. It's a very common pattern and is used many times in real projects.  
 
 ## References
 
