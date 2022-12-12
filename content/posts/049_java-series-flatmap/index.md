@@ -7,7 +7,7 @@ tags: ["java", "stream", "data", "java-series", "data-processing", "optional", "
 ---
 
 {{< alert "link" >}}
-This article is part of the "Java Series", which covers useful Java functions from standard and popular Java libraries. More posts on that can be found [here](https://wkrzywiec.is-a.dev/tags/java-series/).
+This article is part of the "Java Series", which covers useful Java functions from standard and popular libraries. More posts on that can be found [here](https://wkrzywiec.is-a.dev/tags/java-series/).
 {{< /alert >}}
 
 ![Cover](jason-leung-V-HPvi4B4G0-unsplash.jpg)
@@ -22,7 +22,7 @@ Many times when we work with Java code we end up with a following Plain Old Java
 ```java
 public record Parent(List<Child> childs) {}
 ```
-They can represent entities from a database or data transfer objects (DTOs). In general, they're used to structure data. Let's say that we got the list of `Parent` objects, but we want to operate on a list of all `Child` that are part of the `Parent`. How we could extract `Child` objects from all `Parent` objects and combine them into a single list? The naive approach would be to use a loop:
+They can represent database entities or data transfer objects (DTOs). In general, they're used to structure data. Let's say that we got the list of `Parent` objects, but we want to operate on a list of all `Child` that are part of the `Parent`. How we could extract `Child` objects from all `Parent` objects and combine them into a single list? The naive approach would be to use a loop:
 
 ```java
 List<Child> children = new ArrayList<>();
@@ -43,9 +43,7 @@ parents.stream()
     .forEach(list -> children.addAll(list));
 ```
 
-But it has a drawback too. Let's say that once we get a list of all `Child` objects we would like to modify them, aggregate them, or do some calculations. Most of it can be achieved with a Java stream. Unfortunately, the `forEach()` method in the above example is ending the stream processing, which makes it impossible to process `Child` records in the same stream.
-
-It would be nice to chain all operations starting from a list of `Parent` objects to the modified `Child` objects in a single stream.
+But it has a drawback too. Let's say that once we get a list of all `Child` objects we would like to modify them, aggregate, or do calculations on them. Ideally it would be good to perform those action in the same stream. Unfortunately, this is not the case, the `forEach()` method in the above example is ending the stream processing, which makes it impossible to process `Child` records in the same stream.
 
 ## Solution
 
@@ -53,14 +51,14 @@ Luckily Java creators foresaw this problem and introduced a `flatMap()` function
 
 The idea is pretty straightforward. It does two things with every element of a stream:
 
-* maps - transforms one element from a stream into multiple streams, so as a result there would be a stream of streams,
+* maps - transforms one element from a stream into a new stream, so as a result we would get a stream of streams,
 * flattens - results of a previous operation are merged into one stream.
 
 To visualize it consider the following situation:
 
 ![Map function](map-fx.png)
 
-Let's say that we have a stream or `Author` objects, that has a method called `books()` which returns a list of `Book` objects. And now let's say that we would like to have access to all books written by all authors to make further operations on them. If we would use the `map()` function within which we would call the `books()` method we would get a stream of lists of `Book` objects. This is not what we want to have. 
+Let's say that we have a stream of `Author` objects, that has a method called `books()` which returns a list of `Book` objects. And now let's say that we would like to have access to all books written by all authors to make further operations on them. If we would use the `map()` function within which we would call the `books()` method we would get a stream of lists of `Book` objects. This is not what we want to have. 
 
 What we would like to have is a stream of `Book` objects, not a stream of their lists. How we can overcome it? Using `flatmap()` instead:
 
@@ -110,9 +108,9 @@ return authors.stream()
 }
 ```
 
-After making a list of `Author` in a stream the `flatMap()` operation is used in which first the `books()` method is invoked to get their list and then it's changed into the stream. The `flatMap()` is then merging all resulting streams into one so next the `title()` is called to get a String representation of a book title. Finally, the results of each element in a stream are collected into the list.
+After converting a list of `Author` objects into a stream the `flatMap()` operation is used first. The `books()` method is invoked to get their list and then it's changed into the stream. The `flatMap()` is then merging all resulting streams into one so next the `title()` can be called to get a String representation of a book title. Finally, the results of each element in a stream are collected into the list.
 
-The above method can be written a little bit differently. We can split invoking `books()` and `stream()` methods into two operations - `map()` and `flatMap()` respectively - to get a nice looking code: 
+The above method can be written even better. We can split invoking `books()` and `stream()` methods into two operations - `map()` and `flatMap()` respectively - to get a nice looking code: 
 
 ```java
 List<String> getAllBookTitles(List<Author> authors) {
@@ -136,13 +134,11 @@ return Stream.of(left, right)
 }
 ```
 
-A big plus for this approach is that after `flatMap()` we don't need to close the stream immediately. Instead, we can apply other operations on every object, like filtering, mapping, aggregating, etc. Which makes it cleaner and more efficient.
-
-how java stream is processed and efficient
+A big plus for this approach is that after `flatMap()` we don't need to close the stream immediately. Instead, we can apply other operations on every object, like filtering, mapping, aggregating, etc. Which is cleaner and more efficient.
 
 ### Get value from nested Optional
 
-Apart from Java streams `flatMap()` method can be invoked on an `Optional` object. It's used to unwrap an `Optional` from inside another `Optional`. 
+Apart from Java streams `flatMap()` method can be invoked on an `Optional` object. It's used to unwrap an `Optional` that is nested inside another `Optional`. 
 
 Let's say that we've got the following record:
 
@@ -150,7 +146,7 @@ Let's say that we've got the following record:
 public record Address(String street, String buildingNo, Optional<String> apartmentNo) {}
 ```
 
-Now suppose we would have an `Optional<Address>` and would like to extract a value of an `apartmentNo` the code without `flatMap()` could look like this:
+Now suppose we would have an `Optional<Address>` and would like to extract a value of an `apartmentNo`. The code without `flatMap()` would look like this:
 
 ```java
 String extractApartmentNo(Optional<Address> address) {
@@ -174,7 +170,7 @@ return address
 }
 ```
 
-This approach is much cleaner. Both Optionals - parent and child - are validated whether they hold a `null` value in a single expression. 
+This approach a way nicer than the previous one. Both Optionals - parent and child - are validated whether they hold a `null` value in a single expression. 
 
 ## Summary
 
