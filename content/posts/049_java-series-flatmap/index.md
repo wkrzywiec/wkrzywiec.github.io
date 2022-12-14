@@ -174,7 +174,9 @@ This approach a way nicer than the previous one. Both Optionals - parent and chi
 
 ## Summary
 
-Introducing streams into Java made Data processing easier. It brings us a lot of handy operations. `flatMap()` is one of them which gives us the possibility to merge multiple streams into one or flatten nested streams into one. It's a very common pattern and is used many times in real projects.  
+Introducing streams into Java made Data processing easier. It brings us a lot of handy operations. `flatMap()` is one of them which gives us the possibility to merge multiple streams into one or flatten nested streams into one. It's a very common pattern and is used many times in real projects.
+
+Code and tests from this post can be found in my repository: [wkrzywiec/java-series | Github](https://github.com/wkrzywiec/java-series) 
 
 ## References
 
