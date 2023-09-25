@@ -126,8 +126,11 @@ class DeliveryTest {
 }
 ```
 
-focus on essence of the test, easy to read, like a book
+Here, the `Delivery` object is instantiated with all default values except for one – its status. The Test Data Builder offers a an easy to use method to override these values. By using it, we can concentrate on the essence of this test – it becomes evident that only the status affects the test's outcome. Other properties, having no such impact, are not explicitly provided here. This results in a cleaner and more comprehensible test.
 
+Furthermore, the way this object is set up closely resembles natural language. If we omit the brackets in the previous example, we obtain a clear statement: `a delivery with status canceled`. Comparing this to the initial approach with numerous constructor arguments, it becomes evident which is easier to read.
+
+The last benefit and the essential reason why to use the discussed pattern is that it allows to construct objects for various classes. Typically, projects contains a subset of entities, data transfer objects (DTOs), domain classes, messaging classes, and more. While they serve different purposes, they often share common data fields/schemes. The logic for initializing each of them can be encapsulated in a method that takes all required data (whether default or overriden) stored in the Test Data Builder and invokes the class's constructor to yield a new instance. This is the purpose of the previously mentioned entity() method in the examples — it prepares an entity class for use in the test.
 
 
 ## How to achieve it ?
@@ -140,6 +143,7 @@ data holders
 
 transformer
 * entity, message, dto - zaznaczyć, że jeśli nie są do siebie podobne to obiekty to zrobić odrębne klasy
+* opisać jak wolisz to nazywać
 
 ## Where else it can be good to use?
 
@@ -153,3 +157,7 @@ transformer
 
 * mały projekt
 * dużo maintainence
+
+## summary
+
+benefits - wypunktować
