@@ -6,20 +6,18 @@ description: "Discover the power of Test Data Builder for clearer test code! Div
 tags: ["java", "tests", "data", "craftsmanship", "database", "hibernate", "jdbc", "quality", "test-data-builder"]
 ---
 
-https://www.arhohuttunen.com/test-data-builders/
-https://blog.codeleak.pl/2014/06/test-data-builders-and-object-mother.html?m=1
-
 ```
-TODO - znaleźć obrazek
 dodać personal touch... - że to dla mnei jest wygodne
+dodać info a grafach? jak zapisywać? jak traktować? jak tworzyć te obiekty- że zawsze zaczynać od roota
 ```
-![Cover](jason-leung-V-HPvi4B4G0-unsplash.jpg)
-> Cover image by [Jason Leung](https://unsplash.com/@ninjason) on [Unsplash](https://unsplash.com)
+![cover](050_test-data-cover.jpg)
+
+> Photo by [Rachel Park](https://unsplash.com/@therachelstory) on [Unsplash](https://unsplash.com)
 
 
 *Many of us have been in a situation where writing application code is quick, easy, and enjoyable. However, when it comes to test code, it often turns out to be time-consuming, tedious, and boring. There can be several reasons for this, one of which is the necessity of preparing a set of test data. In some extreme cases, this data preparation may consume a significant portion of the test body. This not only becomes inconvenient when we only want to test a small part of the code but also decreases the overall readability of the test. In this post, I'll demonstrate how this issue can be simplified using Test Data Builder.*
 
-## Preparing test data is boring and tedious
+## Preparing test data is boring and tedious!
 
 Let's be honest, how familiar does this code look to you?   
 
@@ -82,7 +80,7 @@ private Delivery aNewDelivery(String address, List<Food> foods) {
 
 Is there a different approach to it? Is there a way to avoid all this setup and at the same time give a flexibility for adjustments of our test data? 
 
-## So let's use the magic tool!
+## So let's use the magic tool...
 
 Let's introduce a Test Data Builder object which will be responsible for generating test data. 
 
@@ -133,7 +131,7 @@ Furthermore, the way this object is set up closely resembles natural language. I
 The last benefit and the essential reason why to use the discussed pattern is that it allows to construct objects for various classes. Typically, projects contains a subset of entities, data transfer objects (DTOs), domain classes, messaging classes, and more. While they serve different purposes, they often share common data fields/schemes. The logic for initializing each of them can be encapsulated in a method that takes all required data (whether default or overriden) stored in the Test Data Builder and invokes the class's constructor to yield a new instance. This is the purpose of the previously mentioned `entity()` method in the examples — it prepares an entity class for use in the test.
 
 
-## Which is not a magic at all!
+## ...which is not a magic at all...
 
 ```
 todo - got to the insights, zajrzeć w bebechy, etc.
@@ -288,7 +286,8 @@ class DeliveryTestData {
 }
 ```
 
-The last step is to allow to read values from private fields so they can be used in test assertions. For that either create it manually (or generate them using an IDE) as it's done here - using [Lombok](https://projectlombok.org/) annotation:
+The final step is to enable the reading of values from private fields so that they can be used in test assertions. This can be achieved either by creating them manually or generating them using an IDE, as demonstrated here with the [Lombok](https://projectlombok.org/) annotation:
+
 
 ```java
 import lombok.Getter;
@@ -300,11 +299,11 @@ class DeliveryTestData {
 }
 ```
 
-## And can be used in Integration tests
+## .. and can be used in Integration tests!
 
-Test Data Builders are great for unit tests, but how about integration tests when in the set up phase of a test data needs to be inserted into the database? Can we use this types of classes as well here? The answer is - of course!
+Test Data Builders are excellent for unit tests, but what about integration tests? In the setup phase of an integration test, we often need to insert data into the database. Can we also use these types of classes for that purpose? The answer is - absolutely!
 
-Let's say that we would like to write an integration test for a custom repository method (in a Spring Data repository). For example, we have a method to get the count of deliveries of a certain food:
+Let's assume we want to create an integration test for a custom repository method in a Spring Data repository. For instance, we have a method to retrieve the count of deliveries for a specific type of food:
 
 ```java
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -325,7 +324,8 @@ interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
 }
 ```
 
-And a test can look like this, assuming that in the `IntegrationTest` class there is code responsible for spinning up the database using the Testcontainers (exemplary code can be found [here](https://github.com/wkrzywiec/farm-to-table/blob/master/services/delivery/src/test/groovy/io/wkrzywiec/fooddelivery/delivery/IntegrationTest.groovy)) so that we can skip the setup here:
+A test can take this form, assuming that within the IntegrationTest class, there is code responsible for launching the database using Testcontainers (exemplary code can be found [here](https://github.com/wkrzywiec/farm-to-table/blob/master/services/delivery/src/test/groovy/io/wkrzywiec/fooddelivery/delivery/IntegrationTest.groovy)). This allows us to skip the setup here:
+
 
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
@@ -367,9 +367,9 @@ class DeliveryRepositoryIntegrationTest extends IntegrationTest {
 }
 ```
 
-The above test is very similiar to the unit tests written before. All the setup phase is done in one place and it's starightforward - 2 delivieres are created with the same food and then saved into a database. There are no need to create any SQL inserts to make this test happening. What's the key to this shape of an integration test? The `TestRepository` class.
+The test above is very similar to the unit tests written earlier. All the setup phases are consolidated into one place, and it's straightforward: two deliveries with the same food are created and then saved into a database. There is no need to create any SQL inserts to make this test work. So, what's the key to this structure of an integration test? The `TestRepository` class.
 
-As the name may suggest the purpose of it is to be used during tests to persist the Test Data Builder object in a database. There are several ways how it could be implemented, here is how it could be implemented for Postgres database using Spring Data's repository:
+As the name suggests, its purpose is to be used during tests to persist the Test Data Builder object in a database. There are several ways to implement it. Here's one way it could be implemented for a Postgres database using Spring Data's repository:
 
 ```java
 import org.springframework.transaction.annotation;
@@ -397,43 +397,38 @@ public class TestRepository {
 }  
 ```
 
-As you can see the `TestRepository` is a simple wrapper for Spring Data's repository. It is in this case, beacuse the object graph (of `Delivery` and list of `Food`) is relatively simple. When we have more complicated data structure or complex ORM mapping (e.g. bidirectional many-to-one association) it is beneficial to keep entity preparation and persitence logic inside the `TestRepository` class.
+Here, you can see that the `TestRepository` is a straightforward wrapper for Spring Data's repository. It takes on this role because the object graph (comprising `Delivery` and a list of `Food`) is relatively simple. However, when dealing with more complex data structures or intricate ORM mappings (such as bidirectional many-to-one associations), it becomes beneficial to centralize entity preparation and persistence logic within the `TestRepository` class.
 
-And of course we don't need to be limited to the above solution. E.g. instead of using Hibernate it can be implemented using JDBC (or Spring's `JdbcTemplate`), jOOQ or any other way tool of your choice. 
+Of course, you're not limited to the above solution. Instead of using Hibernate, you can implement it using JDBC (or Spring's `JdbcTemplate`), jOOQ, or any other tool of your choice.
+So, should we use it everywhere?
 
-## So should we use it everywhere?
+Like any other tool, Test Data Builder should be employed where it fits best. Does it fit every project? Certainly not!
 
-Like every other tool Test Data Builder needs to be used when it fits the most. Does it fit in every project? Of course not!
+## When should you avoid using it?
 
-So when not to use it?
+First and foremost, improved readability comes at the cost of higher maintenance. To use it, you need to create it first. If a data model is extensive (meaning many properties or elements in the object graph), it will take some time to set up Test Data Builder. Moreover, if the data model changes frequently, it will require more effort to keep up with these changes (though the same challenge applies to the classic approach).
 
-First of all the better readeability comes with a price of a higher maintanance. In order to use it first needs to be created. If a data model is large (there are lots of properties or there are lots of elements in the object graph) it will require some time to shadow it with Test Data Builder. Also, if it changes frequently it will also require more work to keep truck with changes (but on the other hand, the same situation will be in the classic approach).
+Using it for a small project (e.g., serverless functions) might be overkill as well. In such cases, where a project has a small number of use cases, it may be quicker and easier to prepare specific data for each test case. The same holds true if a particular object graph is only used a couple of times. There's no sense in creating a Test Data Builder and then using it just a few times. It's better to set up those tests without it.
 
-Also using it for a small project (e.g. serverless functions) it might be an overkill. If a project has small number of usecases it might be quicker, and easier to read, to prepare specific data for each test case. The same goes if a particualr object graph is used only a couple times. It is no sense to prepare a Test Data Builder and then use it 3-4 times. It's better to set up those tests without it. 
+Lastly, not all projects follow the pattern of fetching data, modifying it, persisting it, and notifying an invoker of this action's result. Some projects are less typical and may require a special approach.
 
-Finally not every projects follow the pattern - fetch data, modify it, persist it and notify an invoker of this action of a result. There are projects which are less typical and may need special approach. 
-
-Apart from these three cases I would encourage you to give a try to a Test Data Builder in your applications. With a little bit of effort you can gain a lot of benefits described previously.
+Aside from these three cases, I encourage you to give Test Data Builder a try in your applications. With a little effort, you can reap the benefits described earlier.
 
 ## Let's wrap up
 
-It's time to conclude this post with quick summary why Test Data Builders are worth be used:
+It's time to wrap up this post with a quick summary of why Test Data Builders are worth using:
 
-* they give a convenient and quick way to prepare data for test
-* they increase the readability of test by introducing notation close to the natural language
-* they're hiding irrelevant parts of test data preparation letting to focus only on the key parts that are important for a particualr test
-* they provide a single place for initilizing various data transfer objects used in the test
-* thanks to them unit and integration tests may be very similar to each other
+* They provide a convenient and efficient way to prepare test data.
+* They enhance test readability by introducing notation close to natural language.
+* They conceal irrelevant parts of test data preparation, allowing you to focus only on the key aspects important for a particular test.
+* They offer a single location for initializing various data transfer objects used in tests.
+* Thanks to them, unit and integration tests can closely resemble each other.
 
-Of course we also need to remember that for some projects it's better not to use this pattern. Especially for small or constantly changing ones the maintanace may very large.
+Of course, it's important to remember that for certain projects, this pattern may not be the best choice. Especially for small or rapidly changing projects, the maintenance effort can be significant.
 
-If you need more examples of Test Data Builder go check my project on GitHub - [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table). 
+If you're looking for more examples of Test Data Builders, feel free to check out my project on GitHub - [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table).
 
 
 ## And if you need more sources
 
 * [How to Create a Test Data Builder | Code With Arho](https://www.arhohuttunen.com/test-data-builders/)
-
-dodać info a grafach? jak zapisywać? jak traktować? jak tworzyć te obiekty- że zawsze zaczynać od roota
-
-spradzić w chat gpt od `And can be used in Integration tests``
