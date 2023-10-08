@@ -1,15 +1,11 @@
 ---
-title: "Test Data Builder"
-date: 2023-09-02
+title: "Prepare Test Data Quicker with Test Data Builder!"
+date: 2023-10-08
 summary: "Discover the benefits of using Test Data Builder to improve test code readability"
 description: "Discover the power of Test Data Builder for clearer test code! Dive into this article to explore its benefits and learn how to implement it in Java, making it versatile for both unit and integration tests."
 tags: ["java", "tests", "data", "craftsmanship", "database", "hibernate", "jdbc", "quality", "test-data-builder"]
 ---
 
-```
-dodać personal touch... - że to dla mnei jest wygodne
-dodać info a grafach? jak zapisywać? jak traktować? jak tworzyć te obiekty- że zawsze zaczynać od roota
-```
 ![cover](050_test-data-cover.jpg)
 
 > Photo by [Rachel Park](https://unsplash.com/@therachelstory) on [Unsplash](https://unsplash.com)
@@ -70,7 +66,7 @@ class DeliveryTest {
 }
 ```
 
-Such approach solves the problem of tedious work for test setup but only partially. What if each test requires a slightly different setup? Arguments can be added to this method to make it more customizable, but in a very large set of tests, the number of arguments may quickly become very large and hard to maintain.
+Such approach solves the problem of tedious work for test setup but only partially. What if each test requires a slightly different setup? Arguments can be added to this method to make it more customizable, but in a very large set of tests, the number of arguments may quickly become very big and hard to maintain.
 
 ```java
 private Delivery aNewDelivery(String address, List<Food> foods) {
@@ -101,7 +97,7 @@ class DeliveryTest {
 }
 ```
 
-It is somehow easier to read if we compare with a first approach, but it looks a little bit off with this `entity()` at the end. Without it would look pretty close to the second approach. Where is a gain here?
+It is somehow easier to read if we compare with a first approach, but it looks a little bit off with this `entity()` at the end. Without it would look pretty close to the second approach. Where is a gain here then?
 
 Let's have another test example to see the benefit of using Test Data Builder:
 
@@ -128,14 +124,10 @@ Here, the `Delivery` object is instantiated with all default values except for o
 
 Furthermore, the way this object is set up closely resembles natural language. If we omit the brackets in the previous example, we obtain a clear statement: `a delivery with status canceled`. Comparing this to the initial approach with numerous constructor arguments, it becomes evident which is easier to read.
 
-The last benefit and the essential reason why to use the discussed pattern is that it allows to construct objects for various classes. Typically, projects contains a subset of entities, data transfer objects (DTOs), domain classes, messaging classes, and more. While they serve different purposes, they often share common data fields/schemes. The logic for initializing each of them can be encapsulated in a method that takes all required data (whether default or overriden) stored in the Test Data Builder and invokes the class's constructor to yield a new instance. This is the purpose of the previously mentioned `entity()` method in the examples — it prepares an entity class for use in the test.
+The last benefit and the essential reason why to use the discussed pattern is that it allows to construct objects for various classes. Typically, projects contain a subset of entities, data transfer objects (DTOs), domain classes, messaging classes, and more. While they serve different purposes, they often share common data fields/schemes. The logic for initializing each of them can be encapsulated in a method that takes all required data (whether default or overriden) stored in the Test Data Builder and invokes the class's constructor to yield a new instance. This is the purpose of the previously mentioned `entity()` method in the examples — it prepares an entity class for use in the test.
 
 
 ## ...which is not a magic at all...
-
-```
-todo - got to the insights, zajrzeć w bebechy, etc.
-```
 
 Let's have our hands dirty and and dive into creating the Test Data Builder for delivery objects, as mentioned in the previous section.
 
@@ -227,16 +219,16 @@ class DeliveryTestData {
 }
 ```
 
-Notice that each method returns the instance of modified class ("classic" setter method is always `void`). This little trick enables chaing `with()` methods, for example for teh test we would like to override two default properties:
+Notice that each method returns the instance of modified class ("classic" setter method is always `void`). This little trick enables chaing `with()` methods, for example for the test we would like to override two default properties:
 
 ```java
 class SomeTest {
 
   void test() {
       
-    aDelivery()
-      .withStatus(COMPLETED)
-      .withAddress("Main Road 2");
+    var delivery = aDelivery()
+                     .withStatus(COMPLETED)
+                     .withAddress("Main Road 2");
   }
 }
 ```
@@ -299,7 +291,7 @@ class DeliveryTestData {
 }
 ```
 
-## .. and can be used in Integration tests!
+## ...and can be used in Integration tests!
 
 Test Data Builders are excellent for unit tests, but what about integration tests? In the setup phase of an integration test, we often need to insert data into the database. Can we also use these types of classes for that purpose? The answer is - absolutely!
 
