@@ -7,6 +7,7 @@ tags: ["java", "jvm", "performance", "garbage-collector", "cpu", "memory", "clas
 ---
 
 sprawdzić, co pogrubić, co wykursować, co wielką a co małą literą
+ustalic czym jest dla mnie GC, collector czy collection
 
 ![cover](cover.jpg)
 
@@ -102,6 +103,7 @@ The first plot in the above screenshot tells us how often the certain type of ga
 But even if a number of GC is relatively high it's not always a bad situation. If each one if them takes a very short time and do not affect the overall application performance we have nothing to worry about. Hence, to make sure that it is really the case we can look into the second plot which facilities us with information about the average time of each garbage collection.
 
 The last plot is showing us how much memory was used to allocate objects in the young generation and how much of it was promoted to older generations. This is really helpful information when we want to learn about memory load that GC needs to deal with in each cycle.
+
 
 jakie są w javie 21, różne dla różnych wydań javy
 ale można je podzielić na parallel vs serial, concurrent vs stop the world, incremental vs monolithic (garbage collector minibook)
