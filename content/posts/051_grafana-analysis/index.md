@@ -85,21 +85,34 @@ The above screenshot confirms that. We can see that the plot for `used` memory i
 
 On the contrarory, the *Survivor Space* and *Old Gen* are much more stable. There are some changes in them, but they are very subtle.
 
-These three charts gives us vital information about content of the heap. We can read how often new objects are created and removed. If the cleanup for them is done very often and the old objects are kept on relatively same level it is tempting to increase the ratio of young to old generation size. The larger the young generation is the cleanup will be done less often. But on the other hand, it will be bigger, so the cleanup may take a little bit longer. The same goes for old generations - the smaller it gets the most frequent it is cleaned. So we must keep balance of it. 
+These three charts gives us vital information about content of the heap. We can read how often new objects are created and removed. If the cleanup for them is done very often and the old objects are kept on relatively same level it is tempting to increase the ratio of young to old generation size. The larger the young generation is the cleanup will be done less often. But on the other hand, it will be bigger, so the cleanup may take a little bit longer. The same goes for old generations - the smaller it gets the most frequent it is cleaned. So we must keep balance of it.
 
-To adjust it use `-XX:NewRatio=N` and `-XX:NewSize=N` (str 122)
-
-można sterować udziałami każdej z generacji; duża young generation jeśli tworzymy dużo obiektów, które są tylko tymczasowe; można też ustalić jak długo obiekty będę w której generacji? (to już dla hardcorów?)
-
-not every GC is a generational GC, but most of them are
+To adjust it use `-XX:NewRatio=N` (which is a ration of a young and old generations, e.g. `N=2` means that young generation is twice as big as an old one) or `-XX:NewSize=N` (which is an initial size of the young generation - all remaining will be assigned to the old genration).
 
 ### Garbage Collection
 
 ![garbage-collection](gc.png)
 
-czy ten usuwa też coś z native memory? załodowane klasy, które nie są potrzebne już?
+The previous already mentioned about the garbage collector (GC) which we will have a closer look now. It is a key part of JVM, because in contrast too languages like C++ we, developers, don't need to worry about freeing memory once an object is no longer needed. The role of the GC is to decide which objects should be destroyed and which should be preserved.
+
+All new objects are allocated first in the *Eden Space* but during the next garbage collection they are promoted to the one of the *Survivor Space* if they are still in use. Then during next garbage collections they're again checked if they're shoud be promoted to next subspace of the *Survivor Space* or even to the *Old Gen*.
+
+The first plot in the above screenshot tells us how often the certain type of garbage collection occurs in a second. We can see there that only one minor GC (only a young generation of the heap is cleaned) is happening, but it is also showing major GC (the objects from old generation are cleaned then). So by reading this chart we can figure out how often each GC is happening and if it's too often it may give a hint that one of the spaces is filling too quickly with a large number of objects.
+
+But even if a number of GC is relatively high it's not always a bad situation. If each one if them takes a very short time and do not affect the overall application performance we have nothing to worry about. Hence, to make sure that it is really the case we can look into the second plot which facilities us with information about the average time of each garbage collection.
+
+The last plot is showing us how much memory was used to allocate objects in the young generation and how much of it was promoted to older generations. This is really helpful information when we want to learn about memory load that GC needs to deal with in each cycle.
+
+jakie są w javie 21, różne dla różnych wydań javy
+ale można je podzielić na parallel vs serial, concurrent vs stop the world, incremental vs monolithic (garbage collector minibook)
+generations, niektóre nie mają
+
+major attr, choosing gc - strona 58, infoq gc minibook
+choosing gc - str 113, performance book
 
 So how objects are splitted into generations? First, a newly created object is allocated in the young generation. When a young generation fills up with new objects, Garbage Collector stops the application thread, cleans heap from unsued objects and 
+
+czy ten usuwa też coś z native memory? załodowane klasy, które nie są potrzebne już?
 
 ### JVM Memory Pools (Non-Heap)
 
@@ -130,6 +143,8 @@ heap memory best practises:
 * lazy initialization of fields (str 192)
 * avoid immutable object - do not create copy if needed (if object is used only once, or in a small method, maybe make it mutable)
 * avoid String that are the same
+
+
 
 ## I/O Overview
 
