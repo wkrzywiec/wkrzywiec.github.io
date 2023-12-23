@@ -104,17 +104,35 @@ But even if a number of GC is relatively high it's not always a bad situation. I
 
 The last plot is showing us how much memory was used to allocate objects in the young generation and how much of it was promoted to older generations. This is really helpful information when we want to learn about memory load that GC needs to deal with in each cycle.
 
+After finding an issue in one of these graphs we can do two things - tune JVM memory limits and GC behaviour or select different GC. Depending on Java version and distribution (e.g. Oracle's, Amazon Corretto, Azul Zulu or Eclipse Adoptium) the list of available GC is different, but most of them can be categorized into:
 
-jakie są w javie 21, różne dla różnych wydań javy
-ale można je podzielić na parallel vs serial, concurrent vs stop the world, incremental vs monolithic (garbage collector minibook)
-generations, niektóre nie mają
+* generational vs. non-generational - some GCs may not split a heap into generations and treat it as a one memory space, however they usually are splitting it into them (but it varies how they're doing it from distribution to distribution),
+* stop-the-world vs. concurrent - GCs from the first group are pausing the entire application to do the cleanup, the latter are doing it when application is running,
+* single vs. multi-thread - first group is performing using only one thread, the latter is utilizing at least two,
+* incremental vs. monolithic - specific for stop-the-world GCs and denotes wheather garbage collection is done only for a subset of the generation or until it's done.
+
+
+Here is a list of available GCs in the Amazon Correto distribution of OpenJDK (one of the most popular distributions accordingly to the [2023 State of the
+Java Ecosystem](https://newrelic.com/sites/default/files/2023-04/new-relic-2023-state-of-the-java-ecosystem-2023-04-20.pdf) for 21 version of Java:
+
+| Garbage Collector | Generational | Concurrent          | Multi-thread | Monolithic | Purpose |
+| ----------------- | ------------ | ------------------- | ------------ | ---------- | ------- |
+| **G1**            | ✅ Yes       | ✅ Yes (partially) | ✅ Yes       | ✅ Yes     | Common purpose GC, default |
+| **Serial**        | ✅ Yes       | ❌No               | ❌No         | ✅ Yes     | Good for apps with small heap |
+| **Parallel**      | ✅ Yes       | ❌No               | ✅ Yes       | ✅ Yes     | Good for batch processing apps, where overall throughput can be traded for longer pauses |
+| **Shenandoah**    | ❌No         | ✅ Yes             | ✅ Yes       | ❌No       | Reduces GC pauses |
+| **Generational ZGC** | ✅ Yes    | ✅ Yes             | ✅ Yes       | ❌No       | For apps that needs short response time and large heap |  
+
+
+
+zawsze są jakieś pauzy?
+
+zawsze są jakieś tradeoffy - concurrent and multithread => more cpu
+bardziej szczegółow konfiguracje każdego z gc w linkach na dole
+
 
 major attr, choosing gc - strona 58, infoq gc minibook
 choosing gc - str 113, performance book
-
-So how objects are splitted into generations? First, a newly created object is allocated in the young generation. When a young generation fills up with new objects, Garbage Collector stops the application thread, cleans heap from unsued objects and 
-
-czy ten usuwa też coś z native memory? załodowane klasy, które nie są potrzebne już?
 
 ### JVM Memory Pools (Non-Heap)
 
@@ -161,3 +179,10 @@ heap memory best practises:
 ![jvm-misc](jvm-misc.png)
 
 ## Conclusion
+
+## References
+
+* [Generational ZGC | OpenJDK Wiki](https://wiki.openjdk.org/display/zgc/Main)
+* [Introducing Generational ZGC | Inside Java](https://inside.java/2023/11/28/gen-zgc-explainer/)
+* [Shenandoah GC | OpenJDK Wiki](https://wiki.openjdk.org/display/shenandoah/Main)
+
