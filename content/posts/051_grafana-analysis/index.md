@@ -107,10 +107,9 @@ The last plot is showing us how much memory was used to allocate objects in the 
 After finding an issue in one of these graphs we can do two things - tune JVM memory limits and GC behaviour or select different GC. Depending on Java version and distribution (e.g. Oracle's, Amazon Corretto, Azul Zulu or Eclipse Adoptium) the list of available GC is different, but most of them can be categorized into:
 
 * generational vs. non-generational - some GCs may not split a heap into generations and treat it as a one memory space, however they usually are splitting it into them (but it varies how they're doing it from distribution to distribution),
-* stop-the-world vs. concurrent - GCs from the first group are pausing the entire application to do the cleanup, the latter are doing it when application is running,
-* single vs. multi-thread - first group is performing using only one thread, the latter is utilizing at least two,
+* stop-the-world vs. concurrent - GCs from the first group are pausing the entire application to do the cleanup, the latter are doing it when application is running (or to be precise - they do stop the application but for a very short time),
+* single- vs. multi-thread - first group is performing using only one thread, the latter is utilizing at least two,
 * incremental vs. monolithic - specific for stop-the-world GCs and denotes wheather garbage collection is done only for a subset of the generation or until it's done.
-
 
 Here is a list of available GCs in the Amazon Correto distribution of OpenJDK (one of the most popular distributions accordingly to the [2023 State of the
 Java Ecosystem](https://newrelic.com/sites/default/files/2023-04/new-relic-2023-state-of-the-java-ecosystem-2023-04-20.pdf) for 21 version of Java:
@@ -123,13 +122,9 @@ Java Ecosystem](https://newrelic.com/sites/default/files/2023-04/new-relic-2023-
 | **Shenandoah**    | ❌No         | ✅ Yes             | ✅ Yes       | ❌No       | Reduces GC pauses |
 | **Generational ZGC** | ✅ Yes    | ✅ Yes             | ✅ Yes       | ❌No       | For apps that needs short response time and large heap |  
 
+The above table is listing all available GCs along with theur basic properties. Even though some of them look better from the other it is very important to not forget about trade offs. For instance short GC pauses of *Shenandoah* and *ZGC* comes with a cost of higher CPU usage. Therefore before selecting one make sure that you understand what price you would need to pay.
 
-
-zawsze są jakieś pauzy?
-
-zawsze są jakieś tradeoffy - concurrent and multithread => more cpu
-bardziej szczegółow konfiguracje każdego z gc w linkach na dole
-
+If you look for more information about each GC check the *References* section, where I've put the links to official documentation of each one of them.
 
 major attr, choosing gc - strona 58, infoq gc minibook
 choosing gc - str 113, performance book
@@ -182,6 +177,9 @@ heap memory best practises:
 
 ## References
 
+* [Getting Started with the G1 Garbage Collector | Oracle.com](https://www.oracle.com/technetwork/tutorials/tutorials-1876574.html)
+* Serial GC
+* Parallel GC 
 * [Generational ZGC | OpenJDK Wiki](https://wiki.openjdk.org/display/zgc/Main)
 * [Introducing Generational ZGC | Inside Java](https://inside.java/2023/11/28/gen-zgc-explainer/)
 * [Shenandoah GC | OpenJDK Wiki](https://wiki.openjdk.org/display/shenandoah/Main)
