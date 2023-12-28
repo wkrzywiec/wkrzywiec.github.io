@@ -126,20 +126,24 @@ The above table is listing all available GCs along with theur basic properties. 
 
 If you look for more information about each GC check the *References* section, where I've put the links to official documentation of each one of them.
 
-major attr, choosing gc - strona 58, infoq gc minibook
-choosing gc - str 113, performance book
-
 ### JVM Memory Pools (Non-Heap)
 
-method area (metaspace) - bigger application with lots of different classes = bigger metaspace; default metaspace size is unlimted - size it to not take it too much memory; garbage collector is clearing it?
-
-code cache - https://www.baeldung.com/jvm-code-cache
-
-stacks - `StackOverflow`
+Apart from objects JVM needs memory to store other things. This is represented with next graphs from *JVM Memory Pools (Non-Heap)* in the discussed dashboard.
 
 ![jvm-memory-non-heap](jvm-memory-non-heap.png)
 
+* **Metaspace (a.k.a. Method Area)** - it is a place where metadata and definitions of every class (in simplier terms - every `.class` file in the runtime representation) are stored here. Apart from that *Metasapce* holds methods counter used then by JIT compiler or constant pool - data structure to store information about references and constants associated with a class (`static final` fields). By default there are no limits how big it can get, but it can be tuned using `-XX:MaxMetaspaceSize` flag. If it's not provided it may occur that JVM will consume too much memory and slows down the machine on which application is running.
+* **Compressed Class Space** - this is a subset of the *Metaspace* with classes metadata.
 
+Remaing three graphs are showing segments of the code cache. It is used to store code optimized by already mentioned JIT (Just-In-Time) compiler. This compiler plays a vital role in JVM. It identifies and optimizes places in the code that are executed very often. Those hot spots (hence the Oracle's name of JDK distribution - HotSpot) are identified are recompiled from a bytecode to machine (native) code. Along with other optimizations, like method inlining or dead code elimination, it makes those parts of a code ultra fast to execute making Java applications really robust.
+
+Code cache is splitted into three segments:
+
+* **CodeHeap 'profiled nmethods'** - that has lightly optimized methods,
+* **CodeHeap 'non-profiled nmethods'** - that holds fully optimized methods,
+* **CodeHeap 'non-nmethods'** - the smallest segments that contains compiler buffers and bytecode interpreter.
+
+This is all the insights that discussed dashboard is giving us about non-heap area. These are all very useful information but we need to be aware that it is not everything. All mentioned data areas, like heap and parts of non-heap, are shared amoung all application threads. There are however areas that are assigned to specific threads. Areas like stack or program counter are also vital parts of the JVM.
 
 ### What if the app is consuming too much memory?
 
@@ -178,9 +182,9 @@ heap memory best practises:
 ## References
 
 * [Getting Started with the G1 Garbage Collector | Oracle.com](https://www.oracle.com/technetwork/tutorials/tutorials-1876574.html)
-* Serial GC
-* Parallel GC 
+* [Serial GC | Oracle.com](https://docs.oracle.com/en/java/javase/21/gctuning/available-collectors.html#GUID-45794DA6-AB96-4856-A96D-FDE5F7DEE498)
+* [Parallel GC | Oracle.com](https://docs.oracle.com/en/java/javase/21/gctuning/parallel-collector1.html) 
 * [Generational ZGC | OpenJDK Wiki](https://wiki.openjdk.org/display/zgc/Main)
 * [Introducing Generational ZGC | Inside Java](https://inside.java/2023/11/28/gen-zgc-explainer/)
 * [Shenandoah GC | OpenJDK Wiki](https://wiki.openjdk.org/display/shenandoah/Main)
-
+* [What is Metaspace? | stuefe.de](https://stuefe.de/posts/metaspace/what-is-metaspace/)
