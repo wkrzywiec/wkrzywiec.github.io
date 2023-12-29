@@ -90,6 +90,25 @@ These three charts gives us vital information about content of the heap. We can 
 
 To adjust it use `-XX:NewRatio=N` (which is a ration of a young and old generations, e.g. `N=2` means that young generation is twice as big as an old one) or `-XX:NewSize=N` (which is an initial size of the young generation - all remaining will be assigned to the old genration).
 
+#### What if the app is consuming too much memory?
+
+Heap is one of the most important memory area for JVM and usually it's the place that demands lots of memory. If it happens that it is close to maximum threshold the easiest way would be to change the maximu size of it. Bigger heap means all needed objects will fit it. This can be achieved by providing the `-Xmx` followed by the size number of memory that will be reserver for a heap. E.g. `-Xmx1024m` will alocated 1024 MB for heap.
+
+Changing the maximum size of a heap may be the remedy, but it many cases it's rather covering the symptoms than treating the real cause of a problem. Increasing number of objects may suggest that there is a memory leak somewhere in an application. This place in the code needs to be found and fixed.
+
+Other options may be that too much data has been tried to be loaded into the memory. It can be either because of inefficient data structure or simple large volume of data, which was not predicted. In the first case the solution would be to optimize how we store data in JVM and for the latter it would be to increase the heap size or think about how to chunk the large amount of data into smaller pieces.
+
+Depends on the type. If heap is increasing - too much objects, or they are too big.
+
+heap memory best practises:
+
+* use less memory
+    * reduce object size - too much data, too much variables? maybe instead of String use boolean? instead of Object use the primitive (sprawdź prezentacje Kubryńskiego, albo książki na str 189); even null consumes space
+* lazy initialization of fields (str 192)
+* avoid immutable object - do not create copy if needed (if object is used only once, or in a small method, maybe make it mutable)
+* avoid String that are the same
+
+
 ### Garbage Collection
 
 ![garbage-collection](gc.png)
@@ -144,26 +163,6 @@ Code cache is splitted into three segments:
 * **CodeHeap 'non-nmethods'** - the smallest segments that contains compiler buffers and bytecode interpreter.
 
 This is all the insights that discussed dashboard is giving us about non-heap area. These are all very useful information but we need to be aware that it is not everything. All mentioned data areas, like heap and parts of non-heap, are shared amoung all application threads. There are however areas that are assigned to specific threads. Areas like stack or program counter are also vital parts of the JVM.
-
-### What if the app is consuming too much memory?
-
-How to mitigate it? The easiest way would be to change the maximu size of the heap. Bigger heap means all needed objects will fit it. This can be achieved by providing the `-Xmx` followed by the size number of memory that will be reserver for a heap. E.g. `-Xmx1024m` will alocated 1024 MB for heap.
-
-Changing the maximum size of a heap may be the remedy, but it many cases it's rather covering the symptoms than treating the real cause of a problem. Increasing number of objects may suggest that there is a memory leak somewhere in an application. This place in the code needs to be found and fixed.
-
-Other options may be that too much data has been tried to be loaded into the memory. It can be either because of inefficient data structure or simple large volume of data, which was not predicted. In the first case the solution would be to optimize how we store data in JVM and for the latter it would be to increase the heap size or think about how to chunk the large amount of data into smaller pieces.
-
-Depends on the type. If heap is increasing - too much objects, or they are too big.
-
-heap memory best practises:
-
-* use less memory
-    * reduce object size - too much data, too much variables? maybe instead of String use boolean? instead of Object use the primitive (sprawdź prezentacje Kubryńskiego, albo książki na str 189); even null consumes space
-* lazy initialization of fields (str 192)
-* avoid immutable object - do not create copy if needed (if object is used only once, or in a small method, maybe make it mutable)
-* avoid String that are the same
-
-
 
 ## I/O Overview
 
