@@ -11,7 +11,7 @@ ustalic czym jest dla mnie GC, collector czy collection
 
 ![cover](cover.jpg)
 
-> Photo by [NEOM](https://unsplash.com/@neom) on [Unsplash](https://unsplash.com/photos/a-person-swimming-in-the-ocean-with-a-mountain-in-the-background-s6g6ZSxM3kQ)
+> Photo generated with [Leonardo Ai](https://leonardo.ai/)
 
 *Software engineering is not only about coding. It involves selecting the appropriate solution, implementing it, and verifying its alignment with specific goals. Non-functional requirements, a category often unspoken of, encompass a range of capabilities that a system must fulfill. One of them is performence. Some systems needs to handle lots of users at the same time, while others must process a bulk amount of data within tight timeframes. Numerous factors influence this, including the code itself and how the JVM is configured in the case of JVM applications.* 
 
@@ -98,16 +98,15 @@ Changing the maximum size of a heap may be the remedy, but it many cases it's ra
 
 Other options may be that too much data has been tried to be loaded into the memory. It can be either because of inefficient data structure or simple large volume of data, which was not predicted. In the first case the solution would be to optimize how we store data in JVM and for the latter it would be to increase the heap size or think about how to chunk the large amount of data into smaller pieces.
 
-Depends on the type. If heap is increasing - too much objects, or they are too big.
+But how to spot if we have inefficient data structure? There are couple of reasons, but one of them is using objects with lots of fields (e.g. entities) from which only a small subset is used. Limiting the number of fields per task can be beneficial here. Also we need to remember that even if fields won't be initialized they also consume memory!
 
-heap memory best practises:
+Also try to avoid using objects instead of primitives. There are lots examples when objects have fields like `Boolean` instead of plain `boolean`. It doesn't look that is too much of a change but for memory it usage it has a lot. Also treating `String` objects as holders for numbers of booleans variables consumes more memory than it is needed.
 
-* use less memory
-    * reduce object size - too much data, too much variables? maybe instead of String use boolean? instead of Object use the primitive (sprawdź prezentacje Kubryńskiego, albo książki na str 189); even null consumes space
-* lazy initialization of fields (str 192)
-* avoid immutable object - do not create copy if needed (if object is used only once, or in a small method, maybe make it mutable)
-* avoid String that are the same
+Another optimization that can be done to reduce memory footprint is to avoid initilizing String variables that has same values over and over.
 
+And finally in some situations avoiding creating immutable objects may be very beneficial. This is especially true when new objects needs to be created from as a copy of another. Of course, I'm not discouraging from using immutable objects at all. In lots of situations they are life-savers. But if you create an object that is used only within a small method once or twice, it is sometimes more beneficiar to make it mutable.
+
+These solutions are only tip of an iceberg how to address memory increasing problem. There are lots of materials that can guide you how to make it even better.
 
 ### Garbage Collection
 
