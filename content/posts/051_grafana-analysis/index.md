@@ -165,15 +165,37 @@ This is all the insights that discussed dashboard is giving us about non-heap ar
 
 ## I/O Overview
 
+Next section is providing data not directly connected with JVM. These are the things that may however be worth monitoring along with an application.
+
 ![io](io.png)
+
+First chart is graph is show how many I/O operations per second are performed. Disk usage is very important because if the app is doing lots of it and we have a very slow disk it can quickly become a bottleneck. 
+
+1. http_server_requests_seconds_count
+2. to samo, ale tylko 5xx
+3. http_server_requests_seconds_sum - z wyłączeniem 5xx
+4. tomcat_threads_busy_threads, tomcat_threads_current_threads, tomcat_threads_config_max_threads; to samo dla jetty
+
 
 ## Classloading
 
 ![classloading](classloading.png)
 
+1. jvm_classes_loaded_classes
+2. delta z trgo co wyżej w 1m
+3. 4. i 5. jvm buffer_memory_used_bytes, jvm_buffer_total_capacity_bytes, jvm_buffer_count_buffers
+
 ## JVM Misc
 
 ![jvm-misc](jvm-misc.png)
+
+1. system_cpu_usage, process_cpu_usage, średnia z 15 min
+2. system_load_average_1m, system_cpu_count
+3. jvm_threads_live_threads, jvm_threads_deamon_threads, jvm_threads_peak_threads, process_threads, 
+4. jvm_threads_states_threads, 
+5. jvm_gc_pause_seconds_sum rate
+6. logback_events_total increase
+7. process_files_open_files, process_files_max_files
 
 ## Conclusion
 
