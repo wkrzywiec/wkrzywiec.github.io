@@ -163,19 +163,6 @@ Code cache is splitted into three segments:
 
 This is all the insights that discussed dashboard is giving us about non-heap area. These are all very useful information but we need to be aware that it is not everything. All mentioned data areas, like heap and parts of non-heap, are shared amoung all application threads. There are however areas that are assigned to specific threads. Areas like stack or program counter are also vital parts of the JVM.
 
-## I/O Overview
-
-Next section is providing data not directly connected with JVM. These are the things that may however be worth monitoring along with an application.
-
-![io](io.png)
-
-First chart is graph is show how many I/O operations per second are performed. Disk usage is very important because if the app is doing lots of it and we have a very slow disk it can quickly become a bottleneck. 
-
-1. http_server_requests_seconds_count
-2. to samo, ale tylko 5xx
-3. http_server_requests_seconds_sum - z wyłączeniem 5xx
-4. tomcat_threads_busy_threads, tomcat_threads_current_threads, tomcat_threads_config_max_threads; to samo dla jetty
-
 
 ## Classloading
 
@@ -196,6 +183,18 @@ First chart is graph is show how many I/O operations per second are performed. D
 5. jvm_gc_pause_seconds_sum rate
 6. logback_events_total increase
 7. process_files_open_files, process_files_max_files
+
+## I/O Overview
+
+The last section is providing data not directly connected with JVM but it's very important to keep an eye on if an provides REST API (which is the case for most Java applications nowadays).
+
+![io](io.png)
+
+First chart is showing how many HTTP requests per second were made. Next one is providing the same information but this time narrowed done to all 5xx responses. Their large surge may indicate that something unwanted is happening. Also in case of large user traffic (which can be indicated from the first chart) it's worth to monitor how much memory is consumed by the app, how often garbage collection is performed or other indicators mentioned earlier. All of them may be correlated and affect how fast users get response from your service.
+
+Next indicator is the measurement of how much time on avarage and maximum HTTP requests took (with exception of 5xx). Again the rise of it may indicate that garbage collection pause is taking longer than usual, which is worth to check in that case.
+
+The last chart is telling about Tomcat's (or Jetty's) busy and active threads. It shows how many of them are currently in use which is very important to understand the throughput of an application. On the chart there is also information about configured max number of Tomcat's thread. If the number of currently used threads is very close to this limit it should be a warning that the application may not be able to handle all incoming requests.
 
 ## Conclusion
 
