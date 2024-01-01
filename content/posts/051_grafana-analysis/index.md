@@ -8,6 +8,8 @@ tags: ["java", "jvm", "performance", "garbage-collector", "cpu", "memory", "clas
 
 sprawdzić, co pogrubić, co wykursować, co wielką a co małą literą
 ustalic czym jest dla mnie GC, collector czy collection
+przejrzeć tagi
+zrobić summary w chacie?
 
 ![cover](cover.jpg)
 
@@ -163,14 +165,13 @@ Code cache is splitted into three segments:
 
 This is all the insights that discussed dashboard is giving us about non-heap area. These are all very useful information but we need to be aware that it is not everything. All mentioned data areas, like heap and parts of non-heap, are shared amoung all application threads. There are however areas that are assigned to specific threads. Areas like stack or program counter are also vital parts of the JVM.
 
-
 ## Classloading
+
+Apart from information about how much memory loaded classes are occupying the dashboard is also providing how many of them were loaded into memory and when it happened. This can be read from first two charts:
 
 ![classloading](classloading.png)
 
-1. jvm_classes_loaded_classes
-2. delta z trgo co wyżej w 1m
-3. 4. i 5. jvm buffer_memory_used_bytes, jvm_buffer_total_capacity_bytes, jvm_buffer_count_buffers
+Most of the class loading is happening during the application startup (at least for solution that is using Inversion of Control) when most of objects needs to be initialized but preceded by the loading their definition to JVM process. Not all of them however. It's becauase classes that does not need to be used right away are loaded lazily. It means that some class definitions may be loaded during the runtime.
 
 ## JVM Misc
 
@@ -179,7 +180,7 @@ This is all the insights that discussed dashboard is giving us about non-heap ar
 1. system_cpu_usage, process_cpu_usage, średnia z 15 min
 2. system_load_average_1m, system_cpu_count
 3. jvm_threads_live_threads, jvm_threads_deamon_threads, jvm_threads_peak_threads, process_threads, 
-4. jvm_threads_states_threads, 
+4. jvm_threads_states_threads,
 5. jvm_gc_pause_seconds_sum rate
 6. logback_events_total increase
 7. process_files_open_files, process_files_max_files
