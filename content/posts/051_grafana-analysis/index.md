@@ -182,15 +182,17 @@ Next section available in the dashboard govers various things worth monitoring.
 
 The name of the first chart -  **CPU Usage** - suggest that it show how CPU is utilized. It shows 3 series - system (total CPU usage of the host), process (CPU usage for all JVM processes) and process-15m which is a an average of the latter gauge from last 15 minutes.  
 
-The next graph is providing more insight about the the number of proccesses (load) that are running and queued for CPU on average in 1 minute. If this indicator is below the number of available CPUs (also available on this chart) it means that there are no waiting processes due to occupied CPU, which is a good news. Because otherwise it would meant that CPU can't keep up with executing all processes.
+The next graph, **Load**, is providing more insight about the the number of proccesses (load) that are running and queued for CPU on average in 1 minute. If this indicator is below the number of available CPUs (also available on this chart) it means that there are no waiting processes due to occupied CPU, which is a good news. Because otherwise it would meant that CPU can't keep up with executing all processes.
 
-Next two graphs are showing information about JVM threads. First one is showing the number of deamon threads, which are the opposite for user threads. These are two types of threads in JVM and in the essence they are almost the same. The only difference is when the program is stoped first the users threads are stoped and then the deamon threads are exited. Only after that the JVM is considered as non-running. The second difference is that deamon threads are serving the user thread. Usually they are assigned to do the garbage collection, but they also can be utilized in our code (by marking the `Thread` object with methods `setDaemon(true)`).
+Next two graphs are showing information about JVM threads. First one, **Threads** is showing the number of deamon threads, which are the opposite for user threads. These are two types of threads in JVM and in the essence they are almost the same. The only difference is when the program is stoped first the users threads are stoped and then the deamon threads are exited. Only after that the JVM is considered as non-running. The second difference is that deamon threads are serving the user thread. Usually they are assigned to do the garbage collection, but they also can be utilized in our code (by marking the `Thread` object with methods `setDaemon(true)`).
 
-The second thread graph is presenting 
-4. jvm_threads_states_threads,
-5. jvm_gc_pause_seconds_sum rate
-6. logback_events_total increase
-7. process_files_open_files, process_files_max_files
+The second graph, **Thread States** on threads is presenting the distribution of threads divided by their state.
+
+Next row of charts starts with **GC Pressure** - the percentage of CPU used for garbage collection. It's good to keep track on it along with other garbage collection metrics mentioned earlier.
+
+Another metric that is worth to keep an eye on is the number of logs produces by the app grouped by the level and is called **Log Events**. This may be handy information to spot problems if number of `warn` or `error` level logs is greater than usual, which may not emerge in other metrics.
+
+The last chart, **File Descriptors**, is showing how many files have been opened by the process.
 
 ## I/O Overview
 
