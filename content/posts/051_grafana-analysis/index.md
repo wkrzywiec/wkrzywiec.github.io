@@ -10,6 +10,7 @@ sprawdzić, co pogrubić, co wykursować, co wielką a co małą literą
 ustalic czym jest dla mnie GC, collector czy collection
 przejrzeć tagi
 zrobić summary w chacie?
+wyboldować nazwy wykresów
 
 ![cover](cover.jpg)
 
@@ -17,7 +18,7 @@ zrobić summary w chacie?
 
 *Software engineering is not only about coding. It involves selecting the appropriate solution, implementing it, and verifying its alignment with specific goals. Non-functional requirements, a category often unspoken of, encompass a range of capabilities that a system must fulfill. One of them is performence. Some systems needs to handle lots of users at the same time, while others must process a bulk amount of data within tight timeframes. Numerous factors influence this, including the code itself and how the JVM is configured in the case of JVM applications.* 
 
-*This blog post aims to guide you through the interpretation of one of the most widely used JVM Grafana dashboards, shedding light on key elements that warrant daily monitoring.* 
+*This blog post aims to guide you through the interpretation of one of the most widely used JVM Grafana dashboards, shedding light on key elements that warrant daily monitoring.*
 
 ## Not enough memory
 
@@ -175,11 +176,17 @@ Most of the class loading is happening during the application startup (at least 
 
 ## JVM Misc
 
+Next section available in the dashboard govers various things worth monitoring.
+
 ![jvm-misc](jvm-misc.png)
 
-1. system_cpu_usage, process_cpu_usage, średnia z 15 min
-2. system_load_average_1m, system_cpu_count
-3. jvm_threads_live_threads, jvm_threads_deamon_threads, jvm_threads_peak_threads, process_threads, 
+The name of the first chart -  **CPU Usage** - suggest that it show how CPU is utilized. It shows 3 series - system (total CPU usage of the host), process (CPU usage for all JVM processes) and process-15m which is a an average of the latter gauge from last 15 minutes.  
+
+The next graph is providing more insight about the the number of proccesses (load) that are running and queued for CPU on average in 1 minute. If this indicator is below the number of available CPUs (also available on this chart) it means that there are no waiting processes due to occupied CPU, which is a good news. Because otherwise it would meant that CPU can't keep up with executing all processes.
+
+Next two graphs are showing information about JVM threads. First one is showing the number of deamon threads, which are the opposite for user threads. These are two types of threads in JVM and in the essence they are almost the same. The only difference is when the program is stoped first the users threads are stoped and then the deamon threads are exited. Only after that the JVM is considered as non-running. The second difference is that deamon threads are serving the user thread. Usually they are assigned to do the garbage collection, but they also can be utilized in our code (by marking the `Thread` object with methods `setDaemon(true)`).
+
+The second thread graph is presenting 
 4. jvm_threads_states_threads,
 5. jvm_gc_pause_seconds_sum rate
 6. logback_events_total increase
