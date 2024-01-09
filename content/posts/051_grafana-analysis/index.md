@@ -9,28 +9,25 @@ tags: ["java", "jvm", "performance", "garbage-collector", "cpu", "memory", "clas
 sprawdzić, co pogrubić, co wykursować, co wielką a co małą literą
 ustalic czym jest dla mnie GC, collector czy collection
 przejrzeć tagi
-zrobić summary w chacie?
 wyboldować nazwy wykresów
 
 ![cover](cover.jpg)
 
 > Photo generated with [Leonardo Ai](https://leonardo.ai/)
 
-*Software engineering is not only about coding. It involves selecting the appropriate solution, implementing it, and verifying its alignment with specific goals. Non-functional requirements, a category often unspoken of, encompass a range of capabilities that a system must fulfill. One of them is performence. Some systems needs to handle lots of users at the same time, while others must process a bulk amount of data within tight timeframes. Numerous factors influence this, including the code itself and how the JVM is configured in the case of JVM applications.* 
-
-*This blog post aims to guide you through the interpretation of one of the most widely used JVM Grafana dashboards, shedding light on key elements that warrant daily monitoring.*
+*Are you a Java developer who knows the ins and outs of programming in Java but finds the world of JVM internals a bit mystifying? You're not alone. Understanding what goes on under the hood of the Java Virtual Machine (JVM) can seem like a daunting task. In this blog post, I'll demystify basic JVM internals concepts using insights from a popular Grafana dashboard. Buckle up, we're going on an adventure into the JVM world!*
 
 ## Not enough memory
 
-Learning a programming language can be a rough road. First a basic syntax needs to be known to achieve standard tasks. But unless we don't want stop here and not pursuite the software engineer job. Otherwise the next step is to learn one or two popular frameworks in a given ecosystem to be seen in a job market. Once we land in the dream job we find out that knowing basics of a programming language and popular frameowrk is not enough. Things like best practices, design patterns or system desing are also key eleemtns to become a successful expert in software development.
+Learning a programming language can be a challenging journey. First, you need to grasp the basic syntax to accomplish standard tasks. The next step involves learning one or two popular frameworks within a given ecosystem to enhance your visibility in the job market. However, once you secure that dream job, you quickly realize that having a solid foundation in a programming language and popular frameworks is not sufficient. Elements like best practices, design patterns, and system design play crucial roles in becoming a successful expert in software development.
 
-And finally, a day comes when you knew all this stuff (or at least you think, you know it) you get a call from operations team that your application is way too successful and it can't keep up with a large number requests from users. None of the previous step did not prepare you for a skyrcoketing CPU usage or memory. You're panically trying to recall why all these parts are needed and what they have to do with your state of the art application.
+Finally, a day arrives when you have mastered all this knowledge (or at least you think you have), and you receive a call from the operations team stating that your application is experiencing overwhelming success but struggles to handle the large influx of user requests. None of the previous steps prepared you for the skyrocketing CPU usage or memory issues. Panic sets in as you desperately try to recall why these components are essential and how they relate to your state-of-the-art application.
 
 ## Look into inside
 
 Does it sound familiar?
 
-How can you prevent this from happening? The first step is to initiate app monitoring to observe trends and receive alerts when key metrics approach dangerous thresholds. Additionally, understanding how the app responds under various types of pressure is crucial.
+How could you prevent this from happening? The first step is to come to the realization that you don't know everything about your piece of software. Yes, you have coded it, but do you know how it behaves in the wild production environment? If you received a similar call, you probably don't know. Therefore, the next step for you would be to initiate app monitoring to observe trends and receive alerts when key metrics approach dangerous thresholds. Additionally, understanding how the app responds under various types of pressure is crucial.
 
 Numerous tools can be employed for this purpose. Some are built into the JDK, such as *Java Flight Recorder* with *Java Mission Control*, while others can be downloaded, like *JProfiler*, and some are cloud platforms, such as *Datadog*. It's easy to feel overwhelmed initially, as each tool provides different types of information, often at a very low level.
 
@@ -38,11 +35,11 @@ So, where do you begin with monitoring app performance? Which tool should you ch
 
 ## Grafana dashboard
 
-I recommend starting with Prometheus and Grafana. Both tools are open source and non-invasive, meaning there's no need add any special tool/agent that may affect the overall performance. They only require adding metrics libraries to a project. The setup is relatively straightforward, as I've outlined in a previous article - [How to set up monitoring tools for JVM](https://wkrzywiec.is-a.dev/posts/048_jvm-monitoring/#setting-up-jvm-dashboards-in-grafana). 
+I would recommend starting with Prometheus and Grafana. Both tools are open source and non-invasive, meaning there's no need to add any special tool/agent that may affect overall performance. They only require adding metrics libraries to a project. The setup is relatively straightforward, as I've outlined in a previous article - [How to set up monitoring tools for JVM](https://wkrzywiec.is-a.dev/posts/048_jvm-monitoring/#setting-up-jvm-dashboards-in-grafana).
 
-Mentioned post covers also how to import one of the most popular JVM dashboard - [JVM (Micrometer)](https://grafana.com/grafana/dashboards/4701-jvm-micrometer/) - this is will be the subject of this post. It'll walk you around key metrics and explain when and why they're important.  
+The mentioned post also covers how to import one of the most popular JVM dashboards - [JVM (Micrometer)](https://grafana.com/grafana/dashboards/4701-jvm-micrometer/) - which will be the subject of this post. It will walk you through key metrics and explain when and why they're important.
 
-The dashboard consists of sections that will be described in the following parts, which I group and change order a little bit.
+The dashboard consists of sections that will be described in the following parts, which I've grouped and changed the order a little bit.
 
 ## JVM Memory
 
@@ -208,11 +205,15 @@ The last chart is telling about Tomcat's (or Jetty's) busy and active threads. I
 
 ## Conclusion
 
+And that's it. We went through the entire *JVM (Micrometer)* Grafana dashboard and learnt a tone of things about JVM and important indicators around it. I hope that now JVM is more approachable for you and not just a misterious black box. If you need to know more about it go check references mentioned below or learn about tools like Java Flight Recorder or profilers, which I hope that someday will be introduced on this blog.
+
+Until then, set up Grafana dashboard for your project and start verifying how your piece of software is behaving on production environment.
+
 ## References
 
 * [Getting Started with the G1 Garbage Collector | Oracle.com](https://www.oracle.com/technetwork/tutorials/tutorials-1876574.html)
 * [Serial GC | Oracle.com](https://docs.oracle.com/en/java/javase/21/gctuning/available-collectors.html#GUID-45794DA6-AB96-4856-A96D-FDE5F7DEE498)
-* [Parallel GC | Oracle.com](https://docs.oracle.com/en/java/javase/21/gctuning/parallel-collector1.html) 
+* [Parallel GC | Oracle.com](https://docs.oracle.com/en/java/javase/21/gctuning/parallel-collector1.html)
 * [Generational ZGC | OpenJDK Wiki](https://wiki.openjdk.org/display/zgc/Main)
 * [Introducing Generational ZGC | Inside Java](https://inside.java/2023/11/28/gen-zgc-explainer/)
 * [Shenandoah GC | OpenJDK Wiki](https://wiki.openjdk.org/display/shenandoah/Main)
