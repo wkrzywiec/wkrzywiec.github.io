@@ -45,72 +45,72 @@ The dashboard consists of sections that will be described in the following parts
 
 ![intro](intro.png)
 
-```
->> here read and check once again
-```
-
 If you ever wonder what's the first thing that you must keep eye on when monitoring Java application in most of the case it would be the memory usage. This is a vital information about the health of an app, since JVM needs it to run it.
 
 Therefore it is not a suprise thet this is a first information that is provided by the dashboard - the percentage of how much heap and non-heap memory is fillied up (along with data about how long the app is running).
 
 In most applications, these two metrics are the ones we should keep an eye on. They have a significant impact on its performance and can quickly explain why the app is running slow or even crashing.
 
-Why these two metrics are that important? First of all we need to know that Java is object-oriented language. It means that every program is a set of objects which interact with each other. They have methods that are invoked by other objects and they also hold data. And in the real applications number of objects may be very large. The latter indicator is accountable for measuring memory use of non-object related things, which in some cases are also worth to monitor.
+Why these two metrics are that important? First of all we need to know that Java is object-oriented language. It means that every program is a set of objects which interact with each other. They have methods that are invoked by other objects and they also hold data. And in the real applications number of objects may be very large. And that's why it is worth to monitor their number and size with the first indicator. The latter is accountable for measuring memory use of non-object related things, which in some cases are also worth to monitor.
 
 ![jvm-memory](jvm-memory.png)
 
-Moving on, let's read the charts above, which are showing how memory usage has changed in time. It shows the actual memory usage (`used`) in a given moment, the maximum available (`max`) and the amount memory guaranteed to be available for JVM (`committed`).
+Moving on, let's examine the charts above, which illustrate how memory usage has changed over time. The charts depict the actual memory usage (`used`) at a given moment, the maximum available (`max`), and the memory guaranteed to be available for the JVM (`committed`).
 
-So what we can read from the chart for a Heap memory? Certainly the `used` memory can't reachout to the `max` value. The dengarous situation would be when increasing number of memory in the Heap area suggests that many objects are created and their are never destroyed (collected by the Garbage Collection, which will be mention later). If this happens an app would start to act slower and eventually it will crash and throws the `java.lang.OutOfMemoryError`.
+What can we read from the Heap memory chart? Certainly, the `used` memory shouldn't reach the `max` value. A dangerous situation arises when the increasing amount of memory in the Heap area indicates that many objects are created and never destroyed (collected by the Garbage Collection, which will be mentioned later). If this happens, the app will start to act slower and eventually crash, throwing the `java.lang.OutOfMemoryError`.
 
-Besides Heap data, JVM has a second data area, called Non-Heap (or Off-Heap or Native Memory). It stores various data which can be divded into following spaces:
+In addition to Heap data, the JVM has a second data area called **Non-Heap** (or Off-Heap or Native Memory). It stores various data, which can be divided into the following spaces:
 
-* Metaspace (aka Method Area) - it holds class-related information about classes code, their fields and methods after being loaded by classloader (more about it in the article). It also contains information about constants (in Constant Pool).
-* Code Cache - is an area where optimized native code produced by Just-In-Time compiler is stored.
-* Program Counters - is pointing the address of current executed instruction (each thread it's own Program Counter), 
-* Stacks - the LIFO stack of frames for each executed method, it contains primitives variables and references to the objects on the heap.
+* **Metaspace (aka Method Area)**: It holds class-related information about class code, their fields, and methods after being loaded by the classloader (more about it in the article). It also contains information about constants (in the Constant Pool).
+* **Code Cache**: This area stores optimized native code produced by the Just-In-Time compiler.
+* **Program Counters**: These point to the address of the currently executed instruction (each thread has its own Program Counter).
+* **Stacks**: The Last-In-First-Out (LIFO) stack of frames for each executed method. It contains primitive variables and references to the objects on the heap.
 
-Usually it is the heap that may be too small, but we need to understand that memory problems with non-heap data could also crash an pp. Too much classes loaded into Metaspace may cause `java.lang.OutOfMemoryError` and too much frames in the Stack may end up with `java.lang.StackOverflowError` thrown.
+While it is typically the heap that may be too small, we need to understand that memory problems with non-heap data could also crash an app. Too many classes loaded into Metaspace may cause a `java.lang.OutOfMemoryError`, and too many frames in the Stack may result in a `java.lang.StackOverflowError` being thrown.
 
 ### JVM Memory Pools (Heap)
 
 ![jvm-memory-heap](jvm-memory-heap.png)
 
-Let's now drill down into the Heap usage. But first we need to understand how Heap is structured, because it is not a monloith. Heap divided into spaces depending on the type of Garbage Collector that is used. Above we can see 3 charts of *Eden Space*, *Survivor Space* and *Old Gen* that are used by the **G1** Garbage Collector.
+Let's now delve into Heap usage. But first, we need to understand how the Heap is structured because it is not a monolith. The Heap is divided into various spaces, the number of which depends on the type of Garbage Collector used. Above, we can see three charts for *Eden Space*, *Survivor Space*, and *Old Gen*, which are used by the **G1** Garbage Collector.
 
-But why Heap is splited into spaces? It comes from something called *weak generational hypothesis*. It presumes that a life-span of objects varies. Most of them are very short lived. They are used only once and then the memory they occupy can be freed. Others, usually the smaller fraction, are the ones that are constantly used which and can't be destroyed. Due to this fact Garbage Collector (GC) is splitting heap into generations (spaces) where short-lived objects resides in the young generation (*Eden Space* and *Survivor Space*) and long-lived objects in old generation (*Old Gen*).
+But why is the Heap split into spaces? It comes from something called the *weak generational hypothesis*. This hypothesis presumes that the lifespan of objects varies. Most of them are very short-lived, used only once, and then the memory they occupy can be freed. Others, usually a smaller fraction, are the ones that are constantly used and cannot be destroyed. Due to this fact, the Garbage Collector (GC) splits the heap into generations (spaces), where short-lived objects reside in young generations (*Eden Space* and *Survivor Space*), and long-lived objects in an old generation (*Old Gen*).
 
-The rationale is simple. To avoid doing one, long garbage collection on the entire heap GC is performing it only on subset of it at the time. Also the frequency is different in each generation - the *Eden Space* is more often cleaned than the *Old Gen*, beacuse objects located there are needed only for a short period.
+Having the heap split into generations allows the GC to avoid performing one long garbage collection on the entire heap. Instead, the GC performs it only on a subset at a time. It also allows for different collection frequencies in each generation; the *Eden Space* is cleaned more often than the *Old Gen* because objects located there are needed only for a short period.
 
-The above screenshot confirms that. We can see that the plot for `used` memory in *Eden Space* is formed in the characteristic jigsaw. It quickly fills up with new objects (which is expresed as rising plot on a chart) and once it reaches a certain threshold it is emptied (which causes the plot to go down).
+The above screenshot confirms this. We can see that the plot for `used` memory in *Eden Space* is formed in a characteristic jigsaw pattern. It quickly fills up with new objects (expressed as a rising plot on the chart), and once it reaches a certain threshold, it is emptied (causing the plot to go down).
 
-On the contrarory, the *Survivor Space* and *Old Gen* are much more stable. There are some changes in them, but they are very subtle.
+On the contrary, the *Survivor Space* and *Old Gen* are much more stable. There are some changes in them, but they are very subtle.
 
-These three charts gives us vital information about content of the heap. We can read how often new objects are created and removed. If the cleanup for them is done very often and the old objects are kept on relatively same level it is tempting to increase the ratio of young to old generation size. The larger the young generation is the cleanup will be done less often. But on the other hand, it will be bigger, so the cleanup may take a little bit longer. The same goes for old generations - the smaller it gets the most frequent it is cleaned. So we must keep balance of it.
+These three charts give us vital information about the content of the heap. We can read how often new objects are created and removed. If the cleanup for them is done very often and the old objects are kept at a relatively same level, it is tempting to increase the ratio of young to old generation size. The larger the young generation is, the less often cleanup will be done. But on the other hand, it will be bigger, so the cleanup may take a little bit longer. The same goes for old generations; the smaller it gets, the more frequently it is cleaned. So we must keep a balance of it.
 
-To adjust it use `-XX:NewRatio=N` (which is a ration of a young and old generations, e.g. `N=2` means that young generation is twice as big as an old one) or `-XX:NewSize=N` (which is an initial size of the young generation - all remaining will be assigned to the old genration).
+To adjust it, use `-XX:NewRatio=N` (which is a ratio of young and old generations, e.g., `N=2` means that the young generation is twice as big as the old one) or `-XX:NewSize=N` (which is the initial size of the young generation - all remaining will be assigned to the old generation).
 
 #### What if the app is consuming too much memory?
 
-Heap is one of the most important memory area for JVM and usually it's the place that demands lots of memory. If it happens that it is close to maximum threshold the easiest way would be to change the maximu size of it. Bigger heap means all needed objects will fit it. This can be achieved by providing the `-Xmx` followed by the size number of memory that will be reserver for a heap. E.g. `-Xmx1024m` will alocated 1024 MB for heap.
+The heap is one of the most crucial memory areas for JVM and typically requires a substantial amount of space. If it approaches the maximum threshold, the simplest solution is to increase its maximum size. A larger heap ensures that all necessary objects can fit into it. This can be accomplished by specifying `-Xmx` followed by the size in megabytes allocated for the heap. For example, `-Xmx1024m` will allocate 1024 MB for the heap. It's easy and straightforward.
 
-Changing the maximum size of a heap may be the remedy, but it many cases it's rather covering the symptoms than treating the real cause of a problem. Increasing number of objects may suggest that there is a memory leak somewhere in an application. This place in the code needs to be found and fixed.
+While adjusting the maximum size of the heap may provide a temporary solution, in many cases, it merely masks the symptoms rather than addressing the root cause of the problem. An increasing number of objects could indicate a memory leak within the application, requiring identification and resolution in the code.
 
-Other options may be that too much data has been tried to be loaded into the memory. It can be either because of inefficient data structure or simple large volume of data, which was not predicted. In the first case the solution would be to optimize how we store data in JVM and for the latter it would be to increase the heap size or think about how to chunk the large amount of data into smaller pieces.
+Another possibility is that an excessive amount of data is being loaded into memory, either due to an inefficient data structure or an unexpectedly large volume of it. In the former case, optimizing how data is stored in the JVM is the solution, while in the latter, considerations such as increasing the heap size or chunking the large amount of data into smaller pieces.
 
-But how to spot if we have inefficient data structure? There are couple of reasons, but one of them is using objects with lots of fields (e.g. entities) from which only a small subset is used. Limiting the number of fields per task can be beneficial here. Also we need to remember that even if fields won't be initialized they also consume memory!
+But how to spot if we have inefficient data structure? There are couple of signs and one of them is using objects with lots of fields (e.g. entities) from which only a small subset is used. Limiting the number of fields per task can be beneficial here. Also we need to remember that even if fields won't be initialized they also consume memory!
 
-Also try to avoid using objects instead of primitives. There are lots examples when objects have fields like `Boolean` instead of plain `boolean`. It doesn't look that is too much of a change but for memory it usage it has a lot. Also treating `String` objects as holders for numbers of booleans variables consumes more memory than it is needed.
+Additionally, strive to avoid using objects instead of primitives. Many instances exist where objects contain fields like `Boolean` instead of plain `boolean`. While this may seem like a minor change, it can significantly impacts memory usage. Similarly, treating `String` objects as containers for numbers or booleans variables consumes more memory than necessary.
 
-Another optimization that can be done to reduce memory footprint is to avoid initilizing String variables that has same values over and over.
+Another optimization to reduce memory footprint involves refraining from initializing `String` variables with identical values repeatedly.
 
-And finally in some situations avoiding creating immutable objects may be very beneficial. This is especially true when new objects needs to be created from as a copy of another. Of course, I'm not discouraging from using immutable objects at all. In lots of situations they are life-savers. But if you create an object that is used only within a small method once or twice, it is sometimes more beneficiar to make it mutable.
+In certain situations, it can be highly beneficial to avoid creating immutable objects. This is particularly true when new objects need to be created as copies of others. Of course, I'm not discouraging the use of immutable objects altogether, as they prove invaluable in many scenarios. However, for objects created and used within a small method once or twice, it is sometimes more advantageous to make them mutable.
 
-These solutions are only tip of an iceberg how to address memory increasing problem. There are lots of materials that can guide you how to make it even better.
+These suggestions only scratch the surface of addressing memory-related issues. Numerous resources are available to guide you in further optimizing memory usage.
 
 ### Garbage Collection
 
 ![garbage-collection](gc.png)
+
+```
+check from here
+```
 
 The previous already mentioned about the garbage collector (GC) which we will have a closer look now. It is a key part of JVM, because in contrast too languages like C++ we, developers, don't need to worry about freeing memory once an object is no longer needed. The role of the GC is to decide which objects should be destroyed and which should be preserved.
 
