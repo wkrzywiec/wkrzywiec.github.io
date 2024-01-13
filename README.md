@@ -21,4 +21,3 @@ hugo server
 ```
 
 Page will be available under http://localhost:1313/ .
-
