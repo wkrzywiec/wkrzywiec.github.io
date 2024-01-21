@@ -10,7 +10,8 @@ tags: ["java", "stream", "data", "java-series", "data-processing", "optional", "
 This article is part of the "Java Series", which covers useful Java functions from standard and popular libraries. More posts on that can be found [here](https://wkrzywiec.is-a.dev/tags/java-series/).
 {{< /alert >}}
 
-![Cover](jason-leung-V-HPvi4B4G0-unsplash.jpg)
+{{< imgh src="jason-leung-V-HPvi4B4G0-unsplash.jpg" alt="cover" >}}
+
 > Cover image by [Jason Leung](https://unsplash.com/@ninjason) on [Unsplash](https://unsplash.com)
 
 *Java 8 was a great step forward toward modern programing language. One of the key features added in this release was Java streams. It provides lots of convenient operations for data processing. One of them is a `flatMap()` used very widely to unwrap and merge multiple collections into one.*
@@ -56,14 +57,13 @@ The idea is pretty straightforward. It does two things with every element of a s
 
 To visualize it consider the following situation:
 
-![Map function](map-fx.png)
+{{< imgh src="map-fx.png" alt="Map function" >}}
 
 Let's say that we have a stream of `Author` objects, that has a method called `books()` which returns a list of `Book` objects. And now let's say that we would like to have access to all books written by all authors to make further operations on them. If we would use the `map()` function within which we would call the `books()` method we would get a stream of lists of `Book` objects. This is not what we want to have. 
 
 What we would like to have is a stream of `Book` objects, not a stream of their lists. How we can overcome it? Using `flatmap()` instead:
 
-
-![Flatmap function](flatmap-fx.png)
+{{< imgh src="flatmap-fx.png" alt="Flatmap function" >}}
 
 As previously we need to invoke the `books()` method of the `Author` class to get a list of `Books`. The only difference is that input needs to be converted into multiple values represented by a Java stream. This is the requirement of the `flatMap()` method. Whatever operations we do within it needs to return a `Stream<T>` object.
 

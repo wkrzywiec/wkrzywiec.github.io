@@ -6,7 +6,7 @@ description: "Discover the power of Test Data Builder for clearer test code! Div
 tags: ["java", "tests", "data", "craftsmanship", "database", "hibernate", "jdbc", "quality", "test-data-builder"]
 ---
 
-![cover](050_test-data-cover.jpg)
+{{< imgh src="050_test-data-cover.jpg" alt="cover" >}}
 
 > Photo by [Rachel Park](https://unsplash.com/@therachelstory) on [Unsplash](https://unsplash.com)
 

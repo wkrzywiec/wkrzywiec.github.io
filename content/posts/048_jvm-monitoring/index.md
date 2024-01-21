@@ -11,7 +11,8 @@ canonicalUrl: "https://wkrzywiec.medium.com/how-to-set-up-monitoring-tools-for-j
 This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-set-up-monitoring-tools-for-java-application-322d14c191e4).
 {{< /alert >}}
 
-![Cover](https://miro.medium.com/max/2400/0*31571yeSYkiHH8hf)
+{{< imgh src="cover.jpg" alt="Cover" >}}
+
 > Cover image by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999) on [Unsplash](https://unsplash.com)
 
 *In this blog post I'll show how to set up two monitoring tools that are widely used for Java applications - Java Flight Recorder with JDK Mission Control and Prometheus with Grafana.*
@@ -264,19 +265,19 @@ First exit from a running container, so just type `exit`. Now let's open *JMC* a
 
 Once it has started we need to load recording file. Therefore select **File** > **Open file...** and find a recording file, which can be either a short recording or the entire one that's created when application shuts down (remember both of them are located in *recordings* folder). After that you should get similar screen:
 
-![import](jmc-main.PNG)
+{{< imgh src="jmc-main.PNG" alt="import" >}}
 
 On the left there are couple categories into which we can dive in. After clicking on one of them we can see more details, e.g. by clicking on **Memory** we can get an insight of application memory allocated and how long Garbage collection took:
 
-![import](jmc-memory.PNG)
+{{< imgh src="jmc-memory.PNG" alt="import" >}}
 
 We can see even more details about Garbage Collection by clicking on the **Garbage Collection** item:
 
-![import](jmc-gc.PNG)
+{{< imgh src="jmc-gc.PNG" alt="import" >}}
 
 Another good example of information that we can get from *JMC* is total CPU usage (**Processes** item):
 
-![import](jmc-processes.PNG)
+{{< imgh src="jmc-processes.PNG" alt="import" >}}
 
 But there a way more information that we can read from it, which I would encourage you to explore on your own (or check my next article on that topic ;)). For now this was everything that I would like to show and let's move on to the next section.
 
@@ -474,25 +475,25 @@ Use 'docker scan' to run Snyk tests against images to find vulnerabilities and l
 
 Great, all three containers are now running. Let's go now to Grafana's UI, therefore in a web browser enter `http://localhost:3000` address so the login page will show up. Then provide a username and password which is **admin** in both cases. After successful login a main page should be visible (you will be asked to change the password, but you can go ahead and skip it).
 
-![grafana-main](grafana-main.PNG)
+{{< imgh src="grafana-main.PNG" alt="import" >}}
 
 In a meantime *Prometheus* is already collecting metrics from the *jvm-app*, but we're not yet able to visualize it in *Grafana*. To fix it we need to have a dashboard. We could create our own one, but there is already a great one available to be imported, which was prepared by the community.
 
 To add it, from left panel select **Create**  (plus sign) and than **Import**. A new page will appear where we need to provide an ID of dashboard which we're gonna import. I want to import a very popular one - [JVM (Micrometer)](https://grafana.com/grafana/dashboards/4701) with an id = 4701. 
 
-![import](import.PNG)
+{{< imgh src="import.PNG" alt="import" >}}
 
 After providing it in an input field and clicking **Load** button a summary page will be visible. We can decide what will be the name of imported dashboard, its location, identifier and the most important, don't forget to select it, a data source from where data will be pulled for visualizations. In our case it should be available only one source - **prometheus**.
 
-![import2](import2.PNG)
+{{< imgh src="import2.PNG" alt="import" >}}
 
 After clicking **Import** button a dashboard will be created. 
 
-![dashboard](grafana-dashboard.PNG)
+{{< imgh src="grafana-dashboard.PNG" alt="import" >}}
 
 The last thing that we need to do here is to export newly created dashboard to JSON file and place it to the empty *dashboards* folder, mentioned couple lines before. To do that click on the share icon (left, near the star icon) so the pop up window will appear. Next, go to **Export** tab and click **Save to file** so a file will be downloaded.
 
-![export](export.PNG)
+{{< imgh src="export.PNG" alt="import" >}}
 
 Next copy-paste it to the empty *dashboards* folder, stop containers (using `docker compose down` command) and restart them. After that a dashboard will be persisted.
 

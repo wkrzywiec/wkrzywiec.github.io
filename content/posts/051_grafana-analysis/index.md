@@ -38,7 +38,7 @@ The dashboard consists of sections that will be described in the following parts
 
 ## JVM Memory
 
-![intro](intro.png)
+{{< imgh src="intro.png" alt="intro" >}}
 
 If you ever wonder what's **the first thing that you must keep eye on when monitoring Java application in most of the case it would be the memory usage**. This is a vital information about the health of an app, since JVM needs it to run it.
 
@@ -48,7 +48,7 @@ In most applications, these two metrics are the ones we should keep an eye on. T
 
 Why these two metrics are that important? First of all we need to know that Java is object-oriented language. It means that every program is a set of objects which interact with each other. They have methods that are invoked by other objects and they also hold data. And in the real applications number of objects may be very large. And that's why it is worth to monitor their number and size with the first indicator. The latter is accountable for measuring memory use of non-object related things, which in some cases are also worth to monitor.
 
-![jvm-memory](jvm-memory.png)
+{{< imgh src="jvm-memory.png" alt="jvm-memory" >}}
 
 Moving on, let's examine the charts above, which illustrate how memory usage has changed over time. The charts depict the actual memory usage (`used`) at a given moment, the maximum available (`max`), and the memory guaranteed to be available for the JVM (`committed`).
 
@@ -65,7 +65,7 @@ While it is typically the heap that may be too small, we need to understand that
 
 ### JVM Memory Pools (Heap)
 
-![jvm-memory-heap](jvm-memory-heap.png)
+{{< imgh src="jvm-memory-heap.png" alt="jvm-memory-heap" >}}
 
 Let's now delve into Heap usage. But first, we need to understand how the Heap is structured because it is not a monolith. **The Heap is divided into various spaces**, the number of which depends on the type of Garbage Collector used. Above, we can see three charts for *Eden Space*, *Survivor Space*, and *Old Gen*, which are used by the **G1** Garbage Collector.
 
@@ -101,7 +101,7 @@ These suggestions only scratch the surface of addressing memory-related issues. 
 
 ### Garbage Collection
 
-![garbage-collection](gc.png)
+{{< imgh src="gc.png" alt="garbage-collection" >}}
 
 The previous section already mentioned the Garbage Collector, which we will now examine more closely. It is a key component of the JVM because, in contrast to languages like C++, we, as developers, don't need to worry about freeing memory once an object is no longer needed. **The role of the GC is to decide which objects should be destroyed and which should be preserved.**
 
@@ -141,7 +141,7 @@ If you are looking for more information about each GC, check the *References* se
 
 Apart from objects, JVM needs memory to store other things. This is represented by the next graphs from *JVM Memory Pools (Non-Heap)* in the discussed dashboard.
 
-![jvm-memory-non-heap](jvm-memory-non-heap.png)
+{{< imgh src="jvm-memory-non-heap.png" alt="jvm-memory-non-heap" >}}
 
 * **Metaspace (a.k.a. Method Area)** - This is the place where metadata and definitions of every class are stored (in simpler terms, every `.class` file in the runtime representation). Additionally, *Metaspace* holds method counters used by the JIT compiler and a constant pool (a data structure to store information about references and constants associated with a class, such as `static final` fields). By default, there are no limits on how big it can get, but it can be tuned using the `-XX:MaxMetaspaceSize` flag. If not provided, it may occur that the JVM will consume too much memory and slow down the machine on which the application is running.
 
@@ -161,7 +161,7 @@ This provides all the insights that the discussed dashboard gives us about the n
 
 Besides information about the amount of memory occupied by loaded classes, the dashboard also provides details on how many classes were loaded into memory and when these loadings occurred. This information can be gleaned from the first two charts:
 
-![classloading](classloading.png)
+{{< imgh src="classloading.png" alt="classloading" >}}
 
 Most of the class loading occurs during the application startup, especially for solutions utilizing Inversion of Control. This is when most objects need to be initialized, preceded by the loading of their definitions into the JVM process. However, not all classes are loaded immediately. Some class definitions are loaded lazily during runtime
 
@@ -169,7 +169,7 @@ Most of the class loading occurs during the application startup, especially for 
 
 Next section available in the dashboard govers various things worth monitoring.
 
-![jvm-misc](jvm-misc.png)
+{{< imgh src="jvm-misc.png" alt="jvm-misc" >}}
 
 The name of the first chart, **CPU Usage**, suggests that it shows how the CPU is utilized. It presents three series: system (total CPU usage of the host), process (CPU usage for all JVM processes), and process-15m, which is an average of the latter gauge from the last 15 minutes.
 
@@ -189,7 +189,7 @@ The last chart, **File Descriptors**, displays the number of files opened by the
 
 The last section provides data not directly connected with JVM, but it's crucial to keep an eye on, especially if it provides a REST API (which is the case for most Java applications nowadays).
 
-![io](io.png)
+{{< imgh src="io.png" alt="io" >}}
 
 The first chart shows how many HTTP requests per second were made. The next one provides the same information, but this time narrowed down to all 5xx responses. A significant increase in 5xx responses may indicate unwanted issues. Also, in the case of high user traffic (as indicated in the first chart), it's worth monitoring how much memory is consumed by the app, how often garbage collection is performed, or other indicators mentioned earlier. All of these factors may be correlated and affect how fast users receive a response from your service.
 
