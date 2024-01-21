@@ -1,0 +1,11 @@
+{{ with .Get "src" }}
+  {{ with $.Page.Resources.GetMatch (printf "%s" .) }}
+    <a data-fslightbox="gallery" href="{{ .Permalink }}" target="_blank">
+	    <img src="{{ .RelPermalink }}" alt="{{ $.Get "alt" }}" class="my-0 rounded-md">
+    </a>
+  {{ else }}
+    Original image not found
+  {{ end }}
+{{ else }}
+  Missing "src" parameter in shortcode
+{{ end }}

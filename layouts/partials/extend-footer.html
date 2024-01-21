@@ -1,0 +1,10 @@
+{{ $jsFslightbox := resources.Get "js/fslightbox.js" | resources.Minify | resources.Fingerprint "sha512" }}
+
+<script
+  defer
+  id="medium-zoom"
+  type="text/javascript"
+  src="{{ $jsFslightbox.RelPermalink }}"
+  integrity="{{ $jsFslightbox.Data.Integrity }}"
+></script>
+
