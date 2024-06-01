@@ -267,42 +267,26 @@ public class Delivery {
 }
 ```
 
-Ok, so you now know how to implement event sourcing, you know what implementation could look like, therefore select the approach you like the most, code it and push it to production, right? What possibly could go wrong if so many people says that event sourcing is such great techique? 
+Ok, so you now know how to implement event sourcing, you know what implementation could look like, therefore select the approach you like the most, code it and push it to production, right? What possibly could go wrong if so many people says that event sourcing is such great techique? Lots of software engineering gurus are advocating for it, so why not to try it?
 
-jak widzidzie jest dużo powtórzeń dla kodu biznesowego oraz do otwarzania eventów; można to połączyć apply commands - te same metody do obsługi biznesowych reguł co do otworzenia encji - https://github.com/eugene-khyst/postgresql-event-sourcing - ale jakieś refleksje są tutaj używane....
+### When not to use it?
 
+Even though event sourcing might sounds great there are certain aspects of it that needs to be took care of. 
 
-duplication, więc może reużycie biznesowych metod
+For instance a large number of events for a single business entity may cause performance problems. Replaying thousands of events in order to get current state of an entity may take a while even if each method is relatively fast. There are couple ways to handle this problem, e.g. creating a snapshot events (with full state of an entity) and replaying events strating from it. Another approach would be to create projection of a current state of an entity which would mean that besides events the disposal current state of an object would be stored in a database (disposable because events should be source of truth and a project is only the derivative of it). All these techniques I'll cover in details in my upcoming posts.  
 
-* https://github.com/oskardudycz/EventSourcing.JVM
-    * https://github.com/oskardudycz/EventSourcing.JVM/tree/main/workshops/introduction-to-event-sourcing - wyjaśnienie tego workshopa
-* https://event-driven.io/en/how_to_get_the_current_entity_state_in_event_sourcing/
-* https://github.com/cer/event-sourcing-examples/tree/master/java-spring
-    * chris richardson - ale to jest dziwne, i że to jakaś dziwnie stara biblioteka
-* https://github.com/eugene-khyst/postgresql-event-sourcing
-    * odtwarzanie eventów tymi samymi metodami co biznesowa obsługa
-* https://github.com/mguenther/spring-kafka-event-sourcing-sampler
-    * jakieś to dziwne... 
-* https://github.com/ddd-by-examples/event-source-cqrs-sample
-    * wspólne użycie metod do otwarzania eventów jak i do obsługi commandów
-* https://github.com/ddd-by-examples/library
-* https://event-driven.io/en/this_is_not_your_uncle_java/?utm_source=Architecture_Weekly&utm_medium=email
+Another reason why not to use event sourcing is the fact that it is not wide-spread yet. Not every developer had worked with it and is familiar with it. In situations when business part of a project is pushing for adding new capabilities to a system it's sometimes safer to relay on a things that are known.
 
-#### Event sourcing in application
+Moreover like every tool, event souricing is not a silver bullet. We don't need to apply it to every problem we have. Event sourcing gives a ton of information for analytics, to get information what and when is something happening in the system but it's not always needed. For some domains a regular approach is more than enough.
 
-event structure
+A final argument for opting out from event sourcing is that it requires certain tools work properly. In theory the database layer is quite simple. After all there is no need to create lots of tables - only one is needed to store events. However it needs to come with certain properties, e.g. it needs to support concurrent writes and prevents from adding new events at the same time. Also the storage must be append-only, meaning whatever will be stored in it must stay this way. This comes with all sorts of problems to solve like handling different versions of a same events, compensating incorrect events, or removing personal information (the right to be forgotten). All these topics are not starightforward to solve and may be a major factor to not use event sourcing.
 
-Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
+### And when to use it?
 
-jak wygląda flow serwisu - zrefatorować do jakiegoś generalnego podejścia
+maszyna stanu, ledger
 
-events from method invokation
-events in service
-events as separate list inside
-
-sealed interface
-
-### Why using it?
+analytics
+no data migration - just change
 
 ledger - natural candidate
 
@@ -323,13 +307,47 @@ https://www.eventstore.com/use-cases
         * projections to interpret the same facts in multiple ways.
     * Having the needs for those scenarios can be a driver to use Event Sourcing. Just audit needs may not be enough
 
-### Why not using it?
 
-* https://event-driven.io/pl/when_not_to_use_event_sourcing/
-        * `What do I mean by _“supportive modules”_? I mean, for instance, a CMS (_Content Management System_), e.g., Confluence, WordPress, OneNote or even Excel. Such systems can be treated as bags for data. You put some data in there, sometimes in plain text, sometimes a table, sometimes a photo. We do not intend to perform advanced data analysis: we just want to store and retrieve data. It’s not essential to know the type of data we’re storing. All will be aligned and handled with the same patterns, e.g. a grid with data, edit form. We create, update, read or delete records. We can use such systems both for everything from wedding planning to warehouse inventory and budgeting.`
-        * 1. The team is doing well with the current approach.
-            1. The team could benefit from Event Sourcing but thinks they don’t need it.
-            2. The team thinks that it needs Event Sourcing, but the team doesn’t have the competence and experience.
+### Event sourcing in application
+
+in memory,
+service
+publisher
+outbox
+
+event structure
+
+Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
+
+jak wygląda flow serwisu - zrefatorować do jakiegoś generalnego podejścia
+
+events from method invokation
+events in service
+events as separate list inside
+
+sealed interface
+
+
+### What event sourcing is not?
+
+events streaming 
+events storing
+events storming
+
+
+* https://github.com/oskardudycz/EventSourcing.JVM
+    * https://github.com/oskardudycz/EventSourcing.JVM/tree/main/workshops/introduction-to-event-sourcing - wyjaśnienie tego workshopa
+* https://event-driven.io/en/how_to_get_the_current_entity_state_in_event_sourcing/
+* https://github.com/cer/event-sourcing-examples/tree/master/java-spring
+    * chris richardson - ale to jest dziwne, i że to jakaś dziwnie stara biblioteka
+* https://github.com/eugene-khyst/postgresql-event-sourcing
+    * odtwarzanie eventów tymi samymi metodami co biznesowa obsługa
+* https://github.com/mguenther/spring-kafka-event-sourcing-sampler
+    * jakieś to dziwne... 
+* https://github.com/ddd-by-examples/event-source-cqrs-sample
+    * wspólne użycie metod do otwarzania eventów jak i do obsługi commandów
+* https://github.com/ddd-by-examples/library
+* https://event-driven.io/en/this_is_not_your_uncle_java/?utm_source=Architecture_Weekly&utm_medium=email
 
 ----
 refactor `Message` -> `Event` (np na liście eventów z metody statycznej)
