@@ -283,29 +283,35 @@ A final argument for opting out from event sourcing is that it requires certain 
 
 ### And when to use it?
 
-maszyna stanu, ledger
+I've already described what event sourcing is and written couple of words why not use it. Till this point you may think that I'm the worst technology salesman of the year :D But let me fix it, because there are plenty of good things that comes with it.
 
-analytics
-no data migration - just change
+The first benefit for using it is that it stores the time of a business event. This information is usually lost in the "classic" approach but can be beneficial for advanced analytics. They can not only be used in processing part of a system, but also in analytics. For instance based on events we can answer to many important business questions like - how long a customer was waiting for a delivery, which step of an order took the most time (e.g. finding a delivery man, deliverying food), etc. Or it can help to developer better UX.
 
-ledger - natural candidate
+Another gain is that events may be used in highly regulated industries (e.g. medical, finance). Based on them a log of actions can be constructed to allow auditors to find malacious actions in the system. But this capability in particular should be treated with causion, since events should be as small as they must be and auditors usually wants have more context (e.g. who made a chnage).
+
+Keeping events is also beneficial for operation team to find errors in a processes. For instance if an order seems to be broken a quick look into the events log may bring answer to a question what actions brought the entity to a broken state. The operation team can also get rid of the malacious events to fix an entity to the state before the error.
+
+Also the development teams may benefit from using event sourcing. First of all storing only facts about entites does not enforce to use specific business model. If an initial domain model is not fitting a business needs and must be change there is no need to do any data migration of the entire database. The only thing to change is to how replay events to rebuild the entity. Moreover based on the same events different projects can be build (e.g. a view of an order from the perspective of a customer and a seller).
+
+Another benefit for development team is it helps with debugging the problem. Having a stream of consecutive events allows to move back and forth between them. This enables the "time travel" between events giving a greate insights to fix any bug.
+
+
+#### Example of event sourcing systems
+
+There are various of use cases when using event sourcing is beneficial. For instance:
+
+* account ledger - this is a classic example of using event sourcing. This is actually one of the most "natural" examples. After all the account ledger is a log of all incoming and outgoing money. Based on it the account balance is calculated. Some banks may also provide insights about spendings per month grouped into categories (like rent, food, entertainment, etc.).
+
+* medicine intake log - it's very important for hospital to keep track if patients are receiving proper medicine dosages in correct timespans. Also making sure that drugs are not stolen is very important for regulatory and law. These two things can be achieved by storing events about medical consumption by which patient, when and by whom it was taken from a hospital magazynu
 
 https://www.eventstore.com/use-cases
 
-* change in domain object doesn't mean that data migration is needed - it just need a different approach to replay events
-* https://event-driven.io/en/never_lose_data_with_event_sourcing/
-    * event sourcing prevent from losing information that usually we don't think of - when it was modified. it highly regulated market it might be very important (e.g. in fincance for money laundery) or just to understand how the system is used (what actions brings to the currecnt state - learn how users are using the - finding pesimistic scenarios), create analytics based on that for better ux or turn over the product selling - 
-    * events gives an extra dimension - change in time
-* audit, time travel (All state changes are kept, so it is possible to move systems backward and forwards in time which is extremely valuable for debugging and “what if” analysis.), Root cause analysis
-* events are facts, only needed info, projecttions and how we shape data can be changed, without any data migrations (models can be changed)
-* fault tolleratn - if an event is bad, replay state from before the bad event occurs
-* https://event-driven.io/en/audit_log_event_sourcing/
-    * What makes it unique is the multiple things that you’re getting out of the box, like:
-        * easier modelling of business process,
-        * not losing business data,
-        * extended diagnostics both technical and business,
-        * projections to interpret the same facts in multiple ways.
-    * Having the needs for those scenarios can be a driver to use Event Sourcing. Just audit needs may not be enough
+
+
+
+
+ledger - natural candidate
+maszyna stanu, 
 
 
 ### Event sourcing in application
@@ -335,6 +341,10 @@ events storing
 events storming
 
 
+### Summary
+
+do not jump into the hype train, check if it fits your project; be aware of introduced complexity
+
 * https://github.com/oskardudycz/EventSourcing.JVM
     * https://github.com/oskardudycz/EventSourcing.JVM/tree/main/workshops/introduction-to-event-sourcing - wyjaśnienie tego workshopa
 * https://event-driven.io/en/how_to_get_the_current_entity_state_in_event_sourcing/
@@ -352,3 +362,20 @@ events storming
 ----
 refactor `Message` -> `Event` (np na liście eventów z metody statycznej)
 refactor `DomainMessageBody` -> `DomainEventBody`
+
+
+
+* change in domain object doesn't mean that data migration is needed - it just need a different approach to replay events
+* https://event-driven.io/en/never_lose_data_with_event_sourcing/
+    * event sourcing prevent from losing information that usually we don't think of - when it was modified. it highly regulated market it might be very important (e.g. in fincance for money laundery) or just to understand how the system is used (what actions brings to the currecnt state - learn how users are using the - finding pesimistic scenarios), create analytics based on that for better ux or turn over the product selling - 
+    * events gives an extra dimension - change in time
+* audit, time travel (All state changes are kept, so it is possible to move systems backward and forwards in time which is extremely valuable for debugging and “what if” analysis.), Root cause analysis
+* events are facts, only needed info, projecttions and how we shape data can be changed, without any data migrations (models can be changed)
+* fault tolleratn - if an event is bad, replay state from before the bad event occurs
+* https://event-driven.io/en/audit_log_event_sourcing/
+    * What makes it unique is the multiple things that you’re getting out of the box, like:
+        * easier modelling of business process,
+        * not losing business data,
+        * extended diagnostics both technical and business,
+        * projections to interpret the same facts in multiple ways.
+    * Having the needs for those scenarios can be a driver to use Event Sourcing. Just audit needs may not be enough
