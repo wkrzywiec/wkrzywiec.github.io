@@ -295,44 +295,73 @@ Also the development teams may benefit from using event sourcing. First of all s
 
 Another benefit for development team is it helps with debugging the problem. Having a stream of consecutive events allows to move back and forth between them. This enables the "time travel" between events giving a greate insights to fix any bug.
 
-
 #### Example of event sourcing systems
 
 There are various of use cases when using event sourcing is beneficial. For instance:
 
 * account ledger - this is a classic example of using event sourcing. This is actually one of the most "natural" examples. After all the account ledger is a log of all incoming and outgoing money. Based on it the account balance is calculated. Some banks may also provide insights about spendings per month grouped into categories (like rent, food, entertainment, etc.).
 
-* medicine intake log - it's very important for hospital to keep track if patients are receiving proper medicine dosages in correct timespans. Also making sure that drugs are not stolen is very important for regulatory and law. These two things can be achieved by storing events about medical consumption by which patient, when and by whom it was taken from a hospital magazynu
+* hospital inventory - it's very important for hospital to keep track if patients are receiving proper medicine dosages in correct timespans. Also making sure that drugs are not stolen is very important for regulatory and law. These two things can be achieved by storing events about medical consumption by which patient, when and by whom it was taken from a hospital magazynu.
 
-https://www.eventstore.com/use-cases
-
-
-
-
-
-ledger - natural candidate
-maszyna stanu, 
-
+* ordering system - keep tracking of a state of an order in an e-commerce business is another classic example for utlizing event sourcing. Based on events we can not only rebuild state of an order but also build analytics which would help in optimizing the overall process of ordering and deliverying goods. Basically any system that is a state machine is a good candidate for event sourcing.
 
 ### Event sourcing in application
 
-in memory,
-service
-publisher
-outbox
+We know what event sourcing is, so let's try to put it in the application code. The basic flow of each use case is pretty straightforward if we use event sourcing. Let's say we hava a `Service` class that is responsible for covering it. The basic flow of each method is very similar and can be sumed up into couple points:
 
-event structure
+1. Accept incoming arguments (e.g. in a form of command).
+2. Retrieve events for an entitiy from an events store.
+3. Replay events to rebuild an entitiy.
+4. Invoke a business method on an entity.
+5. Create resulting event.
+6. Store resulting event.
 
-Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
+general approach
+The generic podejście can manifests in code as:
 
-jak wygląda flow serwisu - zrefatorować do jakiegoś generalnego podejścia
+```java
+class Service {
+
+    private final EventStore eventStore;
+
+    public void handle(Command command) {
+
+        var storedEvents = retrieveEvents(command.entityId)
+        var entity = Event.from(storedEvents);
+
+        entity.handle(command.newState);
+
+        var resultingEvent = new NewEntityStateEvent(entity.id);
+        eventStore.store(resultingEvent);
+    }
+
+    private List<Event> retrieveEvents(String streamId) {
+        var storedEvents = eventStore.getEventsFor(streamId);
+        if (storedEvents.size() == 0) {
+            throw new EventStoreException("There are no events for stream: ", streamId);
+        }
+        return storedEvents;
+    }
+
+}
+```
+
+And or more concreate example of `DeliveryService`:
+
+```java
+
+```
+events can be generated in domain object
 
 events from method invokation
 events in service
 events as separate list inside
 
-sealed interface
+troszkę o event storze, na razie, że jest in memory
 
+Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
+
+sealed interface
 
 ### What event sourcing is not?
 
@@ -362,6 +391,7 @@ do not jump into the hype train, check if it fits your project; be aware of intr
 ----
 refactor `Message` -> `Event` (np na liście eventów z metody statycznej)
 refactor `DomainMessageBody` -> `DomainEventBody`
+refactor Items z eventu oraz wewenątrz encji nie są takie same, a chyba powinny być (wprowadzić eventy integracyjne?)
 
 
 
