@@ -316,8 +316,7 @@ We know what event sourcing is, so let's try to put it in the application code. 
 5. Create resulting event.
 6. Store resulting event.
 
-general approach
-The generic podejście can manifests in code as:
+This general approach can manifests in code as:
 
 ```java
 class Service {
@@ -326,12 +325,12 @@ class Service {
 
     public void handle(Command command) {
 
-        var storedEvents = retrieveEvents(command.entityId)
-        var entity = Event.from(storedEvents);
+        List<Event> storedEvents = retrieveEvents(command.entityId)
+        Entity entity = Entity.from(storedEvents);
 
         entity.handle(command.newState);
 
-        var resultingEvent = new NewEntityStateEvent(entity.id);
+        Event resultingEvent = new NewEntityStateEvent(entity.id);
         eventStore.store(resultingEvent);
     }
 
@@ -346,29 +345,156 @@ class Service {
 }
 ```
 
-And or more concreate example of `DeliveryService`:
+And or more concreate example of a `DeliveryService` for handling `PickUpFood` command:
 
 ```java
+class DeliveryService {
 
+    private final EventStore eventStore;
+
+    public void handle(PickUpFood pickUpFood) {
+
+        List<Event> storedEvents = retrieveEvents(pickUpFood.orderId())
+        var delivery = Delivery.from(storedEvents);
+
+        delivery.pickUpFood();
+
+        Event resultingEvent = new FoodWasPickedUp(delivery.orderId());
+        eventStore.store(resultingEvent);
+    }
+
+    private List<Event> retrieveEvents(String orderId) {
+        var storedEvents = eventStore.getEventsFor(orderId);
+        if (storedEvents.size() == 0) {
+            throw new EventStoreException("There are no events for order: ", orderId);
+        }
+        return storedEvents;
+    }
+
+}
 ```
-events can be generated in domain object
 
-events from method invokation
-events in service
-events as separate list inside
+If we want to enforce that every invokation of a business method on a domain object should produce an event we can move event generation to a domain object:
 
-troszkę o event storze, na razie, że jest in memory
+```java
+class Delivery {
+
+    private String orderId;
+
+    public Event pickUpFood() {
+        if (status != DeliveryStatus.FOOD_READY) {
+            throw new DeliveryException(format("Failed to set food as picked up for an '%s' order. It's not possible do it for a delivery with '%s' status", orderId, status));
+        }
+        this.status = DeliveryStatus.FOOD_PICKED;
+        return new FoodWasPickedUp(orderId);
+    }
+
+}
+```
+
+And therefore the code `DeliveryService` can be simplier:
+
+```java
+class DeliveryService {
+
+    public void handle(PickUpFood pickUpFood) {
+
+        List<Event> storedEvents = retrieveEvents(pickUpFood.orderId())
+        var delivery = Delivery.from(storedEvents);
+
+        Event resultingEvent = delivery.pickUpFood();
+
+        eventStore.store(resultingEvent);
+    }
+
+}
+```
+
+In my opinion this approach far more better. The domain object which encapsulates business logic also produces the event that is a statement of a fact that just happened. If event creation is moved to a service layer we may forgot about creating the resulting event. And also sometimes in order to create event we need get info from the domain object whiches fields are private, not accessible for a service.
+
+There is another approach, very similarto the previous one is to temporarly store resulting events in the domain object. Again the events would be created in the domain object but they would not be returned after method is invoked but they would be added to the list of events that is hold by the domain object itself:
+
+```java
+class Delivery {
+
+    private String orderId;
+    List<Event> changes = new ArrayList<Event>(); 
+
+    public void pickUpFood() {
+        if (status != DeliveryStatus.FOOD_READY) {
+            throw new DeliveryException(format("Failed to set food as picked up for an '%s' order. It's not possible do it for a delivery with '%s' status", orderId, status));
+        }
+        this.status = DeliveryStatus.FOOD_PICKED;
+        changes.add(new FoodWasPickedUp(orderId));
+    }
+
+    public List<Event> uncommittedChanges() {
+        return changes;
+    }
+}
+```
+
+So then the flow of the handling method in the `DeliveryService` can look like this:
+
+```java
+class DeliveryService {
+
+    public void handle(PickUpFood pickUpFood) {
+
+        List<Event> storedEvents = retrieveEvents(pickUpFood.orderId())
+        var delivery = Delivery.from(storedEvents);
+
+        delivery.pickUpFood();
+
+        eventStore.store(delivery.uncommittedChanges());
+    }
+
+}
+```
+
+This flow may be beneficial if business methods of the domain object are invoked couple of times within a single service method. This way on a service layer we don't need to take care of collecting events after each method invokation but wait till the end of the method and commit them in one go.
+
+The last part that was introduced in the code is an `EventStore`. Since this article focuses on event sourcing here is a simple definition of `EventStore` interface:
+
+```java
+public interface EventStore {
+
+    List<Event> getEventsFor(String streamId);
+    
+    void store(Event event);
+    
+    default void store(List<Event> events) {
+        events.forEach(this::store);
+    }
+}
+```
+
+And a simple in-memory implementation:
+
+```java
+public class InMemoryEventStore implements EventStore {
+
+    Map<String, List<Event>> store = new ConcurrentHashMap<>();
+
+    @Override
+    public void store(Event event) {
+        var stream = store.getOrDefault(event.orderId(), new ArrayList<>());
+        stream.add(event);
+        store.put(event.orderId(), stream);
+    }
+
+    @Override
+    public List<Event> getEventsFor(String streamId) {
+        return store.getOrDefault(streamId, List.of());
+    }
+}
+```
+
+In real life event store can be implemented in a multiple way. Events may be persisted either in relational or non-relational databases. In one of my next posts I'll cover implementation in PostgreSQL.
 
 Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
 
 sealed interface
-
-### What event sourcing is not?
-
-events streaming 
-events storing
-events storming
-
 
 ### Summary
 
@@ -392,6 +518,7 @@ do not jump into the hype train, check if it fits your project; be aware of intr
 refactor `Message` -> `Event` (np na liście eventów z metody statycznej)
 refactor `DomainMessageBody` -> `DomainEventBody`
 refactor Items z eventu oraz wewenątrz encji nie są takie same, a chyba powinny być (wprowadzić eventy integracyjne?)
+obiekty domenowe do rekordów
 
 
 
