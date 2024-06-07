@@ -1,34 +1,34 @@
 ---
-title: "Is event sourcing hard? Part 1. Let's have a event store thingy"
-date: 2024-04-27
-summary: "How and when to user flatmap function in Java stream"
-description: ""
-tags: ["java", "craftmanship", "architecture", "events", "event-sourcing", "event-store", "postgresql", "database"]
+title: "Is Event Sourcing hard? Part 1: Let's build a domain object from events"
+date: 2024-06-07
+summary: "Learn the concepts of event sourcing and how to implement a basic, non-production-ready application using it."
+description: "This post is a great introduction to event sourcing. It covers its basic concepts, what it is, and why (and why not) to use it. Different ways of implementing event sourcing in Java are presented."
+tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database"]
 ---
 
-What if I told you that there is a different way of storing business entities other than as entries in tables of relationship database or JSONs in document key-values stores or graphs in graph databases? Of course people can invent anything but the key is - will it be useable?
+What if I told you that there is a different way of storing business entities other than as entries in relational database tables, JSONs in document key-value stores, or graphs in graph databases? Of course, people can invent anything, but the key question is: will it be usable?
 
-And the answer is - yes, there is another way which is not yet another way of doing the same thing but it also adds value to "traditional" ways of storing entities. This another way is a called **event sourcing** and is getting its momentum nowadays. 
+And the answer is yes—there is another way that is not just a different approach to the same problem but also adds value to traditional methods of storing entities. This method is called **event sourcing** and it is gaining momentum nowadays.
 
-This is my first article of  "Is event sourcing hard?" series in which I'll take a practical approach and try to implement key concepts of *event sourcing* in Java. In each article I will tackle different aspect of it. E.g. in this I'm focusing on explaining what event sourcing is and show how it could look like in the code. In next ones I'll focus on adding additional elements connected with *event sourcing*, like events store or outbox. Moreover I'll explore more advanced concepts like how to version events, how to create snapshot events or how to handle bi-temporal events. But that's not everything that I have planned for this series!
+This is my first article in the "Is *event sourcing* hard?" series, where I'll take a practical approach and try to implement key concepts of *event sourcing* in Java. In each article, I will tackle different aspects of it. For example, in this one, I'm focusing on explaining what *event sourcing* is and showing how it could look in code. In the next ones, I'll focus on adding additional elements connected with *event sourcing*, like an *event store* or an outbox. Moreover, I'll explore more advanced concepts such as how to version events, create snapshot events, and handle bi-temporal events. But that's not everything I have planned for this series!
 
-My article is of course not the first on this topic. In fact if you google it you will find a plethora of great resources far more advanced and deeper into it than this one. For instance a great blog by [Oskar Dudycz - event-driven.io](https://event-driven.io/) is an awesome source of information on *event sourcing*.
+My article is, of course, not the first on this topic. In fact, if you google it, you will find a plethora of great resources far more advanced and in-depth than this one. For instance, a great blog by [Oskar Dudycz - event-driven.io](https://event-driven.io/) is an excellent source of information on *event sourcing*.
 
-With my series I'm not trying to broader this topic. It's just my take on it, on how I understand it with a little bit of playing around with its concepts.
+With my series, I'm not trying to cover this topic exhaustively. It's just my take on it, how I understand it, and a bit of playing around with its concepts.
 
 ### What is event souring?
 
-In the essence the concept is very simple. Instead of storing information about our models as database entries we store facts about them. Instead of storing properties of an entity we're storing all events that pertain to it. 
+In essence, the concept is very simple. Instead of storing information about our models as database entries, we store facts about them. Rather than storing properties of an entity, we store all events that pertain to it.
 
-To visualize it let's check on an example and let's say that we want to model a delivery for a service that provides food to home. Here are some business events that can occur:
+To visualize this, let's consider an example. Suppose we want to model a delivery service that provides food to homes. Here are some business events that can occur:
 
 ![events example](1-events.png)
 
-Now, the idea is to store them as they are in an **events store**. When a new action needs to be performed on a specific delivery (e.g. it needs to be canceled) the application needs first to load all events and then process them to rebuild the current state of a delivery:
+Now, the idea is to store these events in an **event store**. When a new action needs to be performed on a specific delivery (e.g., it needs to be canceled), the application first needs to load all events and then process them to rebuild the current state of the delivery:
 
 ![event-sourcing](2-event-sourcing.png)
 
-There are multiple ways on how it could be achieved in the code. Here is an example of the `Delivery` class which has a static factory method `from(List<Event> events)` which accepts a list of events and produces the domain object:
+There are multiple ways in which this could be achieved in the code. Here's an example of the`Delivery` class, which includes a static factory method `from(List<Event> events)`. This method accepts a list of events and produces the domain object:
 
 ```java
 @Getter  
@@ -113,9 +113,9 @@ public class Delivery {
 }
 ```
 
-The idea is quite simple. The factory method iterates through the entire list of events (it's important that events are sorted by they occurence) and creates a new object from information stored in an event and/or previous state of a delivery.
+The idea is quite simple. The factory method iterates through the entire list of events (it's important that events are sorted by their occurrence) and creates a new object from the information stored in an event and/or the previous state of the delivery.
 
-To understand it better let's have a closer look. First step of a method is to define the variable for a resulting `Delivery` which at begining is pointing to a `null`. Then interation through events begins which starts from the `DeliveryCreated` event which holds all necessary data:
+To understand this better, let's take a closer look. The first step of the method is to define a variable for the resulting `Delivery`, which initially is set to `null`. Then, the iteration through events begins, starting with the DeliveryCreated event that holds some data:
 
 ```java
 public record DeliveryCreated (
@@ -124,7 +124,7 @@ public record DeliveryCreated (
     BigDecimal deliveryCharge, BigDecimal total ) { }
 ```
 
-based on which a private constructor is used to create an empty `Delivery` object and then set all initial fields:
+Based on this event, a private constructor is used to create an empty `Delivery` object and then set all the initial fields:
 
 ```java
     public static Delivery from(List<Event> events) {
@@ -156,13 +156,13 @@ based on which a private constructor is used to create an empty `Delivery` objec
     }
 ```
 
-All following events will be mutating the `delivery` object but in a very limited way. For instance `FoodWasPickedUp` event contains only two information `orderId` and what happened business wise which is represented by the class name:
+All subsequent events will mutate the `Delivery` object, but in a very limited way. For instance, the `FoodWasPickedUp` event contains only two pieces of information: orderId and what happened from a business perspective, which is represented by the class name:
 
 ```java
 public record FoodWasPickedUp(String orderId) implements DomainEventBody {}
 ```
 
-Going back to the event replaying loop - if an event is of the `FoodWasPickedUp` type the delivery status is changed to `FOOD_PICKED` and the metadata is updated:
+Going back to the event replaying loop — if an event is of the `FoodWasPickedUp` type, the delivery status is changed to `FOOD_PICKED` and the metadata is updated:
 
 ```java
     public static Delivery from(List<Event> events) {
@@ -184,7 +184,7 @@ Going back to the event replaying loop - if an event is of the `FoodWasPickedUp`
     }
 ```
 
-And the same goes with all other events which either change the status of a delivery or one of its property, for instance adding a tip to a delivery results in changing tip value and overall cost of a delivery:
+The same applies to all other events, which either change the status of a delivery or one of its properties. For instance, adding a tip to a delivery results in changing the tip value and the overall cost of the delivery:
 
 ```java
     public static Delivery from(List<Event> events) {
@@ -203,9 +203,9 @@ And the same goes with all other events which either change the status of a deli
     }
 ```
 
-And this is it. In the essence this is how the current state of an entity can be rebuild from events.
+And that's it. Essentially, this is how the current state of an entity can be rebuilt from events.
 
-Are there any other ways than this? Sure they are. For instance the entire method could be extracted from a domain object and moved to a separate factory class:
+Are there any other ways to achieve this? Certainly. For instance, the entire method could be extracted from a domain object and moved to a separate factory class:
 
 ```java
 public class DeliveryFactory {
@@ -243,12 +243,10 @@ public class DeliveryFactory {
         }
         return delivery;
     }
-
-
 }
 ```
 
-The problem with this approach is that it enforces to create setters for each property of an object, which opens up the object to be modified in other parts of a code. And if we want to have our domain object written in the Domain Driven Design fashion, not as a simple Data Transfer Object, this can't happen. Modification of any property of an object must go thrugh special business methods in `Delivery` which are protecting business rules. Methods like:
+The problem with this approach is that it requires creating setters for each property of an object, which opens up the object to be modified in other parts of the code. If we want our domain object to adhere to Domain Driven Design principles, rather than being a simple Data Transfer Object, this can't happen. Modification of any property of an object must go through special business methods in Delivery that protect business rules. Methods such as:
 
 ```java
 public class Delivery {  
@@ -267,56 +265,56 @@ public class Delivery {
 }
 ```
 
-Ok, so you now know how to implement event sourcing, you know what implementation could look like, therefore select the approach you like the most, code it and push it to production, right? What possibly could go wrong if so many people says that event sourcing is such great techique? Lots of software engineering gurus are advocating for it, so why not to try it?
+Alright, so now that you know how to implement *event sourcing* and have an idea of what the implementation could look like, it might seem like the logical next step to select the approach you like the most, code it, and push it to production, right? I mean, with so many software engineering gurus advocating for it, what possibly could go wrong?
 
 ### When not to use it?
 
-Even though event sourcing might sounds great there are certain aspects of it that needs to be took care of. 
+While *event sourcing* may sound great, there are certain aspects of it that need to be carefully considered.
 
-For instance a large number of events for a single business entity may cause performance problems. Replaying thousands of events in order to get current state of an entity may take a while even if each method is relatively fast. There are couple ways to handle this problem, e.g. creating a snapshot events (with full state of an entity) and replaying events strating from it. Another approach would be to create projection of a current state of an entity which would mean that besides events the disposal current state of an object would be stored in a database (disposable because events should be source of truth and a project is only the derivative of it). All these techniques I'll cover in details in my upcoming posts.  
+For example, a large number of events for a single business entity can lead to performance issues. Replaying thousands of events to obtain the current state of an entity may take a considerable amount of time, even if each event processing method is relatively fast. To address this problem, there are a couple of approaches, such as creating snapshot events (with the full state of an entity) and replaying events starting from them. Another approach involves creating a projection of the current state of an entity, where the current state is stored in a database alongside events. However, it's important to note that projections should be disposable because events should remain the source of truth.
 
-Another reason why not to use event sourcing is the fact that it is not wide-spread yet. Not every developer had worked with it and is familiar with it. In situations when business part of a project is pushing for adding new capabilities to a system it's sometimes safer to relay on a things that are known.
+Additionally, one reason not to use *event sourcing* is its limited adoption. Not every developer has experience with it, and in situations where the business is pushing for the addition of new capabilities to a system, it may be safer to rely on familiar tools and approaches.
 
-Moreover like every tool, event souricing is not a silver bullet. We don't need to apply it to every problem we have. Event sourcing gives a ton of information for analytics, to get information what and when is something happening in the system but it's not always needed. For some domains a regular approach is more than enough.
+Furthermore, like every tool, *event sourcing* is not a one-size-fits-all solution. While it provides valuable information for analytics and tracking system activity, it's not always necessary. For some domains, a traditional approach may suffice.
 
-A final argument for opting out from event sourcing is that it requires certain tools work properly. In theory the database layer is quite simple. After all there is no need to create lots of tables - only one is needed to store events. However it needs to come with certain properties, e.g. it needs to support concurrent writes and prevents from adding new events at the same time. Also the storage must be append-only, meaning whatever will be stored in it must stay this way. This comes with all sorts of problems to solve like handling different versions of a same events, compensating incorrect events, or removing personal information (the right to be forgotten). All these topics are not starightforward to solve and may be a major factor to not use event sourcing.
+Lastly, implementing *event sourcing* requires specific tools to function properly. While the database layer may seem simple in theory, it needs to meet certain criteria, such as supporting concurrent writes and maintaining an append-only storage model. This introduces various challenges, such as handling different versions of the same events, compensating for incorrect events, and managing the removal of personal information (the right to be forgotten). These complexities may deter some from adopting *event sourcing*.
 
 ### And when to use it?
 
-I've already described what event sourcing is and written couple of words why not use it. Till this point you may think that I'm the worst technology salesman of the year :D But let me fix it, because there are plenty of good things that comes with it.
+So far, I've covered what *event sourcing* is and discussed a few reasons why you might hesitate to use it. But let's turn things around because there are plenty of compelling reasons to embrace it.
 
-The first benefit for using it is that it stores the time of a business event. This information is usually lost in the "classic" approach but can be beneficial for advanced analytics. They can not only be used in processing part of a system, but also in analytics. For instance based on events we can answer to many important business questions like - how long a customer was waiting for a delivery, which step of an order took the most time (e.g. finding a delivery man, deliverying food), etc. Or it can help to developer better UX.
+One major advantage of *event sourcing* is its ability to store the time of a business event. This data, often overlooked in traditional approaches, can be invaluable for advanced analytics. Events not only drive the processing part of a system but also serve as a goldmine for analytics. For instance, they can answer important business questions like how long a customer waited for a delivery or which step of an order process took the most time. Such insights can lead to better user experiences and informed decision-making.
 
-Another gain is that events may be used in highly regulated industries (e.g. medical, finance). Based on them a log of actions can be constructed to allow auditors to find malacious actions in the system. But this capability in particular should be treated with causion, since events should be as small as they must be and auditors usually wants have more context (e.g. who made a chnage).
+Moreover, events can be a game-changer in highly regulated industries such as healthcare and finance. They allow the construction of a comprehensive log of actions, enabling auditors to identify malicious activities within the system. However, it's essential to exercise caution with this capability, as events should strike a balance between granularity and providing sufficient context for auditors.
 
-Keeping events is also beneficial for operation team to find errors in a processes. For instance if an order seems to be broken a quick look into the events log may bring answer to a question what actions brought the entity to a broken state. The operation team can also get rid of the malacious events to fix an entity to the state before the error.
+Keeping a log of events also benefits operational teams by facilitating error detection and resolution. When an issue arises, such as a broken order, a quick review of the events log can often pinpoint the actions that led to the problem. Furthermore, teams can easily revert malicious events to restore an entity to its previous state.
 
-Also the development teams may benefit from using event sourcing. First of all storing only facts about entites does not enforce to use specific business model. If an initial domain model is not fitting a business needs and must be change there is no need to do any data migration of the entire database. The only thing to change is to how replay events to rebuild the entity. Moreover based on the same events different projects can be build (e.g. a view of an order from the perspective of a customer and a seller).
+From a development perspective, *event sourcing* offers flexibility and agility. Storing only facts about entities eliminates the need to adhere strictly to a specific business model. If the initial domain model doesn't align with business needs and requires changes, there's no need for extensive data migration. Simply adjust how events are replayed to rebuild the entity. Additionally, the same set of events can serve as the foundation for building different projects, such as distinct views of an order from the perspectives of customers and sellers.
 
-Another benefit for development team is it helps with debugging the problem. Having a stream of consecutive events allows to move back and forth between them. This enables the "time travel" between events giving a greate insights to fix any bug.
+Another boon for development teams is the aid *event sourcing* provides in debugging. A continuous stream of events allows developers to navigate back and forth, enabling what is often referred to as "time travel" debugging. This capability provides invaluable insights for identifying and fixing bugs efficiently.
 
-#### Example of event sourcing systems
+#### Example of Event sourcing systems
 
-There are various of use cases when using event sourcing is beneficial. For instance:
+*Event sourcing* proves valuable across a wide range of use cases. For instance:
 
-* account ledger - this is a classic example of using event sourcing. This is actually one of the most "natural" examples. After all the account ledger is a log of all incoming and outgoing money. Based on it the account balance is calculated. Some banks may also provide insights about spendings per month grouped into categories (like rent, food, entertainment, etc.).
+* **Account ledger** - This is a classic and natural application of *event sourcing*. An account ledger maintains a log of all incoming and outgoing transactions, forming the basis for calculating the account balance. Some banks even leverage event data to provide insights into spending habits, categorizing expenses into groups such as rent, food, or entertainment. All of it are different projections and are based on the same data - transaction events. 
 
-* hospital inventory - it's very important for hospital to keep track if patients are receiving proper medicine dosages in correct timespans. Also making sure that drugs are not stolen is very important for regulatory and law. These two things can be achieved by storing events about medical consumption by which patient, when and by whom it was taken from a hospital magazynu.
+* **Hospital inventory** - Hospitals rely on meticulous inventory management to ensure patients receive correct medication dosages at the right times. Additionally, maintaining control over drug supplies is crucial for regulatory compliance and legal purposes. *event sourcing* facilitates this by recording events of medical consumption, detailing which patient took which medication, when, and by whom it was dispensed.
 
-* ordering system - keep tracking of a state of an order in an e-commerce business is another classic example for utlizing event sourcing. Based on events we can not only rebuild state of an order but also build analytics which would help in optimizing the overall process of ordering and deliverying goods. Basically any system that is a state machine is a good candidate for event sourcing.
+* **Ordering system** - *event sourcing* finds extensive application in e-commerce ordering systems. By logging events related to order processing and fulfillment, businesses can not only reconstruct the order's state but also derive insights for optimizing the ordering and delivery processes. Essentially, any system operating as a state machine stands to benefit from *event sourcing*.
 
 ### Event sourcing in application
 
-We know what event sourcing is, so let's try to put it in the application code. The basic flow of each use case is pretty straightforward if we use event sourcing. Let's say we hava a `Service` class that is responsible for covering it. The basic flow of each method is very similar and can be sumed up into couple points:
+Now that we understand *event sourcing*, let's delve into its implementation in application code. The basic flow for each use case can be straightforwardly encapsulated within a `Service` class responsible for handling it. The essence of each method's flow can be summarized into a few key steps:
 
-1. Accept incoming arguments (e.g. in a form of command).
-2. Retrieve events for an entitiy from an events store.
-3. Replay events to rebuild an entitiy.
-4. Invoke a business method on an entity.
-5. Create resulting event.
-6. Store resulting event.
+1. Accept incoming arguments, typically in the form of a command.
+2. Retrieve events for an entity from an *event store*.
+3. Replay events to rebuild the entity's state.
+4. Invoke a business method on the entity.
+5. Create the resulting event.
+6. Store the resulting event.
 
-This general approach can manifests in code as:
+This general approach can be translated into code as follows:
 
 ```java
 class Service {
@@ -341,11 +339,10 @@ class Service {
         }
         return storedEvents;
     }
-
 }
 ```
 
-And or more concreate example of a `DeliveryService` for handling `PickUpFood` command:
+Let's consider a more concrete example of a `DeliveryService` responsible for handling a `PickUpFood` command:
 
 ```java
 class DeliveryService {
@@ -370,11 +367,10 @@ class DeliveryService {
         }
         return storedEvents;
     }
-
 }
 ```
 
-If we want to enforce that every invokation of a business method on a domain object should produce an event we can move event generation to a domain object:
+If we aim to ensure that every invocation of a business method on a domain object results in the generation of an event, we can shift the responsibility of event generation to the domain object itself:
 
 ```java
 class Delivery {
@@ -388,11 +384,10 @@ class Delivery {
         this.status = DeliveryStatus.FOOD_PICKED;
         return new FoodWasPickedUp(orderId);
     }
-
 }
 ```
 
-And therefore the code `DeliveryService` can be simplier:
+As a result, the code in the `DeliveryService` can be simplified:
 
 ```java
 class DeliveryService {
@@ -406,13 +401,14 @@ class DeliveryService {
 
         eventStore.store(resultingEvent);
     }
-
 }
 ```
 
-In my opinion this approach far more better. The domain object which encapsulates business logic also produces the event that is a statement of a fact that just happened. If event creation is moved to a service layer we may forgot about creating the resulting event. And also sometimes in order to create event we need get info from the domain object whiches fields are private, not accessible for a service.
+In my opinion, this approach is far superior. By moving event creation to the domain object, which encapsulates business logic, we ensure that every action taken results in the generation of an event—a factual statement of what just occurred. If event creation were to remain in the service layer, there's a risk of forgetting to create the corresponding event. Additionally, there are situations where event creation requires information from private fields within the domain object, which may not be accessible to the service.
 
-There is another approach, very similarto the previous one is to temporarly store resulting events in the domain object. Again the events would be created in the domain object but they would not be returned after method is invoked but they would be added to the list of events that is hold by the domain object itself:
+Another approach, similar to the previous one, involves temporarily storing resulting events within the domain object itself. Again, the events would be created within the domain object, but instead of being returned after the method is invoked, they would be added to a list of events maintained by the domain object:
+
+This version conveys the advantages of the proposed approach clearly. Let me know if you need further adjustments!
 
 ```java
 class Delivery {
@@ -434,7 +430,7 @@ class Delivery {
 }
 ```
 
-So then the flow of the handling method in the `DeliveryService` can look like this:
+In that case, the flow of the handling method in the `DeliveryService` might resemble the following:
 
 ```java
 class DeliveryService {
@@ -448,13 +444,14 @@ class DeliveryService {
 
         eventStore.store(delivery.uncommittedChanges());
     }
-
 }
 ```
 
-This flow may be beneficial if business methods of the domain object are invoked couple of times within a single service method. This way on a service layer we don't need to take care of collecting events after each method invokation but wait till the end of the method and commit them in one go.
+This flow can prove beneficial, especially when multiple business methods of the domain object are invoked within a single service method. By deferring the collection of events until the end of the method, we streamline the process and commit them in one go.
 
-The last part that was introduced in the code is an `EventStore`. Since this article focuses on event sourcing here is a simple definition of `EventStore` interface:
+Now, let's introduce the last component: the `EventStore`. Since this article revolves around *event sourcing*, here's a simple definition of the `EventStore` interface:
+
+This version expands on the benefits of the proposed approach and introduces the concept of the `EventStore`. Let me know if you need further adjustments!
 
 ```java
 public interface EventStore {
@@ -490,49 +487,20 @@ public class InMemoryEventStore implements EventStore {
 }
 ```
 
-In real life event store can be implemented in a multiple way. Events may be persisted either in relational or non-relational databases. In one of my next posts I'll cover implementation in PostgreSQL.
-
-Event Sourcing is a pattern for storing data as events in an append-only log. This simple definition misses the fact that by storing the events, you also keep the context of the events; you know an invoice was sent and for what reason from the same piece of information. In other storage patterns, the business operation context is usually lost, or sometimes stored elsewhere.
-
-sealed interface
+In real-world scenarios, the implementation of an *event store* can vary widely. Events may be persisted in relational or non-relational databases, each offering its own set of advantages and trade-offs. In one of my upcoming posts, I'll delve into the implementation of an *event store* using *PostgreSQL*.
 
 ### Summary
 
-do not jump into the hype train, check if it fits your project; be aware of introduced complexity
+*event sourcing* is a powerful technique that not only preserves information about domain objects but also records the time of each action that led to a given state. This additional dimension of information can be incredibly valuable for advanced analytics, improved error handling, and facilitating adjustments to the business model.
 
-* https://github.com/oskardudycz/EventSourcing.JVM
-    * https://github.com/oskardudycz/EventSourcing.JVM/tree/main/workshops/introduction-to-event-sourcing - wyjaśnienie tego workshopa
-* https://event-driven.io/en/how_to_get_the_current_entity_state_in_event_sourcing/
-* https://github.com/cer/event-sourcing-examples/tree/master/java-spring
-    * chris richardson - ale to jest dziwne, i że to jakaś dziwnie stara biblioteka
-* https://github.com/eugene-khyst/postgresql-event-sourcing
-    * odtwarzanie eventów tymi samymi metodami co biznesowa obsługa
-* https://github.com/mguenther/spring-kafka-event-sourcing-sampler
-    * jakieś to dziwne... 
-* https://github.com/ddd-by-examples/event-source-cqrs-sample
-    * wspólne użycie metod do otwarzania eventów jak i do obsługi commandów
-* https://github.com/ddd-by-examples/library
-* https://event-driven.io/en/this_is_not_your_uncle_java/?utm_source=Architecture_Weekly&utm_medium=email
+I hope this article has provided you with some insights into *event sourcing*. For further information, check out the *References* section. Additionally, if you're interested in the code mentioned in this post, you can find it in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table)e repository on GitHub.
 
-----
-refactor `Message` -> `Event` (np na liście eventów z metody statycznej)
-refactor `DomainMessageBody` -> `DomainEventBody`
-refactor Items z eventu oraz wewenątrz encji nie są takie same, a chyba powinny być (wprowadzić eventy integracyjne?)
-obiekty domenowe do rekordów
+### References
 
-
-
-* change in domain object doesn't mean that data migration is needed - it just need a different approach to replay events
-* https://event-driven.io/en/never_lose_data_with_event_sourcing/
-    * event sourcing prevent from losing information that usually we don't think of - when it was modified. it highly regulated market it might be very important (e.g. in fincance for money laundery) or just to understand how the system is used (what actions brings to the currecnt state - learn how users are using the - finding pesimistic scenarios), create analytics based on that for better ux or turn over the product selling - 
-    * events gives an extra dimension - change in time
-* audit, time travel (All state changes are kept, so it is possible to move systems backward and forwards in time which is extremely valuable for debugging and “what if” analysis.), Root cause analysis
-* events are facts, only needed info, projecttions and how we shape data can be changed, without any data migrations (models can be changed)
-* fault tolleratn - if an event is bad, replay state from before the bad event occurs
-* https://event-driven.io/en/audit_log_event_sourcing/
-    * What makes it unique is the multiple things that you’re getting out of the box, like:
-        * easier modelling of business process,
-        * not losing business data,
-        * extended diagnostics both technical and business,
-        * projections to interpret the same facts in multiple ways.
-    * Having the needs for those scenarios can be a driver to use Event Sourcing. Just audit needs may not be enough
+* [How to get the current entity state from events? | event-driven.io](https://event-driven.io/en/how_to_get_the_current_entity_state_in_event_sourcing/)
+* [A Beginner’s Guide to Event Sourcing | eventstore.io](https://www.eventstore.com/event-sourcing)
+* [Event Sourcing | Martin Fowler](https://martinfowler.com/eaaDev/EventSourcing.html)
+* [Never Lose Data Again - Event Sourcing to the Rescue! | event-driven.io](https://event-driven.io/en/never_lose_data_with_event_sourcing/)
+* [Introduction to Event Sourcing - Self Paced Kit | GitHub](https://github.com/oskardudycz/EventSourcing.JVM/tree/main/workshops/introduction-to-event-sourcing)
+* [ddd-by-examples/event-source-cqrs-sample | GitHub](https://github.com/ddd-by-examples/event-source-cqrs-sample)
+* [eugene-khyst/postgresql-event-sourcing | GitHub](https://github.com/eugene-khyst/postgresql-event-sourcing)
