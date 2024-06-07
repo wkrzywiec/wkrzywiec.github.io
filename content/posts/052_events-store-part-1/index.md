@@ -1,6 +1,6 @@
 ---
 title: "Is Event Sourcing hard? Part 1: Let's build a domain object from events"
-date: 2024-06-07
+date: 2024-06-10
 summary: "Learn the concepts of event sourcing and how to implement a basic, non-production-ready application using it."
 description: "This post is a great introduction to event sourcing. It covers its basic concepts, what it is, and why (and why not) to use it. Different ways of implementing event sourcing in Java are presented."
 tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database"]
@@ -299,11 +299,11 @@ Another boon for development teams is the aid *event sourcing* provides in debug
 
 *Event sourcing* proves valuable across a wide range of use cases. For instance:
 
-* **Account ledger** - This is a classic and natural application of *event sourcing*. An account ledger maintains a log of all incoming and outgoing transactions, forming the basis for calculating the account balance. Some banks even leverage event data to provide insights into spending habits, categorizing expenses into groups such as rent, food, or entertainment. All of it are different projections and are based on the same data - transaction events. 
+* **Account ledger** - This is a classic and natural application of *event sourcing*. An account ledger maintains a log of all incoming and outgoing transactions, forming the basis for calculating the account balance. Some banks even leverage event data to provide insights into spending habits, categorizing expenses into groups such as rent, food, or entertainment. All of it are different projections and are based on the same data - transaction events.
 
 * **Hospital inventory** - Hospitals rely on meticulous inventory management to ensure patients receive correct medication dosages at the right times. Additionally, maintaining control over drug supplies is crucial for regulatory compliance and legal purposes. *event sourcing* facilitates this by recording events of medical consumption, detailing which patient took which medication, when, and by whom it was dispensed.
 
-* **Ordering system** - *event sourcing* finds extensive application in e-commerce ordering systems. By logging events related to order processing and fulfillment, businesses can not only reconstruct the order's state but also derive insights for optimizing the ordering and delivery processes. Essentially, any system operating as a state machine stands to benefit from *event sourcing*.
+* **Ordering system** - *Event sourcing* finds extensive application in e-commerce ordering systems. By logging events related to order processing and fulfillment, businesses can not only reconstruct the order's state but also derive insights for optimizing the ordering and delivery processes. Essentially, any system operating as a state machine stands to benefit from *event sourcing*.
 
 ### Event sourcing in application
 
