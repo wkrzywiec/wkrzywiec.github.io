@@ -6,6 +6,8 @@ description: "This post is a great introduction to event sourcing. It covers its
 tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database"]
 ---
 
+![cover](cover.jpg)
+
 What if I told you that there is a different way of storing business entities other than as entries in relational database tables, JSONs in document key-value stores, or graphs in graph databases? Of course, people can invent anything, but the key question is: will it be usable?
 
 And the answer is yes—there is another way that is not just a different approach to the same problem but also adds value to traditional methods of storing entities. This method is called **event sourcing** and it is gaining momentum nowadays.
