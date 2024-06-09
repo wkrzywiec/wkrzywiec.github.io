@@ -71,7 +71,6 @@ public class Delivery {
                     Map<String, String> metadata = new HashMap<>();
                     metadata.put("creationTimestamp", event.header().createdAt().toString());
                     delivery.metadata = metadata;
-                    return delivery;
                 }
 
                 case DeliveryManAssigned deliveryManAssigned -> {
@@ -150,7 +149,6 @@ Based on this event, a private constructor is used to create an empty `Delivery`
                     Map<String, String> metadata = new HashMap<>();
                     metadata.put("creationTimestamp", event.header().createdAt().toString());
                     delivery.metadata = metadata;
-                    return delivery;
                 }
             }
         }
@@ -231,7 +229,6 @@ public class DeliveryFactory {
                     Map<String, String> metadata = new HashMap<>();
                     metadata.put("creationTimestamp", event.header().createdAt().toString());
                     delivery.setMetadata(metadata);
-                    return delivery;
                 }
 
                 case DeliveryManAssigned deliveryManAssigned -> {
