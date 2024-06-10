@@ -1,0 +1,51 @@
+<mxfile host="Electron" modified="2024-05-11T18:26:20.085Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.2.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="JTIhWeUnZ2K9he4dB2LU" version="24.2.5" type="device" pages="2">
+  <diagram name="events" id="thdqYxEHqGBRmHtRqWYw">
+    <mxGraphModel dx="1224" dy="1197" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="mln-SkPmqmuhI7W5oJ4V-1" value="Delivery created" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1148" y="401" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mln-SkPmqmuhI7W5oJ4V-2" value="Delivery man assigned" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1248" y="401" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mln-SkPmqmuhI7W5oJ4V-3" value="Order picked up" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1198" y="511" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mln-SkPmqmuhI7W5oJ4V-4" value="Order delivered" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1298" y="511" width="80" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="event-sourcing" id="3c74dOo9eIDintVHMOlx">
+    <mxGraphModel dx="335" dy="684" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-0" />
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-1" parent="Ccua6RpyJb2ouK7MpS1z-0" />
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-2" value="Delivery created" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="935" y="399" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-3" value="Delivery man assigned" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="1035" y="399" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-4" value="Order picked up" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="985" y="509" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Ccua6RpyJb2ouK7MpS1z-5" value="Order delivered" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;shadow=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="1085" y="509" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="VBf8OSB9uqdkN2w__GZL-14" value="" style="shape=singleArrow;whiteSpace=wrap;html=1;arrowWidth=0.1864406779661017;arrowSize=0.23;fillColor=#666666;shadow=0;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="1199" y="468" width="147" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="VBf8OSB9uqdkN2w__GZL-19" value="Delivery" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="Ccua6RpyJb2ouK7MpS1z-1">
+          <mxGeometry x="1402" y="427" width="187" height="123.25" as="geometry" />
+        </mxCell>
+        <mxCell id="VBf8OSB9uqdkN2w__GZL-20" value="+id : UUID&lt;br&gt;+customerId : UUID&lt;br&gt;+status: Status&lt;div&gt;+ ....&lt;/div&gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="VBf8OSB9uqdkN2w__GZL-19">
+          <mxGeometry y="50" width="187" height="73.25" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
