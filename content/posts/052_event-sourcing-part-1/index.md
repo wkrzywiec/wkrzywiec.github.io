@@ -407,8 +407,6 @@ In my opinion, this approach is far superior. By moving event creation to the do
 
 Another approach, similar to the previous one, involves temporarily storing resulting events within the domain object itself. Again, the events would be created within the domain object, but instead of being returned after the method is invoked, they would be added to a list of events maintained by the domain object:
 
-This version conveys the advantages of the proposed approach clearly. Let me know if you need further adjustments!
-
 ```java
 class Delivery {
 
@@ -450,8 +448,6 @@ This flow can prove beneficial, especially when multiple business methods of the
 
 Now, let's introduce the last component: the `EventStore`. Since this article revolves around *event sourcing*, here's a simple definition of the `EventStore` interface:
 
-This version expands on the benefits of the proposed approach and introduces the concept of the `EventStore`. Let me know if you need further adjustments!
-
 ```java
 public interface EventStore {
 
@@ -490,9 +486,9 @@ In real-world scenarios, the implementation of an *event store* can vary widely.
 
 ### Summary
 
-*event sourcing* is a powerful technique that not only preserves information about domain objects but also records the time of each action that led to a given state. This additional dimension of information can be incredibly valuable for advanced analytics, improved error handling, and facilitating adjustments to the business model.
+*Event sourcing* is a powerful technique that not only preserves information about domain objects but also records the time of each action that led to a given state. This additional dimension of information can be incredibly valuable for advanced analytics, improved error handling, and facilitating adjustments to the business model.
 
-I hope this article has provided you with some insights into *event sourcing*. For further information, check out the *References* section. Additionally, if you're interested in the code mentioned in this post, you can find it in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table)e repository on GitHub.
+I hope this article has provided you with some insights into *event sourcing*. For further information, check out the *References* section. Additionally, if you're interested in the code mentioned in this post, you can find it in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table) repository on GitHub.
 
 ### References
 
