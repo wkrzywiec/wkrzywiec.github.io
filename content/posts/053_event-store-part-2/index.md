@@ -462,17 +462,31 @@ The above implementation covers all requirements and if you would like to verify
 
 ## Microservice world - one or per-service event store?
 
-introduce channel, do not show test, but just mention it
+I realy like the shape of an event store that we have so far, so let's add another twist to it - how to fit an event store in a microservice world?
 
-czym jest stream?
+The rule of thumb in microservice world is that shared databases must be avoided. Services should have their own databases and communicate between each other using an established API. sooner or later shared database will bring down to the situation in which one of the services needs to introduce the non backward-compatible change (e.g. rename/delete a column) and since other services are using the same database they also needs to change something on their side. This makes independent service deployment impossible. Deployment of all services must be done at the same moment as data migration.
 
+For this main reason most microservices have their own databases. So in case of event store we should follow the same pattern, right? As always, it depends.
 
+Let's play the devil advocate and try to figure out if a shared event store is a good idea. First of all the problem mentioned above is rather non-existing in event store because the schema of it is rather stable. Moreover event stores are append-only logs, so once we save data there it should not be modified, which also limits the need for data migration. Beside addressing major pain point of shared database, a common event store may be very helpful in integrating services. By introducing subscribtion mechanism services may start to listen for certain events that are stored and act upon them. So there would be no need to have a fancy event bus (like Kafka or Rabbit). Also having data in a single place makes it a way easier to query, which may be very helpful in troubleshooting or preparing various reports.
+
+Of course having a single database has its downsizes too. It is a single point of failure - if it does not work the most parts of your system is not working too. Also with large amount of microservices it must be prepared to handle a large number of concurrent connections which might be quite a challange even for medium sized distributed system. And finally I've told that database schema is stable and does not change but it may not be true. It can evolve with time especially when new concepts must be introduced (like global ordering or bi-temporal events) but wasn't planned up ahead.
+
+There might be of course other factors than the one mentioned above. So whenever you need to decide which solution don't limit yourself to one way or another. Try to weight all pros and cons and decide what approach is better for your.
+
+In my pet project I have decided to use the shared event store, cheifly because it is a small project, single event store removes unnecessary task of managing multiple databases and finally it gives me an opportunity to try to implement the subscription mechanism.
+
+As a consequence of this decision a new column to the `events` table was added. The `channel` *VARCHAR* column stores information which service is writing to the particualr stream. In my case if it's an *ordering* service a value is `ordering` and if it's a *delivery* service a value if `delivery`. Pretty straight-forward.
+
+The implementation of it is also pretty straight-forward (it is only addition of a new column) therefore I'll skip it here but if you would like to check the final solution go check the code in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table) repository.
 
 ## Process flow
 
 ## And why not Kafka?
 
 ## References
+
+czym jest stream?
 
 * [Building an Event Storage | Greg Young](https://cqrs.wordpress.com/documents/building-event-storage/)
 * [Let's build event store in one hour!](https://event-driven.io/pl/lets_build_event_store_in_one_hour/)
