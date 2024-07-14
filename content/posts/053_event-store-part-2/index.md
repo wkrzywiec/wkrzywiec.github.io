@@ -3,15 +3,14 @@ title: "Is Event Sourcing hard? Part 2: How to store events"
 date: 2024-06-25
 summary: "Learn how to build a simple event store in PostgreSQL"
 description: ""
-tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database", "postgresql"]
+tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database", "postgresql", "kafka"]
 ---
 
 *You have decided that event sourcing is a great fit for your project. It meets all your needs. The next thing to do would be to figure out how to persist events. There are several tools available that could be picked from the shelf, but what if you could build your own event store technology? In this article I'm covering how to build a very first version of such solution based on PostgreSQL and that can be utlizied in Java applications.*
 
 The key thing in event sourcing are (suprise, suprise) events. They are created after each business action is performed on a domain object (aggregate) after which they need to be persisted somewhere. Also they used to rebuild state of domain objects but first they need to be fetched from some kind of a storage. For these (and other) reasons the cental piece of event sourcing system is **event store**.
 
-    todo add utm source
-And if you don't know what event sourcing is, go check my previous article on that topic - [Is Event Sourcing hard? Part 1: Let's build a domain object from events](http://localhost:1313/posts/052_event-sourcing-part-1/).
+And if you don't know what event sourcing is, go check my previous article on that topic - [Is Event Sourcing hard? Part 1: Let's build a domain object from events](http://localhost:1313/posts/052_event-sourcing-part-1/?utm_source=blog).
 
 ## What is an event store?
 
@@ -19,7 +18,7 @@ Ok, so event store is important in event sourcing applications. What requirement
 
 * **Event store should allow to store events**
 * **Events stored in event store can't be modified** - events are business actions that occured in the past. We cannot change the history and we cannot change events stored in event store, therefore everything stored there remains there as it was at the begining.
-* **Events must be added to the end of a stream** - every event persisted must be order at least within a stream. The stream is a collection of events that pertains a single domain object. Event store should forbid saving any event in any position but the end of a stream.
+* **Events must be added to the end of a stream** - every event persisted must be order at least within a stream. The stream is a collection of events that refers a single domain object. Event store should forbid saving any event in any position but the end of a stream.
 * **All events in a stream are ordered** - not only storing events but also loading them must preserve the order of their occurance. It is very crucial for replaying them to rebuild the state of a domain object.
 
 These are requirements that will be covered by implementation of event store in this article. Fully fledge event stores are providing other capabilities like:
@@ -480,15 +479,41 @@ As a consequence of this decision a new column to the `events` table was added. 
 
 The implementation of it is also pretty straight-forward (it is only addition of a new column) therefore I'll skip it here but if you would like to check the final solution go check the code in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table) repository.
 
-## Process flow
-
 ## And why not Kafka?
+
+Before the wrap up let dive into one more, very polarizing, issue - *is Kafka a good candidate for an event store?*
+
+Let's check requirements that were mentioned earlier which an event store needs to fullfill:
+
+* ✅ **Event store should allow to store events** - by default Kafka is storing messages for 2 weeks, but it is possible to extend retention time to the infinite.
+* ✅ **Events stored in event store can't be modified** - every message stored in Kafka can't be modified.
+* ✅ **All events in a stream are ordered** - Kafka has topic partitions and makes sure that all messages within a given partion (in our case it could be a streamId) are ordered.
+* ✅ / ❌ **Events must be added to the end of a stream** - in a highly concurrent system, where multiple producers writes to the same topic partition it is not possible to have control what will be the order of messages within it or to disallow the incorrect ones. There is a a proposal [KAFKA-2260](https://issues.apache.org/jira/browse/KAFKA-2260) to be able to provide an offset during the write, but up till this day it is still open.
+* ✅ / ❌ **Events can be fetched till a certain point of time** - there is no built-in functionality, but there is a way to achieve it.
+* ❌ **Events are globally ordered** - Kafka guarantees order of messages only within a single partition, events stored within a single or multiple topics would not be ordered. 
+* ✅ **Notify subscribers about changes in a stream** - Kafka allows subsribe to its topics and notify the consumers about adding new messages.
+* ✅ **Store bi-temporal events**
+
+Most of the points are green so say go ahead with Kafka, right? Not so fast.
+
+Depending on the situation a lack of one of these capabilities may be a show stoper. The biggest, in my eyes, is the fact that Kafka does not support and does not have a way to introduce the optimistic locking, meaning that in case of concurrent writes there will be no mechanism to protect one of these writes. For instance let's say that we have a delivery which is canceled and updated in 2 separate threads. With Kafka we could end up with a situation when the updated will be written to the stream after the delivery is canceled (which from a business point of view should never happen).
+
+Also lack of global ordering may be blocker for those systems which needs to merge events from multiple streams.
+
+Therefore, in my opinion, for small systems it may be a good candidate to consider but there are cases it's better to keep it away. But still Kafka is a great tool designed to move data from one place to another and for that (not storage) is the best solution.
+
+## Summary
+
+I hope that after reading this article you know more about event store and how it can be implemented in Java application using PostgreSQL database. I would encourage you to try it yourself, maybe with a little different approach to get a full experience of learning its all bits and peaces.
+
+If you would like to check the entire code of my project, go check the GitHub repository - wkrzywiec/farm-to-table.
+
+And if you would like to learn more about event stores and event sourcing check links from below.
 
 ## References
 
-czym jest stream?
-
 * [Building an Event Storage | Greg Young](https://cqrs.wordpress.com/documents/building-event-storage/)
-* [Let's build event store in one hour!](https://event-driven.io/pl/lets_build_event_store_in_one_hour/)
+* [Let's build event store in one hour! | event-driven.io](https://event-driven.io/pl/lets_build_event_store_in_one_hour/)
 * [Implementing event sourcing using a relational database | softwaremill.com](https://softwaremill.com/implementing-event-sourcing-using-a-relational-database/)
 * [Fixing the past and dealing with the future using bi-temporal EventSourcing | blog.arkency.com](https://blog.arkency.com/fixing-the-past-and-dealing-with-the-future-using-bi-temporal-eventsourcing/)
+* [Event Streaming is not Event Sourcing! | event-driven.io](https://event-driven.io/en/event_streaming_is_not_event_sourcing/)
