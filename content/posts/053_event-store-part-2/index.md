@@ -1,6 +1,6 @@
 ---
 title: "Is Event Sourcing hard? Part 2: How to store events"
-date: 2024-06-25
+date: 2024-07-15
 summary: "Learn how to build a simple event store in Java using PostgreSQL as the database."
 description: ""
 tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "architecture", "database", "postgresql", "kafka"]
@@ -40,6 +40,8 @@ These are only examples of capabilities. There are certainly more, and you can c
 That's it for the core concepts of an event store. There are, of course, more nuances, but for this blog post, I'll limit it to the basics.
 
 ## Core implementation
+
+![build](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2w2aXo3Mmp0dnlwdTVyYjFkM2xpdm1na2tidzUxMjF4bDZseGhlbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/qt73FYHjuXqAj241m8/giphy.gif)
 
 Let's get our hands dirty and implement these concepts in a Java application using PostgreSQL as the storage technology.
 
@@ -324,6 +326,8 @@ As before, tests for this functionality are available in [PostgresEventStoreIT.g
 
 ## Optimistic Locking for Strong Consistency
 
+![strong](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmZxcWU2MnFmcWR6cnUxbThrMDE1cjk4MXEwaG02YWd1M3F5bndhZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/D7z8JfNANqahW/giphy.gif)
+
 The implementation we have so far is pretty basic. It may work for a small side project used by only one person, but it may not fit the needs of a larger solution (and I'm not claiming it's production-ready yet!) where multiple users may try to store different events to the same stream at the same moment.
 
 The foundation of the event store is that all events are stored in the order of their occurrence. But what happens if, at the same time, two threads want to append to the same stream? Which one should be accepted? Maybe both? If it were a bank transaction, do we want to accept two events that would reduce the account balance below zero? How do we ensure that events that should not happen are not stored in the event store?
@@ -462,6 +466,8 @@ The above implementation covers all requirements, and if you would like to verif
 
 ## Microservice world - one or per-service event store?
 
+![decisions](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjlmNDVxZWtoNTdyMTY3ZDJwNGY3OHRqdDkwczBscHlreXlhNHZxdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ijffQaOlrXhBe/giphy.gif)
+
 I really like the shape of the event store that we have so far, so let's add another twist to it: how to fit an event store in a microservice world?
 
 The rule of thumb in the microservice world is that shared databases must be avoided. Services should have their own databases and communicate with each other using an established API. Sooner or later, a shared database will lead to a situation where one of the services needs to introduce a non-backward-compatible change (e.g., rename/delete a column). Since other services are using the same database, they also need to change something on their side. This makes independent service deployment impossible. Deployment of all services must be done simultaneously with data migration.
@@ -483,6 +489,8 @@ As a consequence of this decision, a new column was added to the `events` table.
 The implementation of this is simple (it is only the addition of a new column), so I'll skip it here. But if you would like to check the final solution, go check the code in the [wkrzywiec/farm-to-table](https://github.com/wkrzywiec/farm-to-table) repository.
 
 ## And Why Not Kafka?
+
+![discuss](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHN6d3Znd2s1Ynpncm1xYzNyNTV1MnE4MmR6cGV3bjZ1aDFmYmc5ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tbEjpqYUbeGyZtIcES/giphy.gif)
 
 Before we wrap up, let's dive into one more very polarizing issue: *Is Kafka a good candidate for an event store?*
 
@@ -514,9 +522,6 @@ If you would like to check the entire code of my project, visit the GitHub repos
 And if you would like to learn more about event stores and event sourcing, check the links below.
 
 ## References
-
-utm links with campaing - event-sourcing-series
-gifs?
 
 * [Building an Event Storage | Greg Young](https://cqrs.wordpress.com/documents/building-event-storage/)
 * [Let's build event store in one hour! | event-driven.io](https://event-driven.io/pl/lets_build_event_store_in_one_hour/)
