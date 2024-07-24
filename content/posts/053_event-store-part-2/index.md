@@ -12,7 +12,7 @@ tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "archi
 
 The key element in event sourcing are (surprise, surprise) events. These events are created after each business action is performed on a domain object (aggregate) and need to be persisted somewhere. They are also used to rebuild the state of domain objects, but first, they need to be fetched from some kind of storage. For these (and other) reasons, the central piece of an event sourcing system is the **event store** which will be built through out this post.
 
-If you are not familiar with event sourcing, please check my previous article on that topic. - [Is Event Sourcing hard? Part 1: Let's build a domain object from events](http://localhost:1313/posts/052_event-sourcing-part-1/?utm_source=blog).
+If you are not familiar with event sourcing, please check my previous article on that topic. - [Is Event Sourcing hard? Part 1: Let's build a domain object from events](https://wkrzywiec.is-a.dev/posts/052_event-sourcing-part-1/?utm_source=blog).
 
 ## What is an Event Store?
 
@@ -188,7 +188,7 @@ public class PostgresEventStore implements EventStore {
 
 Since my application is written with Spring Boot, the `NamedParameterJdbcTemplate` was used to integrate with PostgreSQL. Apart from that, the only other role of the method is to transform the Java object of the `DomainEvent` into its JSON String representation, for which the Jackson `ObjectMapper` is used.
 
-If you would like to test if this code is really working, you can check the integration test that I've written, which is available here: [PostgresEventStoreIT.groovy](https://github.com/wkrzywiec/farm-to-table/blob/master/services/commons/src/test/groovy/io/wkrzywiec/fooddelivery/commons/infra/store/PostgresEventStoreIT.groovy)
+If you would like to test if this code is really working, you can check the integration test that I've written, which is available here: [PostgresEventStoreIT.groovy](https://github.com/wkrzywiec/farm-to-table/blob/master/services/commons/src/test/groovy/io/wkrzywiec/fooddelivery/commons/infra/store/PostgresEventStoreIT.groovy).
 
 ### Loading Events
 
@@ -361,7 +361,7 @@ The least invasive method would be to extend the storing method of the `EventSto
 
 I, however, have decided to go in the opposite direction. I have introduced versions into the domain logic as well, mainly because I wanted to encapsulate the versioning logic within the domain layer to keep the application layer as thin as possible. Was it a good decision? Maybe. Maybe not. I'll see in the future as the project evolves.
 
-From [the previous article](https://wkrzywiec.is-a.dev/posts/052_event-sourcing-part-1/), you may remember that I generate `DomainEvent` within each domain method, e.g.:
+From [the previous article](https://wkrzywiec.is-a.dev/posts/052_event-sourcing-part-1/?utm_source=blog), you may remember that I generate `DomainEvent` within each domain method, e.g.:
 
 ```java
 public class Delivery {
