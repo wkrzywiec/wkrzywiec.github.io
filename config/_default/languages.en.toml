@@ -15,8 +15,8 @@ dateFormat = "2 January 2006"
 [author]
   name = "Wojciech Krzywiec"
   image = "img/avatar.jpg"
-  headline = "Software Developer, DevOps newbie, constant learner, podcast enthusiast."
-  bio = "Software Developer, DevOps newbie, constant learner, podcast enthusiast."
+  headline = "Software Engineer </>, Code Craftsman 🛠️, Constant Learner 📜, Basketball Ethusiast🏀"
+  bio = "Software Engineer </>, Code Craftsman 🛠️, Constant Learner 📜, Basketball Ethusiast🏀"
   links = [
   { github = "https://github.com/wkrzywiec" },
   { linkedin = "https://linkedin.com/in/wkrzywiec" },
