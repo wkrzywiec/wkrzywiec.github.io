@@ -25,6 +25,8 @@ tags: ["ai", "ai-agents", "generative-ai", "model-embeddings", "openai", "rag", 
 
 
 * wstęp
+  * ~~wstęp do nowej serii (kolejnej, zobaczymy czy nie porzucę jej po 1-2 wpisach :P)
+  * ~~dodać disclaimer - nie jestem ai engienerem
 * vectorize db data
   * czym sa vectory i dlaczego sa wazne
   * jak ja to zrobiłem
@@ -40,3 +42,53 @@ tags: ["ai", "ai-agents", "generative-ai", "model-embeddings", "openai", "rag", 
   * wyliczanie kwoty, ile to będzie kosztowało
   * further optimizations - te dziwne indeksy
   * czy vector db jest potrzebny dla ustrukturyzowanych danych?
+
+
+===========
+WSTĘP
+
+===========
+
+![cover](cover.jpg)
+
+The AI revolution is here. The release of ChatGpt in November 2022 ignited a new revolution in software, where generative AI plays a central role. New tools and patterns emerged which enables us, software engineers, to build new, exciting projects. It's so hard to keep up with it because almost every week a new thing comes up. 
+
+At least for me it is sometimes hard to keep up with all new things. Hence to fight off my fear-of-missing-out and to extend my professional toolbox I have created this series in which I will describe how to build an application that is powered by the AI. But before that keep in mind I am not an AI engineer and I have only a basic knowledge on machine learning. I am not an expert in this field but I hope that with this series it will become a little bit more clear to me and perhpaps you, the reader, will also learn something too. 
+
+(And I hope that this series won't share the fate of previous series that I abondend after one or two entries 😜🤞)
+
+=====meme
+
+
+## The Project - 👨‍🍳 Nutri Chef AI
+
+I like to learn based on close to real-life projects. Hence I've decided to built a nutrition assistance application, which will help me plan all my meals for the entire week. I want to keep my meals healthy balanced with all needed macronutrients on a good level.
+
+Because I already has a large number of favourite recipies I don't want to really on something that is on the Internet. I want my AI nutrition assistant to plan my meals based on my prompt and cookbook.
+
+```
+OBRAZEK że ja odpytuję AIa, a on sprawdza mi w ksiązce kucharskiej i daje listę
+```
+
+This requirement brings us to a first problem - how to provide my entire cookbook to the AI? 
+
+## Retrieval-Augmented Generation (RAG)
+
+
+### pattern
+
+### what are vectors?
+
+### Storing vectors
+
+## Vectorize db data
+
+### Chunking data
+
+## Utilizing vectors in application
+
+### Search best fitting recipes
+
+### Enriching prompt with knowledge base data
+
+## Going deeper
