@@ -83,23 +83,59 @@ This requirement brings us to a first problem - how to provide my entire cookboo
 
 ## Vectorize db data
 
-opisać cały proces, z diagramami
-odesłać do innych podejść
+First step in building the Nutri Chef AI application is to vectorize recipe data. I already have it in the PostgreSQL database so the plan is to retrieve from it, prepare the request for the embedding process, execute it and then store the results in the the PostgreSQL database.
+
+My data is relatively static. I don't change it too often, therefore I've decided that vectorinzing data will be a one-off job. The application will be using the OpenAI model therefore embedding I'm also using the ChatGPT API. 
+
+To achieve this task I could use [a simple endpoint for creating embeddings](https://platform.openai.com/docs/api-reference/embeddings/create) which is fast, the reply with vectors is immediate. But in my case I can wait a little bit longer for results and if it would be cheaper it would be even better. For these reasons I've decided to go with [OpenAI Batch API](https://platform.openai.com/docs/guides/batch). This API in essence is processing request in the same fashion as the standard one but it allows to combine multiple request into one. They are then executed asynchronously and the results are returned after couple of minutes or hours (depending on how large the dataset it). It may give an additional overhead to the process (because we need to monitor the async process) but it wil come with a lower price per each embeddding. 
+
+The overall process looks like this:
+
+![](./embedding-process.png)
+
+And the steps are:
+1. Using Python script the data will be fetched from PostgreSQL database and prepared in the `.jsonl` format that is accepted by the OpenAI Batch API.
+2. Prepared `.jsonl` file will be sent to OpenAI and then a process of embedding will be started.
+3. Using the Python script the batch process will be monitored and once it's done the resulting file will be downloaded and vectors will be inserted to the database.
+
+This is one of many approaches we could take. If you would like to learn what are the others, go check the ````TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO```` section.
+
+Before moving on to implementation of the scripts first we need to prepare the database. We need to install the `pgvector` extension by executing the SQL script:
+
+```sql
+CREATE EXTENSION vector;
+```
+
+Be aware that this extension is not built-in into the standard PostgreSQL version. You need to put the installation files into your PostgreSQL instance first. Or you could use the Docker image provided by creators of the extension:
+
+```bash
+docker pull pgvector/pgvector:pg17-trixie
+```
+
+More information on how to provide the installation files to the PostgreSQL instance could be found in [the GitHub repository of the pgvector extension](http://github.com/pgvector/pgvector).
+
+### 📦 Prepare batch file
+
+Database is prepared so we could start writing a script for preparing `.jsonl` file for the batch job. This format is the only accepted by the OpenAI API and it looks somethig like this:
+
+```json
+{"custom_id": "61bf11bb_name", "method": "POST", "url": "/v1/embeddings", "body": {"model": "text-embedding-3-small", "input": "Apple pie"}}
+{"custom_id": "61bf11bb_ingredients", "method": "POST", "url": "/v1/embeddings", "body": {"model": "text-embedding-3-small", "input": "apples, flour, butter, sugar"}}
+```
+
+As you can see it is just a file with regular JSONs wher each line represents a separate request to the OpenAI API. We've got:
+
+* `custom_id` - which is unique accross a file, represents the id of a request,
+* `method`, `url` & `body`- which are respectively HTTP method, path and body from "regular" API,
+
+So here is the Python script that generates it:
 
 ```python
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List
 import psycopg2
-import openai  
-from datetime import datetime
-from dotenv import load_dotenv
 
-
-load_dotenv()
-
-# Configuration options
 DB_CONFIG = {
     "host": "localhost",
     "port": 5432,
@@ -107,7 +143,6 @@ DB_CONFIG = {
     "user": "postgres",
     "password": "postgres"
 }
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 CHUNK_TYPES = ["name", "description", "ingredients", "instructions", "tags"]
@@ -156,29 +191,6 @@ def prepare_jsonl_file(chunks: List[Dict[str, Any]], path: str) -> str:
     print(f"Created file with {record_count} records, path: {path}")
     return path
 
-def start_batch_job(file_path: str, model: str) -> str:
-    client = openai.OpenAI(api_key=OPENAI_API_KEY)
-    
-    file_response = client.files.create(
-        file=open(file_path, "rb"),
-        purpose="batch"
-    )
-    file_id = file_response.id
-    print(f"File uploaded successfully with ID: {file_id}")
-    
-    descr = datetime.now().strftime("%Y%m%d_%H%M%S") + " - nutri chef embedding"
-    batch_response = client.batches.create(
-        input_file_id=file_id,
-        endpoint="/v1/embeddings",
-        completion_window="24h",
-        metadata={
-            "description": descr
-        }
-    )
-    job_id = batch_response.id
-    print(f"Batch job created with ID: {job_id}")
-    return job_id
-
 def main():
     print("Starting embedding process...")
     
@@ -199,14 +211,10 @@ def main():
         base_jsonl_path = temp_dir / "recipes_for_embedding.jsonl"
         jsonl_path = prepare_jsonl_file(all_chunks, str(base_jsonl_path))
 
-        job_id = start_batch_job(jsonl_path, EMBEDDING_MODEL)
-    
-
     except Exception as e:
         print(f"Error during embedding generation: {str(e)}")
         raise
     finally:
-        # Cleanup
         print("Performing cleanup")
         if 'conn' in locals():
             conn.close()
@@ -216,6 +224,8 @@ if __name__ == "__main__":
    main()
 ```
 
+And after running it we've got an output:
+
 ```bash
 Starting embedding process...
 Created temporary directory at: batch-files
@@ -223,13 +233,79 @@ Fetching recipes from database...
 Starting recipe chunking process...
 Created total of 25 chunks from 5 recipes
 Created file with 25 records, path: batch-files\recipes_for_embedding.jsonl
-HTTP Request: POST https://api.openai.com/v1/files "HTTP/1.1 200 OK"
-File uploaded successfully with ID: file-HvRA1M3FMHtiW2CkU9ijhp
-HTTP Request: POST https://api.openai.com/v1/batches "HTTP/1.1 200 OK"
-Batch job created with ID: batch_68c8f2bfcdac8190b762a7a096aa21f7
 Performing cleanup
 Database connection closed
 ```
+
+Simple as that. From the script you may tell that I'm using the OpenAI API and I've picked the `text-embedding-3-small` embedding model. You can choose from different models, which varies by generation, performance and price. In the moment of writing this article there are also `text-embedding-ada-002` and `text-embedding-3-large`. A current list of supported models could be found on [the official OpenAI Models website](https://platform.openai.com/docs/models).
+
+Going back to the script, if you look closer you may see and ask why I have chunked the data. Why each recipe was splitted into pieces which resulted in more batch requests.
+
+#### 🪚 Chunking your data
+
+`TODOTODOTODOTODOTODOTODOTODOTODO`
+
+
+### 🚀Start batch job
+
+An input file is prepared so we have nothing left but to write a script to first upload it and then start the batch job:
+
+```python
+import os
+from pathlib import Path
+import openai  
+from datetime import datetime
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+file_path =  Path("batch-files")  / "recipes_for_embedding.jsonl"
+
+def main():
+    client = openai.OpenAI(api_key=OPENAI_API_KEY)
+    
+    file_response = client.files.create(
+        file=open(file_path, "rb"),
+        purpose="batch"
+    )
+    file_id = file_response.id
+    print(f"File uploaded successfully with ID: {file_id}")
+    
+    descr = datetime.now().strftime("%Y%m%d_%H%M%S") + " - nutri chef embedding"
+    batch_response = client.batches.create(
+        input_file_id=file_id,
+        endpoint="/v1/embeddings",
+        completion_window="24h",
+        metadata={
+            "description": descr
+        }
+    )
+    job_id = batch_response.id
+    print(f"Batch job created with ID: {job_id}")
+    
+
+if __name__ == "__main__":
+   main()
+```
+
+The output after running the script:
+
+
+```bash
+HTTP Request: POST https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+File uploaded successfully with ID: file-HvRA1M3
+HTTP Request: POST https://api.openai.com/v1/batches "HTTP/1.1 200 OK"
+Batch job created with ID: batch_68c8f2bf
+```
+
+Great! 🎉🎉🎉 The only thing we can do now is to sit and relax. The batch job is executed in the backrogund, so how we get to know when it finishes? 🤔
+
+
+### 🔍 Monitor batch job status
+
+Depending on how large your dataset is the batch process may take from several minutes to several hours. To verify it the OpenAI API could be used:
 
 ```python
 from openai import OpenAI
@@ -241,21 +317,21 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-batch_id = ""
+batch_id = "batch_68c8f2bf"
 
 batch = client.batches.retrieve(batch_id)
 print(f"Batch response:\n {batch.to_json()}")
 ```
 
+This simple Python script will print out the batch job information:
 
-batch status
 ```json
 {
-  "id": "batch_68c8f2bfcdac8190b762a7a096aa21f7",
+  "id": "batch_68c8f2bf",
   "completion_window": "24h",
   "created_at": 1757999807,
   "endpoint": "/v1/embeddings",
-  "input_file_id": "file-HvRA1M3FMHtiW2CkU9ijhp",
+  "input_file_id": "file-HvRA1M3",
   "object": "batch",
   "status": "completed",
   "cancelled_at": null,
@@ -271,7 +347,7 @@ batch status
   "metadata": {
     "description": "20250916_071647 - nutri chef embedding"
   },
-  "output_file_id": "file-BhMQY4umjMy228GzgVqvgB",
+  "output_file_id": "file-BhMQY4",
   "request_counts": {
     "completed": 25,
     "failed": 0,
@@ -291,6 +367,17 @@ batch status
 }
 ```
 
+The most important information for us is the `status`. Above it states that it is `completed` and we can see that it also contains information about the `output_file_id` - a file with all results.
+
+Before completing it a batch may have various statuses, all of them are listed [here](https://platform.openai.com/docs/guides/batch#4-check-the-status-of-a-batch). Most likely you will see one of these: 
+
+* `in_progress` - batch is running,
+* `finalizing` - all requests have been executed and the results are being prepared,
+* `completed` - all requests have been executed and the results are available to be downloaded.
+
+### 💾 Download batch job results
+
+Having the id of an output file we can downlaod it with this simple script:
 
 ```python
 from openai import OpenAI
@@ -304,7 +391,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-file_name = "file-BhMQY4umjMy228GzgVqvgB"
+file_name = "file-BhMQY4"
 
 file_response = client.files.content(file_name)
 
@@ -318,17 +405,42 @@ with open(output_file, "w", encoding='utf-8') as f:
 print(f"Response saved to: {output_file}")
 ```
 
+The output:
+
 ```bash
-Response saved to: batch-files\file-BhMQY4umjMy228GzgVqvgB.jsonl
+Response saved to: batch-files\file-BhMQY4.jsonl
 ```
 
-
+After opening the resulting file we would get something like this:
 
 ```json
-{"id": "batch_req_68c8f34a2aa08190948f212848e33ab5", "custom_id": "e4d52600-5a9a-48fc-8afe-af3ed6d835dd_tags", "response": {"status_code": 200, "request_id": "8724e1825b5baa0ac74cf4d11c77d513", "body": {"object": "list", "data": [{"object": "embedding", "index": 0, "embedding": [-0.0075121797, 0.016524209, 0.012069914, -0.032091618]}], "model": "text-embedding-3-small", "usage": {"prompt_tokens": 13, "total_tokens": 13}}}, "error": null}
-
+{"id": "batch_req_68c8f34a2aa", "custom_id": "61bf11bb_name", "response": {"status_code": 200, "request_id": "8724e1825b5baa0", "body": {"object": "list", "data": [{"object": "embedding", "index": 0, "embedding": [-0.0075121797, 0.016524209, 0.012069914, -0.032091618, ......]}], "model": "text-embedding-3-small", "usage": {"prompt_tokens": 13, "total_tokens": 13}}}, "error": null}
 ```
 
+It contains a list of responses for each request, where each one of them contains a vector representation of each chunk which will be extracted and inserted into database in the next step.
+
+### Insert vector data into database
+
+The last step is to insert the embeddings into the PostgreSQL database. We could use the already existing table with recipes but because each recipe was chunked into 5 pieces, let's have a new one:
+
+```sql
+CREATE TABLE recipe_embeddings (
+    id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    recipe_id               UUID NOT NULL REFERENCES recipe(id),
+    chunk_type              VARCHAR(255),
+    token_count             INTEGER,
+    embedding               VECTOR(1536)
+);
+```
+
+where:
+* `id` - is an id of a reo,
+* `recipe_id` -  is an id of a recipe,
+* `chunk_type` - tells kind of a chunk it is, values, like `name`, `description`, `ingredients`, `instructions`, `tags`,
+* `token_count` - tells of how many tokens this chunk translates to,
+* `embedding` - is a stored vector.
+
+Having this table set we can execute a following Python script:
 
 ```python
 import json
@@ -337,7 +449,7 @@ import tiktoken
 from typing import List, Dict, Any
 from pathlib import Path
 
-embedding_file = "file-BhMQY4umjMy228GzgVqvgB.jsonl"
+embedding_file = "file-BhMQY4.jsonl"
 
 DB_CONFIG = {
     "host": "localhost",
@@ -464,7 +576,12 @@ if __name__ == "__main__":
     main()
 ```
 
+The logic of the script is simple:
+1. It loads both the request and output files.
+2. It iterates through each line in the output file and extracts recipe_id, chunk_type and embedding. It also retieve the content of an input in order to calculate its token count.
+3. Loaded data is then inserted into the database.
 
+Here is the exemplary output from the script:
 
 ```bash
 Loading embeddings from file: batch-files\file-BhMQY4umjMy228GzgVqvgB.jsonl
@@ -472,27 +589,7 @@ Token count: 11 for text of length 28
 Token count: 36 for text of length 89
 Token count: 210 for text of length 509
 Token count: 348 for text of length 855
-Token count: 79 for text of length 181
-Token count: 6 for text of length 16
-Token count: 32 for text of length 83
-Token count: 168 for text of length 390
-Token count: 547 for text of length 1,367
-Token count: 33 for text of length 74
-Token count: 16 for text of length 39
-Token count: 39 for text of length 95
-Token count: 224 for text of length 554
-Token count: 455 for text of length 1,119
-Token count: 34 for text of length 74
-Token count: 11 for text of length 28
-Token count: 34 for text of length 91
-Token count: 185 for text of length 433
-Token count: 370 for text of length 915
-Token count: 51 for text of length 121
-Token count: 10 for text of length 24
-Token count: 27 for text of length 72
-Token count: 134 for text of length 339
-Token count: 460 for text of length 1,168
-Token count: 13 for text of length 31
+....
 Loaded total of 25 embeddings from all files
 Database connection established successfully
 Storing total of 25 embeddings from all files
@@ -501,8 +598,6 @@ Successfully stored all 25 embeddings in database
 Performing cleanup
 Database connection closed
 ```
-
-
 
 ### Chunking data
 
