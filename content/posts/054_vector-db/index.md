@@ -57,7 +57,7 @@ At least for me it is sometimes hard to keep up with all new things. Hence to fi
 
 (And I hope that this series won't share the fate of previous series that I abondend after one or two entries 😜🤞)
 
-=====meme
+![abandon-series-meme](series-meme.jpg)
 
 
 ## The Project - 👨‍🍳 Nutri Chef AI
@@ -70,12 +70,38 @@ Because I already has a large number of favourite recipies I don't want to reall
 OBRAZEK że ja odpytuję AIa, a on sprawdza mi w ksiązce kucharskiej i daje listę
 ```
 
-This requirement brings us to a first problem - how to provide my entire cookbook to the AI? 
+This requirement brings us to a first problem - **how to provide my entire cookbook to the AI? **
+
+Theoritcally we could add entire knowledge to each prompt but for several reasons it may not be good idea:
+
+* it would increase costs - each token sent to AI costs money (no matter if you pay it with subscription or with electric power of your locally installed AI model),
+* it would introduces latencies - large inputs usually requires AI to process it for much longer,
+* it could result in lossing user context - AI may loose user context in a very large input, the user question may get lost in the large input (that's why it is crucial for AI applications to balance the size of an input to be the most effective an accurate otherwise AI may forgot what was a user question).
+
+Instead we could use only a subset of knowledge base. We can cerafully select only the parts that are the most relevant for a task (user prompt). E.g. in the *Nutri Chef AI* app for a prompt `find all recipies with what is left in my fridge - cheese, ham, egg, paprica, flour, milk` it is not needed to attach recipies that requires other ingredients. We want to recieve only those that matches the critiria. So we need something smart eanough to get only those part of data that may be relevant before adding it to the system context. 
 
 ## Retrieval-Augmented Generation (RAG)
 
+There are 2 patterns of how we could provide achieve that:
 
-### pattern
+1. via Retrieval-Augmented Generation (RAG)
+2. via tool calling
+
+As you may gues, in this article is focused on the first approach (I'll do the separate blog post on the latter topic sometime in the future). 
+
+RAG is a techniquie in which application retrieves the most relevant pieces information from the external data source (it could a database, file or else) and attach it to the AI input with a user prompt. It is up to an application to select data that may be needed to fullfil the task by the AI agent. It is the app which builds the context specific to each user query.  
+
+```
+TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+
+wykres pokazujący jak aplikacja wybiera dane
+```
+
+**But how an application can select only relevant data?** 
+
+One way could be based on the keyworlds included in the user input. This is a way how Google Search, Elasticsearch or any other "classic" solutions works. They try to find best matches based on key terms from the input. If an input is `low-carb pasta dinner` it may found all documents that have `low-carb`, `pasta` and `dinner` terms in it. They only analyze only words included in the query and based on them prepare the results. They usually do not search for deeper meaning, so in results for the mentioned query we could get not only low-carb pasta recipies but also regular pasta recipes and low-carb but non-pasta recipes.
+
+There is another approach that addresses this problem - embedding-based retrieval.
 
 ### what are vectors?
 
@@ -608,3 +634,7 @@ Database connection closed
 ### Enriching prompt with knowledge base data
 
 ## Going deeper
+
+## References
+
+* książk ai engineering
