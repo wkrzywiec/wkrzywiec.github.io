@@ -76,7 +76,8 @@ Theoritcally we could add entire knowledge to each prompt but for several reason
 
 * it would increase costs - each token sent to AI costs money (no matter if you pay it with subscription or with electric power of your locally installed AI model),
 * it would introduces latencies - large inputs usually requires AI to process it for much longer,
-* it could result in lossing user context - AI may loose user context in a very large input, the user question may get lost in the large input (that's why it is crucial for AI applications to balance the size of an input to be the most effective an accurate otherwise AI may forgot what was a user question).
+* it could result in lossing context window - it is not always good to have as big input as possible because too large inputs may cause that some parts of it will be not be taken into the account when generating an answer by the AI model, it is always a matter of balancing the size of it,
+* it would be not accepted by the AI model - each AI model has an input token limit which can't be exceeded.
 
 Instead we could use only a subset of knowledge base. We can cerafully select only the parts that are the most relevant for a task (user prompt). E.g. in the *Nutri Chef AI* app for a prompt `find all recipies with what is left in my fridge - cheese, ham, egg, paprica, flour, milk` it is not needed to attach recipies that requires other ingredients. We want to recieve only those that matches the critiria. So we need something smart eanough to get only those part of data that may be relevant before adding it to the system context. 
 
@@ -101,9 +102,34 @@ wykres pokazujący jak aplikacja wybiera dane
 
 One way could be based on the keyworlds included in the user input. This is a way how Google Search, Elasticsearch or any other "classic" solutions works. They try to find best matches based on key terms from the input. If an input is `low-carb pasta dinner` it may found all documents that have `low-carb`, `pasta` and `dinner` terms in it. They only analyze only words included in the query and based on them prepare the results. They usually do not search for deeper meaning, so in results for the mentioned query we could get not only low-carb pasta recipies but also regular pasta recipes and low-carb but non-pasta recipes.
 
-There is another approach that addresses this problem - embedding-based retrieval.
+There is another approach that addresses this problem - embedding-based retrieval, aka semantic retrieval.
 
-### what are vectors?
+### Embedding-based retrieval
+
+In short an embedding is a compact representation of a data in a form multidimensional vector. Those vectors represents a (semantic, underlying) meaning of the embedded text. In the embedding-based retrieval we compare a user input, represented as a vector, with the entire knowledge base also represented as a vector. If, by many measures, two vectors are similar to each other we consider that data that they represent are relevant. 
+
+To visualize it let's check a following graph of the x and y axes which presents 3 vectors:
+
+```
+TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+
+oś OX i OY, porównanie wektorów
+* wyjasnic xzym jest vectro, na obrazku, można użyć cos podobnego to tego https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
+```
+
+Vector A and B are similar to each other because they are close to each other, they have similar angle with x and y axes and they are of similar length. Vector C however does not share those similarities with othe two vectors. If vectors A and B would represent two pieces of information we could say that both of them are of a similar meaning. 
+
+
+siialrities check types
+
+how to make a vector
+
+And what is important not only the text data could be represented as vector. Recordings, images, videos can be vectoriezed (embedded). 
+
+
+how to use it in the app
+* proces konwersji query do embeddingu, retrieve closest data chunks to the query vector; compare vectors; same embedding model for queey and indexed data
+
 
 ### Storing vectors
 
