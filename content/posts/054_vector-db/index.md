@@ -87,7 +87,7 @@ Each method focuses on a different aspects and should be depending on a case. Th
 
 ### From text to vectors: producing embeddings
 
-So the app flow is pretty straighfowrad. We need to have data prepared as vector representstion and when user prompts we need to transform it to vector snd compare with those prepared to find the nearest (the most Similarity). But how to make such converdion of user input and data?  With AI model of course! 
+So the app flow is pretty straighfowrad. We need to have data prepared as vector representstion and when user prompts we need to transform it to vector snd compare with those prepared to find the nearest (the most Similarity). But how to make such converdion of user input and data?  With AI model of course!
 
 Those models, embedding models, are different than regular chat models but they are offered by alll key AI providers. For instance Open Ai is offering 2 in the moment of writing it - .......... We can select whatever model we like but we need to keep to these rules:
 
@@ -139,14 +139,16 @@ The workflow for the second one will look like this:
 
 This flow is not specific to the *Nutri Chef AI*, it is pretty generic one and could be used in various cases.
 
-```
-TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-(Pokazać na obrazku)
-```
+![rag flow](rag-flow.png)
 
 The implementration of this entire flow is described in the [Enriching prompt with recipe data](TODODODOODODOD) section of this blog post.
 
 ## Practical walkthrough
+
+Theoretical introduction jestr juz za nami so we can move on with implementing a simple RAG in the *Nutri Chef AI* app. I've splitted this section into 2 parts:
+
+1. creating embeddings from already stored data
+2. implementing RAG flow in the app itself
 
 ### Embedding recipe data and inserting into pgvector columns
 
@@ -661,6 +663,8 @@ Database connection closed
 
 ### Utilizing embeddings in application
 
+We have the embeddings prepared so we can move on to the actual application. I'll be writting it in Kotlin with Spring framework because I feel the most comfortable with it and since recently it also has its own AI module that I wanted to try on. If you prefer other language or framework you can still read it since I've tried to have code as simple as possible so it's easy to understand and translate to another language/framework.
+
 #### Search best fitting recipes
 
 #### Enriching prompt with recipe data
@@ -670,6 +674,8 @@ Database connection closed
 ### Different ways for document embedding process
 
 ### Indexing vectors
+
+## Summary
 
 ## References
 
