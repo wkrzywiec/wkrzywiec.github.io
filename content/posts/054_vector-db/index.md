@@ -81,7 +81,7 @@ Theoritcally we could add entire knowledge to each prompt but for several reason
 
 Instead we could use only a subset of knowledge base. We can cerafully select only the parts that are the most relevant for a task (user prompt). E.g. in the *Nutri Chef AI* app for a prompt `find all recipies with what is left in my fridge - cheese, ham, egg, paprica, flour, milk` it is not needed to attach recipies that requires other ingredients. We want to recieve only those that matches the critiria. So we need something smart eanough to get only those part of data that may be relevant before adding it to the system context. 
 
-## Retrieval-Augmented Generation (RAG)
+## How Retrieval‑Augmented Generation (RAG) works
 
 There are 2 patterns of how we could provide achieve that:
 
@@ -98,7 +98,7 @@ TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 wykres pokazujący jak aplikacja wybiera dane
 ```
 
-**But how an application can select only relevant data?** 
+**But how an application can select only relevant data?**
 
 One way could be based on the keyworlds included in the user input. This is a way how Google Search, Elasticsearch or any other "classic" solutions works. They try to find best matches based on key terms from the input. If an input is `low-carb pasta dinner` it may found all documents that have `low-carb`, `pasta` and `dinner` terms in it. They only analyze only words included in the query and based on them prepare the results. They usually do not search for deeper meaning, so in results for the mentioned query we could get not only low-carb pasta recipies but also regular pasta recipes and low-carb but non-pasta recipes.
 
@@ -106,7 +106,7 @@ There is another approach that addresses this problem - embedding-based retrieva
 
 ### Embedding-based retrieval
 
-In short an embedding is a compact representation of a data in a form multidimensional vector. Those vectors represents a (semantic, underlying) meaning of the embedded text. In the embedding-based retrieval we compare a user input, represented as a vector, with the entire knowledge base also represented as a vector. If, by many measures, two vectors are similar to each other we consider that data that they represent are relevant. 
+In short an embedding is a compact representation of a data in a form multidimensional vector. Those vectors represents a (semantic, underlying) meaning of the embedded text. In the embedding-based retrieval we compare a user input, represented as a vector, with the entire knowledge base also represented as a vector. If, by many measures, two vectors are similar to each other we consider that data that they represent are relevant.
 
 To visualize it let's check a following graph of the x and y axes which presents 3 vectors:
 
@@ -117,23 +117,81 @@ oś OX i OY, porównanie wektorów
 * wyjasnic xzym jest vectro, na obrazku, można użyć cos podobnego to tego https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
 ```
 
-Vector A and B are similar to each other because they are close to each other, they have similar angle with x and y axes and they are of similar length. Vector C however does not share those similarities with othe two vectors. If vectors A and B would represent two pieces of information we could say that both of them are of a similar meaning. 
+Vector A and B are similar to each other because they are close to each other, they have similar angle with x and y axes and they are of similar length. Vector C however does not share those similarities with othe two vectors. If vectors A and B would represent two pieces of information we could say that both of them are of a similar meaning.
 
+When we can say that 2 vectors are similar? There are couple of way to calculate if the distance metric between 2 vectors, and thus their dimilarity. Some of them you may know already from the math classes:
 
-siialrities check types
+• l2 (Euclidean) distance
+• cosine distance
+• l1 distance
+• hamming distance
+• jaccard distance
 
-how to make a vector
+Each distance metric has its strengths and is suitable for different data types. For instance, the Euclidean distance is a distance between two end points of position vector that is shown on a picture below
 
-And what is important not only the text data could be represented as vector. Recordings, images, videos can be vectoriezed (embedded). 
+```
+TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+(Pokazać na obrazku)
+```
 
+The larger differences in length and angel are between 2 vectors the larger distance is between both of them and the larger dissimilarities.
 
-how to use it in the app
-* proces konwersji query do embeddingu, retrieve closest data chunks to the query vector; compare vectors; same embedding model for queey and indexed data
+Each method focuses on a different aspects and should be depending on a case. The best approach is to try out each of them and measure which one of them bahaves the best.
 
+### From text to vectors: producing embeddings
 
-### Storing vectors
+So the app flow is pretty straighfowrad. We need to have data prepared as vector representstion and when user prompts we need to transform it to vector snd compare with those prepared to find the nearest (the most Similarity). But how to make such converdion of user input and data?  With AI model of course! 
 
-## Vectorize db data
+Those models, embedding models, are different than regular chat models but they are offered by alll key AI providers. For instance Open Ai is offering 2 in the moment of writing it - .......... We can select whatever model we like but we need to keep to these rules:
+
+• tune number of dimensions based on purpose - hugher number of dimension is usually good for capturing nuances in data, similar but still different data may have slightky different vectors and hence search may be more accurate. On the other hand higher number of parameters may require more resources to compute search and require more storage for larger vectors
+• model is self hosted or consumed via api - like for lllm, we pick from mosels that we can isntall locally ofr use services exposed by ai providers
+• input snd data must be converted using the same language - each model represents space in a different which makes vectors produced not compatibile if 2 different models where used. If you want to test which embedding works the best for your case (with ab testing pephaps) you need to have embedding produced by different modrls
+
+If you would like to browse available models go check the https://huggingface.co/blog/mteb mteb, which also measures all if them how powerful they are.
+
+#### Chunking strategies
+
+One of the problems with data embedding is that konwlesge that we would like to embed  may be veery large and models may not handle too much of input tokens. In fact each one of them has its own limits.
+
+Therefore we need to chunk the data into smaller segments. The simple solituon would be to split the data by character number. I.e. if model has limit of 1000 tokens we could split the input to be less than that. But it would vause that some embeddingss may lack of required context as theynwould be splitted in a middle of a sentence or sectio which would produce garbage vector. 
+
+Another approacg to this problem could be chunking input data based on some logical fragments of it. For instance the paraghps of a blog post may be treeated as separated chunk. Or section if a paragpah is too granular. This fixes the problem with out of context but we still need to watch out for limits, which is relatively easy since there are libraries that counts how mamy tokens a given text will be translated to.
+
+Next, more sophisticated approach could be to ligically split the data. If a data is already structured, like recipies, chunking  could be relatively easy since the data is already break out into smaller pieces. But what to do if a knowledge base is not struturized? We could use the llm for that! It could split the data based on certain parameters (e..g. not loosing context and to not exceed the certain limits), ehich of course comes with additional cost and may not be accurate (as llm may produce nondetermiestic results).
+
+As we can see there are various ways how we can chunk our data. As always there are no silver bullet and sometimes it is better to try out various approaches ( different chunking strategy, chunk size,etc) and measure its results.
+
+#### Storing vectors
+
+Once we've got vectors produced by the embedding model we need to save it somewhere. There are couple options for doing that, like storing them in:
+
+1. a file - not efficient but simple solition
+2. an exisitng database with requires extensions installed. Popular solituons that are offering it are for instance , postgres,  elasticseach, redis i inni.
+4. A native vector db - with AI RAG revolution new players emerges offering native vector storing and search solituons. Examples are :
+5. a cloud provider IaaS - each cloud vendor has its own vector database -
+
+Each one of them comes with pros and cons. Some of them are free to use, some of them are paid but are easy to use, more performant or doesn not require to set entite infrastructure.
+
+### Using embeddings in applications
+
+Feww that was a lot of knowledge to be introduced to. Let's now focus on applicatation that we're buildnig. In the nutri chef ai app i want to have 2 endpoints that would:
+
+• search the best fitting recipes
+• propose a meal plan for a day
+
+The workflow for the second one will look like this:
+1. User issues a query which is transformed into vectro
+2. User input vector is used to search a similar chunks of stored data. The most similar chunks are returned with an id of a recipe.
+3. The recipe is fetched using the recipe ids. (This is where the 1st endpoint ends)
+4. Recipes are added to the system prompt which is passed to llm with user prompt and instructions what the lllm should do (plan a meal for a day)
+5. the output is returned to the user as a string
+
+`proces konwersji query do embeddingu, retrieve closest data chunks to the query vector; compare vectors; same embedding model for queey and indexed data`
+
+## Practical walkthrough
+
+### Embedding recipe data and inserting into pgvector columns
 
 First step in building the Nutri Chef AI application is to vectorize recipe data. I already have it in the PostgreSQL database so the plan is to retrieve from it, prepare the request for the embedding process, execute it and then store the results in the the PostgreSQL database.
 
@@ -166,7 +224,7 @@ docker pull pgvector/pgvector:pg17-trixie
 
 More information on how to provide the installation files to the PostgreSQL instance could be found in [the GitHub repository of the pgvector extension](http://github.com/pgvector/pgvector).
 
-### 📦 Prepare batch file
+#### 📦 Prepare batch input file
 
 Database is prepared so we could start writing a script for preparing `.jsonl` file for the batch job. This format is the only accepted by the OpenAI API and it looks somethig like this:
 
@@ -291,14 +349,9 @@ Database connection closed
 
 Simple as that. From the script you may tell that I'm using the OpenAI API and I've picked the `text-embedding-3-small` embedding model. You can choose from different models, which varies by generation, performance and price. In the moment of writing this article there are also `text-embedding-ada-002` and `text-embedding-3-large`. A current list of supported models could be found on [the official OpenAI Models website](https://platform.openai.com/docs/models).
 
-Going back to the script, if you look closer you may see and ask why I have chunked the data. Why each recipe was splitted into pieces which resulted in more batch requests.
+Going back to the script, if you look closer you may see that each recipe data was splitted into smaller chunks (name, description, ingredients, instructions and tags) to make each vector smaller.
 
-#### 🪚 Chunking your data
-
-`TODOTODOTODOTODOTODOTODOTODOTODO`
-
-
-### 🚀Start batch job
+#### 🚀Start batch job
 
 An input file is prepared so we have nothing left but to write a script to first upload it and then start the batch job:
 
@@ -344,7 +397,6 @@ if __name__ == "__main__":
 
 The output after running the script:
 
-
 ```bash
 HTTP Request: POST https://api.openai.com/v1/files "HTTP/1.1 200 OK"
 File uploaded successfully with ID: file-HvRA1M3
@@ -354,8 +406,7 @@ Batch job created with ID: batch_68c8f2bf
 
 Great! 🎉🎉🎉 The only thing we can do now is to sit and relax. The batch job is executed in the backrogund, so how we get to know when it finishes? 🤔
 
-
-### 🔍 Monitor batch job status
+#### 🔍 Monitor batch job status
 
 Depending on how large your dataset is the batch process may take from several minutes to several hours. To verify it the OpenAI API could be used:
 
@@ -427,7 +478,7 @@ Before completing it a batch may have various statuses, all of them are listed [
 * `finalizing` - all requests have been executed and the results are being prepared,
 * `completed` - all requests have been executed and the results are available to be downloaded.
 
-### 💾 Download batch job results
+#### 💾 Download batch job results
 
 Having the id of an output file we can downlaod it with this simple script:
 
@@ -471,7 +522,7 @@ After opening the resulting file we would get something like this:
 
 It contains a list of responses for each request, where each one of them contains a vector representation of each chunk which will be extracted and inserted into database in the next step.
 
-### Insert vector data into database
+#### 📥 Insert vector data into database
 
 The last step is to insert the embeddings into the PostgreSQL database. We could use the already existing table with recipes but because each recipe was chunked into 5 pieces, let's have a new one:
 
@@ -651,15 +702,17 @@ Performing cleanup
 Database connection closed
 ```
 
-### Chunking data
+### Utilizing embeddings in application
 
-## Utilizing vectors in application
+#### Search best fitting recipes
 
-### Search best fitting recipes
-
-### Enriching prompt with knowledge base data
+#### Enriching prompt with recipe data
 
 ## Going deeper
+
+### Different ways for document embedding process
+
+### Indexing vectors
 
 ## References
 
