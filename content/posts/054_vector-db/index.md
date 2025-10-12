@@ -91,9 +91,9 @@ So the app flow is pretty straighfowrad. We need to have data prepared as vector
 
 Those models, embedding models, are different than regular chat models but they are offered by alll key AI providers. For instance Open Ai is offering 2 in the moment of writing it - .......... We can select whatever model we like but we need to keep to these rules:
 
-• tune number of dimensions based on purpose - hugher number of dimension is usually good for capturing nuances in data, similar but still different data may have slightky different vectors and hence search may be more accurate. On the other hand higher number of parameters may require more resources to compute search and require more storage for larger vectors
-• model is self hosted or consumed via api - like for lllm, we pick from mosels that we can isntall locally ofr use services exposed by ai providers
-• input snd data must be converted using the same language - each model represents space in a different which makes vectors produced not compatibile if 2 different models where used. If you want to test which embedding works the best for your case (with ab testing pephaps) you need to have embedding produced by different modrls
+* tune number of dimensions based on purpose - hugher number of dimension is usually good for capturing nuances in data, similar but still different data may have slightky different vectors and hence search may be more accurate. On the other hand higher number of parameters may require more resources to compute search and require more storage for larger vectors
+* model is self hosted or consumed via api - like for lllm, we pick from mosels that we can isntall locally ofr use services exposed by ai providers
+* input snd data must be converted using the same language - each model represents space in a different which makes vectors produced not compatibile if 2 different models where used. If you want to test which embedding works the best for your case (with ab testing pephaps) you need to have embedding produced by different modrls
 
 If you would like to browse available models go check the https://huggingface.co/blog/mteb mteb, which also measures all if them how powerful they are.
 
@@ -124,8 +124,8 @@ Each one of them comes with pros and cons. Some of them are free to use, some of
 
 Feww that was a lot of knowledge to be introduced to. Let's now focus on applicatation that we're buildnig. In the *Nutri Chef AI* app I want to have 2 endpoints that would:
 
-• search the best fitting recipes
-• propose a meal plan for a day
+* search the best fitting recipes
+* propose a meal plan for a day
 
 The workflow for the second one will look like this:
 
