@@ -6,44 +6,6 @@ description: ""
 tags: ["ai", "ai-agents", "generative-ai", "model-embeddings", "openai", "rag", "retrieval-augmented-generation", "java", "kotlin", "spring-boot", "python", "database", "postgresql", "vectors", "pgvector" ]
 ---
 
-* https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F
-  * podstawy czym jest embedding, czym sa vectory
-  * oraz to: https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
-* https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector
-  * długi i bardzo szczegłowy artykuł - skupia się na samych vectorach i postgresie
-  * oraz https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive
-  * oraz https://www.postgresql.fastware.com/blog/how-to-store-and-query-embeddings-in-postgresql-without-losing-your-mind?utm_source=perplexity
-  * oraz https://www.tigerdata.com/learn/using-pgvector-with-python
-* https://www.tigerdata.com/blog/which-rag-chunking-and-formatting-strategy-is-best?utm_source=perplexity
-  * chunkowanie danych raga
-  * oraz https://mastra.ai/en/docs/rag/chunking-and-embedding
-* https://neptune.ai/blog/building-llm-applications-with-vector-databases
-  * jak pisac apki wykorzystujące raga, ogólne
-* https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
-  * using embeddings in prompts
-
-
-
-* wstęp
-  * ~~wstęp do nowej serii (kolejnej, zobaczymy czy nie porzucę jej po 1-2 wpisach :P)
-  * ~~dodać disclaimer - nie jestem ai engienerem
-* vectorize db data
-  * czym sa vectory i dlaczego sa wazne
-  * jak ja to zrobiłem
-    * co poza postgresem
-  * chunking startegy
-* aplikacja
-  * search
-  * dodanie wyników do prompta
-* dodatkowe rozkminy
-  * inne opcje na tworzenie vectorów
-    * w bazie danych
-    * on the fly, przez aplikację (robiąc update/insert kalkuowanie vectora)
-  * wyliczanie kwoty, ile to będzie kosztowało
-  * further optimizations - te dziwne indeksy
-  * czy vector db jest potrzebny dla ustrukturyzowanych danych?
-
-
 ===========
 WSTĘP
 
@@ -51,14 +13,13 @@ WSTĘP
 
 ![cover](cover.jpg)
 
-The AI revolution is here. The release of ChatGpt in November 2022 ignited a new revolution in software, where generative AI plays a central role. New tools and patterns emerged which enables us, software engineers, to build new, exciting projects. It's so hard to keep up with it because almost every week a new thing comes up. 
+The AI revolution is here. The release of ChatGpt in November 2022 ignited a new revolution in software, where generative AI plays a central role. New tools and patterns emerged which enables us, software engineers, to build new, exciting projects. It's so hard to keep up with it because almost every week a new thing comes up.
 
-At least for me it is sometimes hard to keep up with all new things. Hence to fight off my fear-of-missing-out and to extend my professional toolbox I have created this series in which I will describe how to build an application that is powered by the AI. But before that keep in mind I am not an AI engineer and I have only a basic knowledge on machine learning. I am not an expert in this field but I hope that with this series it will become a little bit more clear to me and perhpaps you, the reader, will also learn something too. 
+At least for me it is sometimes hard to keep up with all new things. Hence to fight off my fear-of-missing-out and to extend my professional toolbox I have created this series in which I will describe how to build an application that is powered by the AI. But before that keep in mind I am not an AI engineer and I have only a basic knowledge on machine learning. I am not an expert in this field but I hope that with this series it will become a little bit more clear to me and perhpaps you, the reader, will also learn something too.
 
 (And I hope that this series won't share the fate of previous series that I abondend after one or two entries 😜🤞)
 
 ![abandon-series-meme](series-meme.jpg)
-
 
 ## The Project - 👨‍🍳 Nutri Chef AI
 
@@ -66,11 +27,9 @@ I like to learn based on close to real-life projects. Hence I've decided to buil
 
 Because I already has a large number of favourite recipies I don't want to really on something that is on the Internet. I want my AI nutrition assistant to plan my meals based on my prompt and cookbook.
 
-```
-OBRAZEK że ja odpytuję AIa, a on sprawdza mi w ksiązce kucharskiej i daje listę
-```
+![meal-planner-process](meal-planner-process.png)
 
-This requirement brings us to a first problem - **how to provide my entire cookbook to the AI? **
+This requirement brings us to a first problem - **how to provide my entire cookbook to the AI?**
 
 Theoritcally we could add entire knowledge to each prompt but for several reasons it may not be good idea:
 
@@ -79,7 +38,7 @@ Theoritcally we could add entire knowledge to each prompt but for several reason
 * it could result in lossing context window - it is not always good to have as big input as possible because too large inputs may cause that some parts of it will be not be taken into the account when generating an answer by the AI model, it is always a matter of balancing the size of it,
 * it would be not accepted by the AI model - each AI model has an input token limit which can't be exceeded.
 
-Instead we could use only a subset of knowledge base. We can cerafully select only the parts that are the most relevant for a task (user prompt). E.g. in the *Nutri Chef AI* app for a prompt `find all recipies with what is left in my fridge - cheese, ham, egg, paprica, flour, milk` it is not needed to attach recipies that requires other ingredients. We want to recieve only those that matches the critiria. So we need something smart eanough to get only those part of data that may be relevant before adding it to the system context. 
+Instead we could use only a subset of knowledge base. We can cerafully select only the parts that are the most relevant for a task (user prompt). E.g. in the *Nutri Chef AI* app for a prompt `find all recipies with what is left in my fridge - cheese, ham, egg, paprica, flour, milk` it is not needed to attach recipies that requires other ingredients. We want to recieve only those that matches the critiria. So we need something smart eanough to get only those part of data that may be relevant before adding it to the system context.
 
 ## How Retrieval‑Augmented Generation (RAG) works
 
@@ -175,19 +134,29 @@ Each one of them comes with pros and cons. Some of them are free to use, some of
 
 ### Using embeddings in applications
 
-Feww that was a lot of knowledge to be introduced to. Let's now focus on applicatation that we're buildnig. In the nutri chef ai app i want to have 2 endpoints that would:
+Feww that was a lot of knowledge to be introduced to. Let's now focus on applicatation that we're buildnig. In the *Nutri Chef AI* app I want to have 2 endpoints that would:
 
 • search the best fitting recipes
 • propose a meal plan for a day
 
 The workflow for the second one will look like this:
-1. User issues a query which is transformed into vectro
-2. User input vector is used to search a similar chunks of stored data. The most similar chunks are returned with an id of a recipe.
-3. The recipe is fetched using the recipe ids. (This is where the 1st endpoint ends)
-4. Recipes are added to the system prompt which is passed to llm with user prompt and instructions what the lllm should do (plan a meal for a day)
-5. the output is returned to the user as a string
 
-`proces konwersji query do embeddingu, retrieve closest data chunks to the query vector; compare vectors; same embedding model for queey and indexed data`
+1. User sends a query.
+2. The query is transformed into a vector.
+3. User input vector is compared with vectors stored in PostgreSQL database. The *n* most similar chunks are returned each with an id of a different recipe.
+4. Full recipes are fetched from db using the recipe ids (this is where the 1st endpoint ends and returns recipes as results).
+5. Recipes are formatted and added to the system prompt along with AI instructions and a user prompt.
+6. The entire prompt is passed to the LLM.
+7. The output is returned to the user as a string
+
+This flow is not specific to the *Nutri Chef AI*, it is pretty generic one and could be used in various cases.
+
+```
+TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+(Pokazać na obrazku)
+```
+
+The implementration of this entire flow is described in the [Enriching prompt with recipe data](TODODODOODODOD) section of this blog post.
 
 ## Practical walkthrough
 
@@ -195,9 +164,9 @@ The workflow for the second one will look like this:
 
 First step in building the Nutri Chef AI application is to vectorize recipe data. I already have it in the PostgreSQL database so the plan is to retrieve from it, prepare the request for the embedding process, execute it and then store the results in the the PostgreSQL database.
 
-My data is relatively static. I don't change it too often, therefore I've decided that vectorinzing data will be a one-off job. The application will be using the OpenAI model therefore embedding I'm also using the ChatGPT API. 
+My data is relatively static. I don't change it too often, therefore I've decided that vectorinzing data will be a one-off job. The application will be using the OpenAI model therefore embedding I'm also using the ChatGPT API.
 
-To achieve this task I could use [a simple endpoint for creating embeddings](https://platform.openai.com/docs/api-reference/embeddings/create) which is fast, the reply with vectors is immediate. But in my case I can wait a little bit longer for results and if it would be cheaper it would be even better. For these reasons I've decided to go with [OpenAI Batch API](https://platform.openai.com/docs/guides/batch). This API in essence is processing request in the same fashion as the standard one but it allows to combine multiple request into one. They are then executed asynchronously and the results are returned after couple of minutes or hours (depending on how large the dataset it). It may give an additional overhead to the process (because we need to monitor the async process) but it wil come with a lower price per each embeddding. 
+To achieve this task I could use [a simple endpoint for creating embeddings](https://platform.openai.com/docs/api-reference/embeddings/create) which is fast, the reply with vectors is immediate. But in my case I can wait a little bit longer for results and if it would be cheaper it would be even better. For these reasons I've decided to go with [OpenAI Batch API](https://platform.openai.com/docs/guides/batch). This API in essence is processing request in the same fashion as the standard one but it allows to combine multiple request into one. They are then executed asynchronously and the results are returned after couple of minutes or hours (depending on how large the dataset it). It may give an additional overhead to the process (because we need to monitor the async process) but it wil come with a lower price per each embeddding.
 
 The overall process looks like this:
 
@@ -717,3 +686,21 @@ Database connection closed
 ## References
 
 * książk ai engineering
+
+
+
+* https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F
+  * podstawy czym jest embedding, czym sa vectory
+  * oraz to: https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
+* https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector
+  * długi i bardzo szczegłowy artykuł - skupia się na samych vectorach i postgresie
+  * oraz https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive
+  * oraz https://www.postgresql.fastware.com/blog/how-to-store-and-query-embeddings-in-postgresql-without-losing-your-mind?utm_source=perplexity
+  * oraz https://www.tigerdata.com/learn/using-pgvector-with-python
+* https://www.tigerdata.com/blog/which-rag-chunking-and-formatting-strategy-is-best?utm_source=perplexity
+  * chunkowanie danych raga
+  * oraz https://mastra.ai/en/docs/rag/chunking-and-embedding
+* https://neptune.ai/blog/building-llm-applications-with-vector-databases
+  * jak pisac apki wykorzystujące raga, ogólne
+* https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
+  * using embeddings in prompts
