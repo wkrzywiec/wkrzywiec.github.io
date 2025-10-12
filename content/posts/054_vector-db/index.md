@@ -1,6 +1,6 @@
 ---
 title: "Building AI-Powered Software: Model Embeddings"
-date: 2025-12-12
+date: 2025-10-01
 summary: "Learn how to build an AI agentic software that utilized vectorized knowledge database"
 description: ""
 tags: ["ai", "ai-agents", "generative-ai", "model-embeddings", "openai", "rag", "retrieval-augmented-generation", "java", "kotlin", "spring-boot", "python", "database", "postgresql", "vectors", "pgvector" ]
