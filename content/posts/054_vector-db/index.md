@@ -47,15 +47,11 @@ There are 2 patterns of how we could provide achieve that:
 1. via Retrieval-Augmented Generation (RAG)
 2. via tool calling
 
-As you may gues, in this article is focused on the first approach (I'll do the separate blog post on the latter topic sometime in the future). 
+As you may gues, in this article is focused on the first approach (I'll do the separate blog post on the latter topic sometime in the future).
 
-RAG is a techniquie in which application retrieves the most relevant pieces information from the external data source (it could a database, file or else) and attach it to the AI input with a user prompt. It is up to an application to select data that may be needed to fullfil the task by the AI agent. It is the app which builds the context specific to each user query.  
+RAG is a technique in which application retrieves the most relevant pieces information from the external data source (it could a database, file or else) and attach it to the AI input with a user prompt. It is up to an application to select data that may be needed to fullfil the task by the AI agent. It is the app which builds the context specific to each user query.
 
-```
-TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-
-wykres pokazujący jak aplikacja wybiera dane
-```
+![rag process](rag.png)
 
 **But how an application can select only relevant data?**
 
