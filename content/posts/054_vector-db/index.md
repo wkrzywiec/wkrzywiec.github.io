@@ -65,29 +65,21 @@ In short an embedding is a compact representation of a data in a form multidimen
 
 To visualize it let's check a following graph of the x and y axes which presents 3 vectors:
 
-```
-TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-
-oś OX i OY, porównanie wektorów
-* wyjasnic xzym jest vectro, na obrazku, można użyć cos podobnego to tego https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
-```
+![vectors](vectors.png)
 
 Vector A and B are similar to each other because they are close to each other, they have similar angle with x and y axes and they are of similar length. Vector C however does not share those similarities with othe two vectors. If vectors A and B would represent two pieces of information we could say that both of them are of a similar meaning.
 
 When we can say that 2 vectors are similar? There are couple of way to calculate if the distance metric between 2 vectors, and thus their dimilarity. Some of them you may know already from the math classes:
 
-• l2 (Euclidean) distance
-• cosine distance
-• l1 distance
-• hamming distance
-• jaccard distance
+* l2 (Euclidean) distance
+* cosine distance
+* l1 distance
+* hamming distance
+* jaccard distance
 
 Each distance metric has its strengths and is suitable for different data types. For instance, the Euclidean distance is a distance between two end points of position vector that is shown on a picture below
 
-```
-TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-(Pokazać na obrazku)
-```
+![vector distance](vector-distance.png)
 
 The larger differences in length and angel are between 2 vectors the larger distance is between both of them and the larger dissimilarities.
 
