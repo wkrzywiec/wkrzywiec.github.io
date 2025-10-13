@@ -667,6 +667,85 @@ We have the embeddings prepared so we can move on to the actual application. I'l
 
 #### Search best fitting recipes
 
+First endpoint that I would like to implement and which will utilize RAG is for searching the most matching queries to the user input. It'll will be the GET `/api/recipes/search?limit=<number of recipes>&prompt=<user input>` which will return a list of recipes in well structured, JSON format. The `limit` query parameter refers to how many recipes a client wants to retrieve and the `prompt` is a user input string, which could be anything, e.g. `find low-carb options for breakfast`.
+
+Starting from the controller, which is rather standard:
+
+```kotlin
+@RestController
+@RequestMapping("/api/recipes")
+class RecipeController(
+    val recipeSearchService: RecipeSearchFacade
+) {
+
+    @GetMapping("/search")
+    fun findRecipes(
+        @RequestParam prompt: String?,
+        @RequestParam(defaultValue = "10") limit: Int
+    ): ResponseEntity<RecipeSearchResponse> {
+
+        lateinit var matches: List<Recipe>
+
+        val duration = measureTimeMillis {
+            matches = recipeSearchService
+                .findRecipes(prompt, limit)
+        }
+
+        val response = RecipeSearchResponse(matches = matches, totalFound = matches.size, searchTimeMs = duration)
+
+        return ResponseEntity.ok(response)
+    }
+}
+
+data class RecipeSearchResponse(
+    val matches: List<Recipe>? = null,
+    val totalFound: Int = 0,
+    val searchTimeMs: Long = 0,
+)
+```
+
+ And the response may look like this:
+
+```json
+{
+    "totalFound": 10,
+    "searchTimeMs": 873,
+    "matches": [
+        {
+            "id": "ad252e65-7f39-4914-bcc4-0f29b7aaf18e",
+            "name": "Omelette with Spinach, Avocado, and Feta Cheese",
+            "description": null,
+            "ingredients": [],
+            "instructions": [
+                {
+                    "steps": [
+                        "Rinse and chop the spinach. Heat 1 teaspoon of butter in a pan, add halved garlic and spinach. Stir and cook for a minute until the spinach wilts and softens. Set aside on a plate.",
+                        "Melt a tablespoon of butter in the pan and spread it all over. Meanwhile, beat the eggs in a bowl with a fork, adding milk or water, salt, and pepper, trying to incorporate air into the eggs.",
+                        "Pour the egg mixture into the pan and cook for about 2 minutes. Then add the spinach, and after a minute of cooking, add chopped avocado and feta. Sprinkle with chives, season with salt and pepper, and cook for another half a minute until the eggs are set.",
+                        "You can fold it in half or roll it up."
+                    ],
+                    "section": "all"
+                }
+            ],
+            "sourceUrl": "https://www.kwestiasmaku.com/przepis/omlet-ze-szpinakiem-awokado-i-serem-feta",
+            "servings": "2 servings, 301 kcal each",
+            "tags": [
+                "Breadless Breakfasts",
+                "feta cheese",
+                "Eggs for breakfast",
+                "Spinach",
+                "Omelettes",
+                "Avocado",
+                "Fit recipes",
+                "Vegetarian",
+                "Eggs"
+            ],
+            "similarityScore": 0.40134930610656316
+        }
+    ]
+}
+```
+
 #### Enriching prompt with recipe data
 
 ## Going deeper
