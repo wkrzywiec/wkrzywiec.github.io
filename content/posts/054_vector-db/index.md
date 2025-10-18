@@ -675,7 +675,7 @@ Starting from the controller, which is rather standard:
 @RestController
 @RequestMapping("/api/recipes")
 class RecipeController(
-    val recipeSearchService: RecipeSearchFacade
+    val recipeSearchFacade: RecipeSearchFacade
 ) {
 
     @GetMapping("/search")
@@ -687,7 +687,7 @@ class RecipeController(
         lateinit var matches: List<Recipe>
 
         val duration = measureTimeMillis {
-            matches = recipeSearchService
+            matches = recipeSearchFacade
                 .findRecipes(prompt, limit)
         }
 
@@ -698,13 +698,215 @@ class RecipeController(
 }
 
 data class RecipeSearchResponse(
-    val matches: List<Recipe>? = null,
+    val matches: List<Recipe> = emptyList(),
     val totalFound: Int = 0,
     val searchTimeMs: Long = 0,
 )
+
+data class Recipe(
+    val id: UUID,
+    val name: String,
+    val description: String? = null,
+    val ingredients: List<Ingredients>,
+    val instructions: List<Instruction>,
+    val sourceUrl: String? = null,
+    val servings: String? = null,
+    val tags: List<String> = emptyList(),
+    val similarityScore: Double? = null,
+)
+
+data class Ingredients(val section: String, val ingredients: String)
+
+data class Instruction(val steps: List<String>, val section: String)
 ```
 
- And the response may look like this:
+The only think may raise an eyebrow is the `measureTimeMillis` block which I've added to measure waiting time for a result from facade which includes all the steps required to retrieve recipes. And speaking of the steps that facade implement, here is its code:
+
+```kotlin
+@Service
+class RecipeSearchFacade(
+    private val embeddingEngine: EmbeddingEngine,
+    private val repository: RecipeRepository
+) {
+
+    companion object {
+        private val log = logger {}
+    }
+
+    fun findRecipes(prompt: String?, limit: Int): List<Recipe> {
+        if (prompt == null || prompt.isBlank()) return emptyList()
+        log.info { "Searching for $limit recipes based on a user prompt: '$prompt'..."}
+
+        val promptEmbedding: FloatArray = embeddingEngine.embed(prompt)
+        log.info { "User input was embedded. Looking for closest recipes..." }
+        return repository.findNearestRecipes(promptEmbedding, limit)
+    }
+}
+```
+
+The role of a facade is to orchestrate the entire process, therefore it covers first creating the embedding out of user input and then finding the most suitable recipes.
+
+Let's check the code of the `EmbeddingEngine`:
+
+```kotlin
+import org.springframework.ai.embedding.EmbeddingModel
+
+interface EmbeddingEngine {
+    fun embed(prompt: String): FloatArray
+}
+
+@Component
+class OpenAIEmbeddingEngine(
+    private val embeddingModel: EmbeddingModel
+): EmbeddingEngine {
+    override fun embed(prompt: String): FloatArray {
+        val response = embeddingModel.embedForResponse(listOf(prompt))
+        return response.result.output
+    }
+}
+```
+
+Again, there are not that much lines of code here. With `EmbeddingModel` we can call any embedding model to get the vector representation of a user prompt which in Kotlin it is as `FloatArray` object. It's thanks to the [Spring AI](https://spring.io/projects/spring-ai) framework. The `EmbeddingModel` is Spring's interface for interacting with various embedding models. The only thing that needs to done to add it is to insert following dependency to the build tool (Gradle or Maven):
+
+```kotlin
+dependencies {
+    implementation("org.springframework.ai:spring-ai-starter-model-openai:1.0.1")
+    implementation("org.springframework.ai:spring-ai-autoconfigure-model-openai:1.0.1")
+}
+```
+
+I've selected the OpenAI model for start so this is the reason both libs were added. Apart from that we also need to select which embedding model we want to use (it needs to be the same as it was used for embed data in PostgreSQL) and provide the API key. The simplest way to achieve it is via autoconfiguration which requires only to provide those values to the `application.yaml` file:
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: "text-embedding-3-small"
+```
+
+That's pretty much it that needs to be done to enable text embedding.
+
+With `OpenAIEmbeddingEngine` the user input was transformed into vector so the only thing to do now is to pass this vector to the SQL query to find the best matching recipes. The logic of it is encapsulated in the `findNearestRecipes(promptEmbedding: FloatArray, limit: Int = 10)` method of the `RecipeRepository` class:
+
+```kotlin
+@Repository
+class RecipeRepository(
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
+) {
+
+    fun findNearestRecipes(promptEmbedding: FloatArray, limit: Int = 10): List<Recipe> {
+        val sql = """
+            SELECT
+              r.id AS recipe_id,
+              r.name,
+              r.description,
+              re.similarity_score,
+              r.ingredients,
+              r.instructions,
+              r.source_url,
+              r.servings,
+              r.tags
+            FROM (
+                SELECT
+                  recipe_id,
+                  MIN(embedding <=> CAST(:prompt_embedding AS vector)) AS similarity_score
+                FROM recipe_embeddings
+                GROUP BY recipe_id
+                ORDER BY similarity_score ASC
+                LIMIT :limit
+            ) AS re
+            JOIN recipe r ON r.id = re.recipe_id
+            ORDER BY re.similarity_score ASC;
+        """
+
+        val params = MapSqlParameterSource()
+            .addValue("prompt_embedding", promptEmbedding)
+            .addValue("limit", limit)
+
+        return jdbcTemplate.query(sql, params, rowMapper())
+    }
+
+    fun rowMapper() = RowMapper<Recipe> { rs, _ ->
+        Recipe(
+            id = UUID.fromString(rs.getString("recipe_id")),
+            name = rs.getString("name"),
+            description = rs.getString("description"),
+            ingredients = parseFromJson<Ingredients>(rs.getString("ingredients")),
+            instructions =  parseFromJson<Instruction>(rs.getString("instructions")),
+            sourceUrl = rs.getString("source_url"),
+            servings = rs.getString("servings"),
+            tags =  parseFromJson<String>(rs.getString("tags")),
+            similarityScore = rs.getDouble("similarity_score"),
+        )
+    }
+
+    private inline fun <reified T> parseFromJson(jsonString: String?): List<T> {
+        if (jsonString.isNullOrBlank()) return emptyList()
+
+        return try {
+            jsonString.toObject<List<T>>()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+```
+
+Here I'm using the `NamedParameterJdbcTemplate` to execute the raw SQL query, which finds the top `n` (10 by default) recipeIds from the `recipe_embeddings` table. The list of retrieved recipeIds is then used to get full recipe data from the `recipe` table.
+
+The most interesting part is how vectors are compared here:
+
+```sql
+SELECT
+    recipe_id,
+    MIN(embedding <=> CAST(:prompt_embedding AS vector)) AS similarity_score
+FROM recipe_embeddings
+GROUP BY recipe_id
+ORDER BY similarity_score ASC
+LIMIT :limit
+```
+
+I'm using the `<=>` operator provided by the *pgvector* extenstion. This particular operator finds the shortest value of cosine distance. The results are then sorted from the smallest to the biggest value and limited to only top `n` results.
+
+*pgvector* offers other methods of comparing vectors which are:
+
+* `<->` - L2 distance
+* `<#>` - (negative) inner product
+* `<=>` - cosine distance
+* `<+>` - L1 distance
+* `<~>` - Hamming distance (binary vectors)
+* `<%>` - Jaccard distance (binary vectors)
+
+In order to find the best one for your case is to try out all of them, experiment and measure which one is the most suitable for you.
+
+The `jsonString.toObject<List<T>>()` function code on the `String` object is an extension method (this is Kotlin's ability to add additional method to a class that is not part of the current codebase):
+
+```kotlin
+class ObjectMapperConfig {
+
+    companion object {
+        val objectMapper = objectMapper()
+    }
+}
+
+fun objectMapper() =
+    jsonMapper {
+        addModule(kotlinModule())
+        findAndAddModules()
+        serializationInclusion(JsonInclude.Include.NON_NULL)
+        defaultDateFormat(StdDateFormat())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        build()
+    }
+
+fun Any.toJson(): String = objectMapper().writeValueAsString(this)
+
+inline fun <reified T> String.toObject(): T = objectMapper().readValue(this)
+```
+
+Everything is coded, so after starting the application and running the **GET** `/api/recipes/search?prompt=<my_prompt>` endpoint where my prompt was a simple `find low-carb options for breakfast` I got this result:
 
 ```json
 {
@@ -712,47 +914,256 @@ data class RecipeSearchResponse(
     "searchTimeMs": 873,
     "matches": [
         {
-            "id": "ad252e65-7f39-4914-bcc4-0f29b7aaf18e",
-            "name": "Omelette with Spinach, Avocado, and Feta Cheese",
-            "description": null,
-            "ingredients": [],
-            "instructions": [
+            "id": "00280180-a2ca-4d1d-930e-7a8baf6ff187",
+            "name": "Scrambled Eggs with Mushrooms on Toast",
+            "description": "A tasty breakfast idea. Scrambled eggs and browned small mushrooms are placed on toasts and sprinkled with chopped parsley or chives.",
+            "ingredients": [
                 {
-                    "steps": [
-                        "Rinse and chop the spinach. Heat 1 teaspoon of butter in a pan, add halved garlic and spinach. Stir and cook for a minute until the spinach wilts and softens. Set aside on a plate.",
-                        "Melt a tablespoon of butter in the pan and spread it all over. Meanwhile, beat the eggs in a bowl with a fork, adding milk or water, salt, and pepper, trying to incorporate air into the eggs.",
-                        "Pour the egg mixture into the pan and cook for about 2 minutes. Then add the spinach, and after a minute of cooking, add chopped avocado and feta. Sprinkle with chives, season with salt and pepper, and cook for another half a minute until the eggs are set.",
-                        "You can fold it in half or roll it up."
-                    ],
-                    "section": "all"
+                "section": "all",
+                "ingredients": [
+                    "4 eggs",
+                    "4 tablespoons butter",
+                    "1 tablespoon vegetable oil",
+                    "2 cups small mushrooms",
+                    "sea salt and freshly ground black pepper",
+                    "4 slices of toasted baguette",
+                    "2 tablespoons chopped parsley"
+                ]
                 }
             ],
-            "sourceUrl": "https://www.kwestiasmaku.com/przepis/omlet-ze-szpinakiem-awokado-i-serem-feta",
-            "servings": "2 servings, 301 kcal each",
-            "tags": [
-                "Breadless Breakfasts",
-                "feta cheese",
-                "Eggs for breakfast",
-                "Spinach",
-                "Omelettes",
-                "Avocado",
-                "Fit recipes",
-                "Vegetarian",
-                "Eggs"
+            "instructions": [
+                {
+                "section": "all",
+                "steps": [
+                    "Prepare two small frying pans. Heat the first, add the oil and 2 tablespoons of butter and melt. Add washed and dried mushrooms and fry for a few minutes until nicely browned on each side. Season with salt and pepper.",
+                    "Meanwhile, toast the bread slices in a toaster, spread them with butter and place them on two plates.",
+                    "Heat the second pan and melt 2 tablespoons of butter in it, crack in the eggs and season with salt. Fry quickly, stirring only 4–5 times. As soon as the whites set, remove from the pan and place on one prepared toast. Put the mushrooms on the other toast. Sprinkle with pepper and parsley."
+                ]
+                }
             ],
-            "similarityScore": 0.40134930610656316
-        }
+            "sourceUrl": "https://www.kwestiasmaku.com/dania_dla_dwojga/sniadania/jajecznica_pieczarki/przepis.html",
+            "servings": "2 servings",
+            "tags": [
+                "Mushrooms",
+                "Eggs",
+                "Eggs for breakfast"
+            ],
+            "similarityScore": 0.365850391911005
+        },
+        /// other recipes
     ]
 }
 ```
 
+Looks amazing 🤩! As you can see even with small amount of work and with out really using any LLM we can "intelligently" query our data to find best matches! Awesome!
+
 #### Enriching prompt with recipe data
+
+With previous success, let's built a new thing on top of that - a simple diet advisor. Let's use the LLM to act as a dietician that focuses on delivering nutritional balanced recipes based on the user prompt (assuming that user will be asking for ideas for a specific meal and giving certain boundries, like specific diet or favourite ingredients). It won't be doing the plan for the entire week or even day - this will be covered in one of the upcoming blog posts.
+
+First thing to do is to define an endpoint and controller for that:
+
+```kotlin
+@RestController
+@RequestMapping("/api/planner")
+class MealPlannerController(
+    private val mealPlanner: MealPlanner
+) {
+
+    @GetMapping("/single")
+    fun proposeMeal(
+        @RequestParam prompt: String,
+    ): ResponseEntity<RecipeProposals> {
+        val proposals = mealPlanner.proposeMeal(prompt)
+        return ResponseEntity.ok(proposals)
+    }
+}
+```
+
+The `MealPlanner` is a service that takes responsiblity of orchestrating the entire process which is - finding the most relevant recipies to the user prompt (we already have that) and add them to the request made to AI model. Here is the entire code of this class:
+
+```kotlin
+import org.springframework.ai.chat.client.ChatClient
+
+data class RawRecipeProposals(val response: String, val nextActions: List<String>, val recipes: List<RecipeIdWithRationale>)
+
+class RecipeIdWithRationale(val rationale: String, val recipeId: UUID)
+
+data class RecipeProposals(val response: String, val nextActions: List<String>, val recipes: List<RecipeWithRationale>)
+
+data class RecipeWithRationale(val rationale: String, val recipe: Recipe?)
+
+@Service
+class MealPlanner(
+    private val recipeSearch: RecipeSearchFacade,
+    private val builder: ChatClient.Builder
+) {
+
+    companion object {
+        private val log = logger {}
+    }
+
+    fun proposeMeal(userPrompt: String): RecipeProposals? {
+        log.info { "Searching for best meal proposals based on user prompt... '$userPrompt'"}
+        val recipes = recipeSearch.findRecipes(userPrompt, 10)
+
+        log.info {" Found ${recipes.size} recipes with ids: ${recipes.map { it.id }} "}
+        log.info { "Calling an AI agent..."}
+        val answer = builder.build().prompt()
+            .system(
+                """
+                You are a nutrition assistant that selects the best fitting recipes for meal planning.
+                
+                TASK: Analyze the provided recipes and select the most suitable ones based on nutritional benefits and user goals. If no specific goal is provided, assume recommendations for a regular healthy adult diet.
+                
+                RESPONSE FORMAT: You must respond with valid JSON in exactly this structure:
+                {
+                  "response": "Brief overall explanation of your selection strategy and nutritional focus",
+                  "nextActions": ["suggested action 1", "suggested action 2"],
+                  "recipes": [
+                    {
+                      "recipeId": "recipe-uuid-here",
+                      "rationale": "Detailed explanation of why this recipe was selected, focusing on specific nutritional benefits"
+                    }
+                  ]
+                }
+                
+                REQUIREMENTS:
+                - Select 3-5 most suitable recipes from the provided list
+                - Focus on nutritional balance, variety, and health benefits
+                - Include specific nutritional reasons in each rationale
+                - Suggest 2-3 relevant next actions for the user
+                - Use the exact recipe IDs provided
+                - Respond in the same language as the user's request
+                - Return only valid JSON, no additional text
+                
+                RECIPES: ${recipes.toJson()}
+                """.trimIndent()
+            )
+            .user { u -> u.text("USER_QUERY: \"$userPrompt\"") }
+            .call()
+            .content()
+        log.info { "Response from AI Agent:\n $answer" }
+        return answer?.let {
+            mapToRawRecipeProposals(it)
+        }?.let {
+            mapToRecipeProposals(it, recipes)
+        }
+    }
+
+    private fun mapToRawRecipeProposals(answer: String): RawRecipeProposals? {
+        return answer.toObject<RawRecipeProposals>()
+    }
+
+    private fun mapToRecipeProposals(raw: RawRecipeProposals, fullRecipes: List<Recipe>): RecipeProposals? {
+        return RecipeProposals(
+            response = raw.response,
+            nextActions = raw.nextActions,
+            recipes = raw.recipes.map { RecipeWithRationale(rationale = it.rationale, recipe = fullRecipes.find { recipe -> recipe.id == it.recipeId}) }
+        )
+    }
+}
+```
+
+In the first lines of the `fun proposeMeal(userPrompt: String)` method we're invoking the already existing recipe search code. The result of it is then transformed into JSON and added to the end of the system prompt. For now on let's do not focus that much on the prompt itself, the whole topic of how to write good prompt will be covered in another article.
+
+In this post I want to focus on two key points - how the recipies are added to the system prompt and how to enforce AI to respond in a certain format. In the system prompt I'm adding those retrieved recipes as JSONs but in your system you can try to use different formats like XML or something less structured. Because they are added to the prompt it is always important to keep in mind the content of a each recipe should be relatively small in order to be below the limit of how many tokens can be added in the request to AI model.
+
+The second important thing in this prompt is how the output result should be returned because further processing of AI response depends on that. This is crucial part because if we want to build a complex system with an AI in the middle of it we need to enforce returning the structured responses from ito make it easier to process it by other elements of our system (backend or UI code).
+
+To make it work we also need to specify which AI model we want to use. It needs to be added to configuration in the `application.yaml` file. I've decided to use the OpenAI's `gpt-5-mini` model:
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: "gpt-5-mini"
+          temperature: 1
+```
+
+After rebuilding the entire project we can test the **GET** `/api/planner/single` endpoint with a prompt: `looking for a dinner ideas, i'm vegetarian and my favourite vegetable is tomato`. And here are the exemplary result:
+
+```json
+{
+  "response": "I selected vegetarian dishes from the list that maximize the use of tomatoes while providing balanced nutrients: good sources of plant/animal protein (eggs, cheese, beans), healthy fats (olive oil), fiber, and vitamins and antioxidants (lycopene, vitamin C, vitamin A) from vegetables. I focus on a variety of textures and seasons (warm one-pot dish, pasta, baked cheese, cold soup) so you have options for different moods and energy needs.",
+  "nextActions": [
+    "Choose 1 of the following recipes for today's dinner and I'll provide a shopping list.",
+    "If you want more protein, I can suggest simple modifications (e.g., more beans, addition of nuts/seeds).",
+    "Do you want a vegan version of any recipe? I'll suggest substitutes for cheese and eggs."
+  ],
+  "recipes": [
+    {
+      "rationale": "Halloumi cheese in tomatoes with beans — a great combination of plant protein (beans) and protein/calcium memory from halloumi. Beans increase fiber, iron, and plant protein content, making the dish more filling and stabilizing blood glucose levels. Tomatoes and spices add lycopene and micronutrients. Note: halloumi is quite salty — if you limit sodium, use less cheese or choose less salty mozzarella/packaged cheese.",
+      "recipe": {
+        "id": "8fbb8ce5-8367-4660-a984-5f5756ad8780",
+        "name": "Halloumi cheese in tomatoes with beans",
+        "description": "Halloumi cheese can not only be fried or grilled but also baked or cooked in tomato sauce. Cooking keeps the cheese moist and pleasantly soft.",
+        "ingredients": [
+          {
+            "section": "all",
+            "ingredients": [
+              "600 g fresh tomatoes (e.g., sauce variety) or 400 g canned peeled",
+              "1 tablespoon olive oil",
+              "2 garlic cloves",
+              "1 can (400 g) white beans",
+              "about 200 g halloumi cheese",
+              "parsley and chives",
+              "spices: 1/2 teaspoon smoked paprika, a pinch of chili flakes, 1 teaspoon oregano, salt and pepper"
+            ]
+          }
+        ],
+        "instructions": [
+          {
+            "section": "all",
+            "steps": [
+              "Peel fresh tomatoes, cut into quarters, remove stems. Dice the flesh. Cut canned tomatoes into smaller pieces, keep the sauce.",
+              "In a large pan, gently fry grated garlic in olive oil. Add chopped fresh or canned tomatoes with the sauce and bring to a boil, season with salt, pepper, and other spices.",
+              "Cook until the tomatoes reduce (about 10 minutes for fresh tomatoes or 6 minutes for canned tomatoes).",
+              "Add canned beans with the liquid and mix. Cook for about 3 minutes.",
+              "Place halloumi cheese on top and cook for another 5 minutes. Sprinkle with chopped parsley and chives."
+            ]
+          }
+        ],
+        "sourceUrl": "https://www.kwestiasmaku.com/przepis/pieczony-ser-halloumi-w-pomidorach-z-fasola",
+        "servings": "2 servings",
+        "tags": [
+          "Gluten-free",
+          "Warm dinners",
+          "halloumi",
+          "Greek cuisine",
+          "Fit recipes",
+          "Dinners",
+          "Lunches",
+          "Tomatoes",
+          "Vegetarian",
+          "Beans",
+          "Hits of Kwestia Smaku"
+        ],
+        "similarityScore": null
+      }
+    },
+    //other proposals
+}
+```
+
+It returns not only the list of matched recipes but also rationale of each recipe. There is also a text summary for the entire prompt with actions that user may want to do next to get better results.
 
 ## Going deeper
 
-### Different ways for document embedding process
+That's pretty much it. With only few lines of code we have built a RAG system! It is very simple but it may already make an impact. So what's next? How we could make it even better? Oh there are a lot of things that may be done better.
+
+For instance before providing the user prompt to the recipe search service, we could first ask another AI agent to analyze the user input an produce a better prompt that would be embeded and then used to search for a proper recipes. With this technique we could get even more precise results which are focusing on finding the most fitting but also nutritious meals possible from the cookbook.
+
+This is only one of the many improvements that could be added to the RAG system to make it more precise, faster or cheaper. Before the suming up this blog post I want to briefly describe 2 more things that can be done with a system that we have so far.
 
 ### Indexing vectors
+
+Another technic that could be applied here is to create an indexes for vectors in PostgreSQL
+
+### Different ways for document embedding process
 
 ## Summary
 
