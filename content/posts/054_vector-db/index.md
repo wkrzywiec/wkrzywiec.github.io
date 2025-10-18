@@ -675,7 +675,7 @@ Starting from the controller, which is rather standard:
 @RestController
 @RequestMapping("/api/recipes")
 class RecipeController(
-    val recipeSearchService: RecipeSearchFacade
+    val recipeSearchFacade: RecipeSearchFacade
 ) {
 
     @GetMapping("/search")
@@ -687,7 +687,7 @@ class RecipeController(
         lateinit var matches: List<Recipe>
 
         val duration = measureTimeMillis {
-            matches = recipeSearchService
+            matches = recipeSearchFacade
                 .findRecipes(prompt, limit)
         }
 
@@ -698,13 +698,190 @@ class RecipeController(
 }
 
 data class RecipeSearchResponse(
-    val matches: List<Recipe>? = null,
+    val matches: List<Recipe> = emptyList(),
     val totalFound: Int = 0,
     val searchTimeMs: Long = 0,
 )
+
+data class Recipe(
+    val id: UUID,
+    val name: String,
+    val description: String? = null,
+    val ingredients: List<Ingredients>,
+    val instructions: List<Instruction>,
+    val sourceUrl: String? = null,
+    val servings: String? = null,
+    val tags: List<String> = emptyList(),
+    val similarityScore: Double? = null,
+)
+
+data class Ingredients(val section: String, val ingredients: String)
+
+data class Instruction(val steps: List<String>, val section: String)
 ```
 
- And the response may look like this:
+The only think may raise an eyebrow is the `measureTimeMillis` block which I've added to measure waiting time for a result from facade which includes all the steps required to retrieve recipes. And speaking of the steps that facade implement, here is its code:
+
+```kotlin
+@Service
+class RecipeSearchFacade(
+    private val embeddingEngine: EmbeddingEngine,
+    private val repository: RecipeRepository
+) {
+
+    companion object {
+        private val log = logger {}
+    }
+
+    fun findRecipes(prompt: String?, limit: Int): List<Recipe> {
+        if (prompt == null || prompt.isBlank()) return emptyList()
+        log.info { "Searching for $limit recipes based on a user prompt: '$prompt'..."}
+
+        val promptEmbedding: FloatArray = embeddingEngine.embed(prompt)
+        log.info { "User input was embedded. Looking for closest recipes..." }
+        return repository.findNearestRecipes(promptEmbedding, limit)
+    }
+}
+```
+
+The role of a facade is to orchestrate the entire process, therefore it covers first creating the embedding out of user input and then finding the most suitable recipes.
+
+Let's check the code of the `EmbeddingEngine`:
+
+```kotlin
+import org.springframework.ai.embedding.EmbeddingModel
+
+interface EmbeddingEngine {
+    fun embed(prompt: String): FloatArray
+}
+
+@Component
+class OpenAIEmbeddingEngine(
+    private val embeddingModel: EmbeddingModel
+): EmbeddingEngine {
+    override fun embed(prompt: String): FloatArray {
+        val response = embeddingModel.embedForResponse(listOf(prompt))
+        return response.result.output
+    }
+}
+```
+
+Again, there are not that much lines of code here. With `EmbeddingModel` we can call any embedding model to get the vector representation of a user prompt which in Kotlin it is as `FloatArray` object. It's thanks to the [Spring AI](https://spring.io/projects/spring-ai) framework. The `EmbeddingModel` is Spring's interface for interacting with various embedding models. The only thing that needs to done to add it is to insert following dependency to the build tool (Gradle or Maven):
+
+```kotlin
+dependencies {
+    implementation("org.springframework.ai:spring-ai-starter-model-openai:1.0.1")
+    implementation("org.springframework.ai:spring-ai-autoconfigure-model-openai:1.0.1")
+}
+```
+
+I've selected the OpenAI model for start so this is the reason both libs were added. Apart from that we also need to select which embedding model we want to use (it needs to be the same as it was used for embed data in PostgreSQL) and provide the API key. The simplest way to achieve it is via autoconfiguration which requires only to provide those values to the `application.yaml` file:
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: "text-embedding-3-small"
+```
+
+That's pretty much it that needs to be done to enable text embedding.
+
+With `OpenAIEmbeddingEngine` the user input was transformed into vector so the only thing to do now is to pass this vector to the SQL query to find the best matching recipes. The logic of it is encapsulated in the `findNearestRecipes(promptEmbedding: FloatArray, limit: Int = 10)` method of the `RecipeRepository` class:
+
+```kotlin
+@Repository
+class RecipeRepository(
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
+) {
+
+    fun findNearestRecipes(promptEmbedding: FloatArray, limit: Int = 10): List<Recipe> {
+        val sql = """
+            SELECT
+              r.id AS recipe_id,
+              r.name,
+              r.description,
+              re.similarity_score,
+              r.ingredients,
+              r.instructions,
+              r.source_url,
+              r.servings,
+              r.tags
+            FROM (
+                SELECT
+                  recipe_id,
+                  MIN(embedding <=> CAST(:prompt_embedding AS vector)) AS similarity_score
+                FROM recipe_embeddings
+                GROUP BY recipe_id
+                ORDER BY similarity_score ASC
+                LIMIT :limit
+            ) AS re
+            JOIN recipe r ON r.id = re.recipe_id
+            ORDER BY re.similarity_score ASC;
+        """
+
+        val params = MapSqlParameterSource()
+            .addValue("prompt_embedding", promptEmbedding)
+            .addValue("limit", limit)
+
+        return jdbcTemplate.query(sql, params, rowMapper())
+    }
+
+    fun rowMapper() = RowMapper<Recipe> { rs, _ ->
+        Recipe(
+            id = UUID.fromString(rs.getString("recipe_id")),
+            name = rs.getString("name"),
+            description = rs.getString("description"),
+            ingredients = parseFromJson<Ingredients>(rs.getString("ingredients")),
+            instructions =  parseFromJson<Instruction>(rs.getString("instructions")),
+            sourceUrl = rs.getString("source_url"),
+            servings = rs.getString("servings"),
+            tags =  parseFromJson<String>(rs.getString("tags")),
+            similarityScore = rs.getDouble("similarity_score"),
+        )
+    }
+
+    private inline fun <reified T> parseFromJson(jsonString: String?): List<T> {
+        if (jsonString.isNullOrBlank()) return emptyList()
+
+        return try {
+            jsonString.toObject<List<T>>()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+```
+
+Here I'm using the `NamedParameterJdbcTemplate` to execute the raw SQL query, which finds the top `n` (10 by default) recipeIds from the `recipe_embeddings` table. The list of retrieved recipeIds is then used to get full recipe data from the `recipe` table.
+
+The most interesting part is how vectors are compared here:
+
+```sql
+SELECT
+    recipe_id,
+    MIN(embedding <=> CAST(:prompt_embedding AS vector)) AS similarity_score
+FROM recipe_embeddings
+GROUP BY recipe_id
+ORDER BY similarity_score ASC
+LIMIT :limit
+```
+
+I'm using the `<=>` operator provided by the *pgvector* extenstion. This particular operator finds the shortest value of cosine distance. The results are then sorted from the smallest to the biggest value and limited to only top `n` results.
+
+*pgvector* offers other methods of comparing vectors which are:
+
+* `<->` - L2 distance
+* `<#>` - (negative) inner product
+* `<=>` - cosine distance
+* `<+>` - L1 distance
+* `<~>` - Hamming distance (binary vectors)
+* `<%>` - Jaccard distance (binary vectors)
+
+In order to find the best one for your case is to try out all of them, experiment and measure which one is the most suitable for you.
+
+Everything is coded, so after starting the application and running the **GET** `/api/recipes/search?prompt=<my_prompt>` endpoint where my prompt was a simple `find low-carb options for breakfast` I got this result:
 
 ```json
 {
@@ -712,41 +889,52 @@ data class RecipeSearchResponse(
     "searchTimeMs": 873,
     "matches": [
         {
-            "id": "ad252e65-7f39-4914-bcc4-0f29b7aaf18e",
-            "name": "Omelette with Spinach, Avocado, and Feta Cheese",
-            "description": null,
-            "ingredients": [],
-            "instructions": [
+            "id": "00280180-a2ca-4d1d-930e-7a8baf6ff187",
+            "name": "Scrambled Eggs with Mushrooms on Toast",
+            "description": "A tasty breakfast idea. Scrambled eggs and browned small mushrooms are placed on toasts and sprinkled with chopped parsley or chives.",
+            "ingredients": [
                 {
-                    "steps": [
-                        "Rinse and chop the spinach. Heat 1 teaspoon of butter in a pan, add halved garlic and spinach. Stir and cook for a minute until the spinach wilts and softens. Set aside on a plate.",
-                        "Melt a tablespoon of butter in the pan and spread it all over. Meanwhile, beat the eggs in a bowl with a fork, adding milk or water, salt, and pepper, trying to incorporate air into the eggs.",
-                        "Pour the egg mixture into the pan and cook for about 2 minutes. Then add the spinach, and after a minute of cooking, add chopped avocado and feta. Sprinkle with chives, season with salt and pepper, and cook for another half a minute until the eggs are set.",
-                        "You can fold it in half or roll it up."
-                    ],
-                    "section": "all"
+                "section": "all",
+                "ingredients": [
+                    "4 eggs",
+                    "4 tablespoons butter",
+                    "1 tablespoon vegetable oil",
+                    "2 cups small mushrooms",
+                    "sea salt and freshly ground black pepper",
+                    "4 slices of toasted baguette",
+                    "2 tablespoons chopped parsley"
+                ]
                 }
             ],
-            "sourceUrl": "https://www.kwestiasmaku.com/przepis/omlet-ze-szpinakiem-awokado-i-serem-feta",
-            "servings": "2 servings, 301 kcal each",
-            "tags": [
-                "Breadless Breakfasts",
-                "feta cheese",
-                "Eggs for breakfast",
-                "Spinach",
-                "Omelettes",
-                "Avocado",
-                "Fit recipes",
-                "Vegetarian",
-                "Eggs"
+            "instructions": [
+                {
+                "section": "all",
+                "steps": [
+                    "Prepare two small frying pans. Heat the first, add the oil and 2 tablespoons of butter and melt. Add washed and dried mushrooms and fry for a few minutes until nicely browned on each side. Season with salt and pepper.",
+                    "Meanwhile, toast the bread slices in a toaster, spread them with butter and place them on two plates.",
+                    "Heat the second pan and melt 2 tablespoons of butter in it, crack in the eggs and season with salt. Fry quickly, stirring only 4–5 times. As soon as the whites set, remove from the pan and place on one prepared toast. Put the mushrooms on the other toast. Sprinkle with pepper and parsley."
+                ]
+                }
             ],
-            "similarityScore": 0.40134930610656316
-        }
+            "sourceUrl": "https://www.kwestiasmaku.com/dania_dla_dwojga/sniadania/jajecznica_pieczarki/przepis.html",
+            "servings": "2 servings",
+            "tags": [
+                "Mushrooms",
+                "Eggs",
+                "Eggs for breakfast"
+            ],
+            "similarityScore": 0.365850391911005
+        },
+        /// other recipes
     ]
 }
 ```
 
+Looks amazing 🤩! As you can see even with small amount of work and with out really using any LLM we can "intelligently" query our data to find best matches! Awesome!
+
 #### Enriching prompt with recipe data
+
+With previous success, let's complicate a little bit to make the first diet advisor.
 
 ## Going deeper
 
