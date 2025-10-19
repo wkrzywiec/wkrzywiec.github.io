@@ -1157,13 +1157,17 @@ It returns not only the list of matched recipes but also rationale of each recip
 
 That's pretty much it. With only few lines of code we have built a RAG system! It is very simple but it may already make an impact. So what's next? How we could make it even better? Oh there are a lot of things that may be done better.
 
-For instance before providing the user prompt to the recipe search service, we could first ask another AI agent to analyze the user input an produce a better prompt that would be embeded and then used to search for a proper recipes. With this technique we could get even more precise results which are focusing on finding the most fitting but also nutritious meals possible from the cookbook.
+For instance before providing the user prompt to the recipe semantic search service, we could first ask another AI agent to analyze the user input an produce a better prompt that would be embeded and then used to search for a proper recipes. With this technique we could get even more precise results which are focusing on finding the most fitting but also nutritious meals possible from the cookbook.
 
 This is only one of the many improvements that could be added to the RAG system to make it more precise, faster or cheaper. Before the suming up this blog post I want to briefly describe 2 more things that can be done with a system that we have so far.
 
 ### Indexing vectors
 
-Another technic that could be applied here is to create an indexes for vectors in PostgreSQL
+The knowledge base for this project is relatively small. Finding the most similar vectors across thousands of vectors is relatively quick operation. But what if we would have billions or even trillions of vectors? Definitely the retrieval process could get significaly longer.
+
+One way of coping with that is to create indexes with *pgvector* that would cluster similar vectors into smaller number of groups of vectors. With indexes we do not search for vectors with a shortest distance but for group of vectors. This way we loose a little bit the precision of finding the exact vector but in return we gain a faster retrieval.
+
+The *pgvector* extensions supports 2 algorithms of creating such index - **HNSW** (Hierarchical Navigable Small World) & **IVFFlat** (Inverted File Flat). I won't be going deep into any of them but you can check these great articles on[ the first](https://www.crunchydata.com/blog/hnsw-indexes-with-postgres-and-pgvector) and [the second](https://www.tigerdata.com/blog/nearest-neighbor-indexes-what-are-ivfflat-indexes-in-pgvector-and-how-do-they-work) algorithm respectively.
 
 ### Different ways for document embedding process
 
@@ -1190,3 +1194,4 @@ Another technic that could be applied here is to create an indexes for vectors i
   * jak pisac apki wykorzystujące raga, ogólne
 * https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
   * using embeddings in prompts
+  * 
