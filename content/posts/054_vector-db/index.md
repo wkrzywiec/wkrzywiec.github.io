@@ -1149,6 +1149,8 @@ After rebuilding the entire project we can test the **GET** `/api/planner/single
 }
 ```
 
+Looks amazing 🤩! As you can see even with small amount of work and with out really using any LLM we can "intelligently" query our data to find best matches! Awesome!
+
 It returns not only the list of matched recipes but also rationale of each recipe. There is also a text summary for the entire prompt with actions that user may want to do next to get better results.
 
 ## Going deeper
