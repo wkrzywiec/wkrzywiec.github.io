@@ -1171,6 +1171,14 @@ The *pgvector* extensions supports 2 algorithms of creating such index - **HNSW*
 
 ### Different ways for document embedding process
 
+In the hands-on section of this article I've described how I write the Python script that takes care of creating embeddings. I've decided to go with a Python script and usage of batch API of the OpenAI because for my case it is the one-time job. I don't modify my cookbook too often so the entire procedure could be done only once and never repeated. However this is not the case in every system. Data in some systems changes quite often and if a new data should be embedded than other approaches should be taken.
+
+One of them could be to run similar script periodically on a monthly, weekly or daily basis. Script would either wipe down all exisintg vectors and replace them with new ones or only updates and adds those that have changed or were added. This of course require further development of a script and a good monitoring of it since it becomes the crucial part of a data pipeline for the entire system.
+
+If periodical processing is not enough and we would like have those vectors stored in the moment of storing the corresponding data then another approach should be taken. Instead of the script the logic of creating the embedding should be baked into the application logic itself. When the data is updated/inserted into the database an application should also create a vector and store it. This approach certainly has advantages like the data could be serched semantically right away but the caveat is that since we're introducing the external dependcy (embedding model) it may slow down the modifcation operation or even prevent them from happening. There are of course work arounds for those problems but with a cost of higher complexity of the entire system and slowing down the process of embedding. As always each solution has its own tradeoffs.
+
+The last solution could be to use the [pgai](https://github.com/timescale/pgai) exention for PostgreSQL. It enables to create and synchronize vector embeddings directly in PostgreSQL instance. You don't need to add any logic to the app or create complicated scripts to periodically update the entire database. With a simple cofiguration all of that could be achieved inside PostgreSQL. This way we weight-in the logic from an app to the database, which in some cases could be good solution but in some it may bad because it makes the entire data flow less explicit.
+
 ## Summary
 
 ## References
@@ -1194,4 +1202,3 @@ The *pgvector* extensions supports 2 algorithms of creating such index - **HNSW*
   * jak pisac apki wykorzystujące raga, ogólne
 * https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
   * using embeddings in prompts
-  * 
