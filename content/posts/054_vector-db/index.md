@@ -641,12 +641,13 @@ if __name__ == "__main__":
     main()
 ```
 
+Here’s what’s really happening under the hood (and don’t worry, it’s not as scary as it sounds!):
 
-The logic of the script is as follows:
+1. First, the script grabs both the request file (that’s the one with all the original embedding requests) and the output file (the one OpenAI sends back with the results).
+2. Then, for each line in the output file, it finds the matching `custom_id` in the request file to pull out the original input text. It also extracts the `recipe_id`, `chunk_type`, and the actual embedding vector, and counts the tokens in the input (because, well, tokens matter!).
+3. Finally, it bundles all this info together and pops it into the database.
 
-1. The script loads the request file (containing the original embedding requests) and the output file (containing the embedding results returned by the API).
-2. For each line in the output file, it matches the `custom_id` with the corresponding entry in the request file to retrieve the original input text. It then extracts the `recipe_id`, `chunk_type`, and embedding vector from the output, and calculates the token count for the input text.
-3. The script inserts the combined data (recipe_id, chunk_type, embedding, and token count) into the database.
+That’s it! If you’re like me and sometimes get lost in the details, just follow the steps one by one. And if you spot a better way, let me know—I’m always up for learning something new.
 
 Here is an example output from the script:
 
@@ -1188,10 +1189,7 @@ The last solution could be to use the [pgai](https://github.com/timescale/pgai) 
 ## Summary
 
 ## References
-
-
 * książk ai engineering
-
 
 * [Introduction to Text Embeddings with the OpenAI API (DataCamp)](https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F)
     * Basics of embedding and vectors
