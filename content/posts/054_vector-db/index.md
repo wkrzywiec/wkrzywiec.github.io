@@ -87,13 +87,13 @@ Each method focuses on different aspects and should be chosen depending on the c
 
 ### From text to vectors: producing embeddings
 
-So the app flow is pretty straightforward. We need to have data prepared as vector representations, and when a user prompts, we need to transform it to a vector and compare it with those prepared to find the nearest (the most similar). But how do we make such a conversion of user input and data? With an AI model, of course!
+So the app flow is pretty straightforward. When a user submits a query, we need to transform it into a vector and compare it with the stored vectors to find the most similar ones. But how do we make such a conversion of user input and data? With an AI model, of course!
 
-These models, called embedding models, are different from regular chat models, but they are offered by all key AI providers. For instance, OpenAI is offering three at the moment of writing this - `text-embedding-3-small`, `text-embedding-3-large` and `text-embedding-ada-002` . We can select whichever model we like, but we need to keep to these rules:
+Embedding models are specialized neural networks designed to convert text into vector representations, and are different from large language models used for chat. For instance, OpenAI is offering three at the moment of writing this - `text-embedding-3-small`, `text-embedding-3-large` and `text-embedding-ada-002` . We can select whichever model we like, but we need to keep to these rules:
 
 * Tune the number of dimensions based on purpose - a higher number of dimensions is usually good for capturing nuances in data; similar but still different data may have slightly different vectors and hence search may be more accurate. On the other hand, a higher number of parameters may require more resources to compute search and require more storage for larger vectors.
 * Model is self-hosted or consumed via API - like for LLMs, we pick from models that we can install locally or use services exposed by AI providers.
-* Input and data must be converted using the same model - each model represents space differently, which makes vectors produced not compatible if two different models were used. If you want to test which embedding works best for your case (with A/B testing perhaps), you need to have embeddings produced by different models.
+* Input and data must be converted using the same model - each model represents space differently, which makes vectors produced not compatible if two different models were used. If you want to compare which embedding model works best for your use case (e.g., via A/B testing), you need to generate embeddings for your data using each model separately.
 
 If you would like to browse available models, go check https://huggingface.co/blog/mteb, which also measures how powerful they all are.
 
@@ -103,7 +103,7 @@ One of the problems with data embedding is that the knowledge we would like to e
 
 Therefore, we need to chunk the data into smaller segments. The simple solution would be to split the data by character number. I.e., if a model has a limit of 1000 tokens, we could split the input to be less than that. But it would cause some embeddings to lack the required context, as they would be split in the middle of a sentence or section, which would produce a garbage vector.
 
-Another approach to this problem could be chunking input data based on some logical fragments of it. For instance, the paragraphs of a blog post may be treated as separate chunks, or a section if a paragraph is too granular. This fixes the problem of being out of context, but we still need to watch out for limits, which is relatively easy since there are libraries that count how many tokens a given text will be translated to.
+Another approach is to chunk input data based on logical units, such as paragraphs, sections, or other meaningful divisions. For instance, the paragraphs of a blog post may be treated as separate chunks, or a section if a paragraph is too granular. This helps preserve context within each chunk, but we still need to ensure that each chunk does not exceed the model's token limit, which can be checked using available libraries.
 
 Next, a more sophisticated approach could be to logically split the data. If data is already structured, like recipes, chunking could be relatively easy since the data is already broken out into smaller pieces. But what if a knowledge base is not structured? We could use the LLM for that! It could split the data based on certain parameters (e.g., not losing context and not exceeding certain limits), which of course comes with additional cost and may not be accurate (as LLMs may produce nondeterministic results).
 
@@ -115,8 +115,8 @@ Once we've got vectors produced by the embedding model, we need to save them som
 
 1. a file - not efficient but a simple solution
 2. an existing database which requires extensions installed. Popular solutions that offer it are, for instance, Postgres, Elasticsearch, Redis, and others.
-3. a native vector DB - with the AI RAG revolution, new players have emerged offering native vector storing and search solutions. Examples are:
-4. a cloud provider IaaS - each cloud vendor has its own vector database -
+3. a native vector DB - with the AI RAG revolution, new players have emerged offering native vector storing and search solutions. Examples are: [Chroma](https://www.trychroma.com/), [Milvus](https://milvus.io/), [Qdrant](https://qdrant.tech/), [Weaviate](https://weaviate.io/), and others.
+4. a cloud provider IaaS - each cloud vendor has its own vector database, e.g. [Amazon S3 Vectors](https://aws.amazon.com/s3/features/vectors/), [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search) or Google's [Vertex AI Vector Search](https://cloud.google.com/vertex-ai/docs/vector-search/overview).
 
 Each one of them comes with pros and cons. Some are free to use, some are paid but are easy to use, more performant, or do not require you to set up the entire infrastructure.
 
@@ -641,11 +641,12 @@ if __name__ == "__main__":
     main()
 ```
 
-The logic of the script is simple:
 
-1. It loads both the request and output files.
-2. It iterates through each line in the output file and extracts recipe_id, chunk_type, and embedding. It also retrieves the content of an input in order to calculate its token count.
-3. The loaded data is then inserted into the database.
+The logic of the script is as follows:
+
+1. The script loads the request file (containing the original embedding requests) and the output file (containing the embedding results returned by the API).
+2. For each line in the output file, it matches the `custom_id` with the corresponding entry in the request file to retrieve the original input text. It then extracts the `recipe_id`, `chunk_type`, and embedding vector from the output, and calculates the token count for the input text.
+3. The script inserts the combined data (recipe_id, chunk_type, embedding, and token count) into the database.
 
 Here is an example output from the script:
 
@@ -963,7 +964,7 @@ Looks amazing 🤩! As you can see, even with a small amount of work and without
 
 #### Enriching prompt with recipe data
 
-With previous success, let's build a new thing on top of that - a simple diet advisor. Let's use the LLM to act as a dietician that focuses on delivering nutritionally balanced recipes based on the user prompt (assuming that the user will be asking for ideas for a specific meal and giving certain boundaries, like a specific diet or favorite ingredients). It won't be doing the plan for the entire week or even day - this will be covered in one of the upcoming blog posts.
+With previous success, let's build a new thing on top of that - a simple diet advisor. Let's use the LLM to act as a dietician that focuses on delivering nutritionally balanced recipes based on the user prompt (assuming that the user will be asking for ideas for a specific meal and giving certain boundaries, like a specific diet or favorite ingredients). It won't generate a full meal plan for the entire week or even a full day—this will be covered in a future blog post.
 
 The first thing to do is to define an endpoint and controller for that:
 
@@ -1164,7 +1165,7 @@ That's pretty much it. With only a few lines of code, we have built a RAG system
 
 For instance, before providing the user prompt to the recipe semantic search service, we could first ask another AI agent to analyze the user input and produce a better prompt that would be embedded and then used to search for proper recipes. With this technique, we could get even more precise results, focusing on finding the most fitting but also nutritious meals possible from the cookbook.
 
-This is only one of the many improvements that could be added to the RAG system to make it more precise, faster, or cheaper. Before summing up this blog post, I want to briefly describe two more things that can be done with the system that we have so far.
+This is just one of many possible improvements to make the RAG system more precise, faster, or cheaper. Before wrapping up, I want to briefly describe two additional enhancements you can consider.
 
 ### Indexing vectors
 
