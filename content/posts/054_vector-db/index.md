@@ -141,7 +141,7 @@ This flow is not specific to the *Nutri Chef AI*; it is a pretty generic one and
 
 ![rag flow](rag-flow.png)
 
-The implementation of this entire flow is described in the [Enriching prompt with recipe data](TODODODOODODOD) section of this blog post.
+The implementation of this entire flow is described in the [Enriching prompt with recipe data](https://wkrzywiec.is-a.dev/posts/054_vector-db/#enriching-prompt-with-recipe-data) section of this blog post.
 
 ## Practical walkthrough
 
@@ -168,7 +168,7 @@ And the steps are:
 2. Prepared `.jsonl` file will be sent to OpenAI and then a process of embedding will be started.
 3. Using the Python script the batch process will be monitored and once it's done the resulting file will be downloaded and vectors will be inserted to the database.
 
-This is one of many approaches we could take. If you would like to learn what are the others, go check the ````TODOTODOTODOTODOTODOTODOTODOTODOTODOTODO```` section.
+This is one of many approaches we could take. If you would like to learn what are the others, go check the [Different ways for document embedding process](https://wkrzywiec.is-a.dev/posts/054_vector-db/#different-ways-for-document-embedding-process) section.
 
 Before moving on to implementation of the scripts first we need to prepare the database. We need to install the `pgvector` extension by executing the SQL script:
 
