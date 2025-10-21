@@ -1188,20 +1188,26 @@ The last solution could be to use the [pgai](https://github.com/timescale/pgai) 
 
 ## References
 
+
 * książk ai engineering
 
-* https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F
-  * podstawy czym jest embedding, czym sa vectory
-  * oraz to: https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings
-* https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector
-  * długi i bardzo szczegłowy artykuł - skupia się na samych vectorach i postgresie
-  * oraz https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive
-  * oraz https://www.postgresql.fastware.com/blog/how-to-store-and-query-embeddings-in-postgresql-without-losing-your-mind?utm_source=perplexity
-  * oraz https://www.tigerdata.com/learn/using-pgvector-with-python
-* https://www.tigerdata.com/blog/which-rag-chunking-and-formatting-strategy-is-best?utm_source=perplexity
-  * chunkowanie danych raga
-  * oraz https://mastra.ai/en/docs/rag/chunking-and-embedding
-* https://neptune.ai/blog/building-llm-applications-with-vector-databases
-  * jak pisac apki wykorzystujące raga, ogólne
-* https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
-  * using embeddings in prompts
+
+* [Introduction to Text Embeddings with the OpenAI API (DataCamp)](https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F)
+    * Basics of embedding and vectors
+    * Also: [A Beginner's Guide to Vector Embeddings (TigerData)](https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings)
+
+* [PostgreSQL as a Vector Database Using pgvector (TigerData)](https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector)
+    * Detailed article focused on vectors and PostgreSQL
+    * Also: [Vector Similarity Search with PostgreSQL's pgvector (SeveralNines)](https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive)
+    * Also: [How to Store and Query Embeddings in PostgreSQL (Fastware)](https://www.postgresql.fastware.com/blog/how-to-store-and-query-embeddings-in-postgresql-without-losing-your-mind?utm_source=perplexity)
+    * Also: [Using pgvector with Python (TigerData)](https://www.tigerdata.com/learn/using-pgvector-with-python)
+
+* [Which RAG Chunking and Formatting Strategy is Best? (TigerData)](https://www.tigerdata.com/blog/which-rag-chunking-and-formatting-strategy-is-best?utm_source=perplexity)
+    * RAG data chunking
+    * Also: [Chunking and Embedding (Mastra AI)](https://mastra.ai/en/docs/rag/chunking-and-embedding)
+
+* [Building LLM Applications with Vector Databases (Neptune AI)](https://neptune.ai/blog/building-llm-applications-with-vector-databases)
+    * How to build apps using RAG
+
+* [Question Answering Using Embeddings (OpenAI Cookbook)](https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb)
+    * Using embeddings in prompts
