@@ -8,7 +8,7 @@ tags: ["ai", "ai-agents", "ai-series", "generative-ai", "model-embeddings", "ope
 
 *Do you want to build your first AI application but don't know how? Are you afraid of missing out on the AI hype train? Don't worry! These were my exact thoughts recently, so I decided to start a new series on this topic. In this article, I want to focus on how to provide your own data to an LLM using RAG. After a short introduction to the topic, we'll dive into a practical guide on how to convert data into vectors and then use it in a real Spring Boot application—so buckle up!*
 
-![cover](cover.jpg)
+![cover](cover.png)
 
 The AI revolution is here. The release of ChatGPT in November 2022 ignited a new revolution in software, where generative AI plays a central role. New tools and patterns have emerged, enabling us as software engineers to build new, exciting projects. It's hard to keep up because almost every week something new comes out.
 
