@@ -1,15 +1,12 @@
 ---
 title: "Building AI-Powered Software: Model Embeddings"
-date: 2025-10-01
-summary: "Learn how to build AI agentic software that utilizes a vectorized knowledge database."
-description: ""
-tags: ["ai", "ai-agents", "generative-ai", "model-embeddings", "openai", "rag", "retrieval-augmented-generation", "java", "kotlin", "spring-boot", "python", "database", "postgresql", "vectors", "pgvector" ]
+date: 2025-10-22
+summary: "Learn how to build AI agentic software that utilizes a RAG, vectorized knowledge database."
+description: "This post provides a hands-on guide to building an AI-powered application using Retrieval-Augmented Generation (RAG), showing step-by-step how to convert your own data into vector embeddings and integrate them into a real Spring Boot project."
+tags: ["ai", "ai-agents", "ai-series", "generative-ai", "model-embeddings", "openai", "rag", "retrieval-augmented-generation", "java", "kotlin", "spring-boot", "python", "database", "postgresql", "vectors", "pgvector" ]
 ---
 
-===========
-WSTĘP
-
-===========
+*Do you want to build your first AI application but don't know how? Are you afraid of missing out on the AI hype train? Don't worry! These were my exact thoughts recently, so I decided to start a new series on this topic. In this article, I want to focus on how to provide your own data to an LLM using RAG. After a short introduction to the topic, we'll dive into a practical guide on how to convert data into vectors and then use it in a real Spring Boot application—so buckle up!*
 
 ![cover](cover.jpg)
 
@@ -1188,25 +1185,18 @@ The last solution could be to use the [pgai](https://github.com/timescale/pgai) 
 
 ## Summary
 
+This is it for today! I hope you learned something new, like how to transform your data into vector embeddings, how to use them for semantic search, and how to write your first AI agent that leverages your own knowledge base.
+
+The entire codebase for this project can be found on my GitHub: [wkrzywiec/nutri-chef-ai](https://github.com/wkrzywiec/nutri-chef-ai).
+
+Until the next time!
+
 ## References
-* książk ai engineering
 
-* [Introduction to Text Embeddings with the OpenAI API (DataCamp)](https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api?dc_referrer=https%3A%2F%2Fcommunity.openai.com%2F)
-    * Basics of embedding and vectors
-    * Also: [A Beginner's Guide to Vector Embeddings (TigerData)](https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings)
-
-* [PostgreSQL as a Vector Database Using pgvector (TigerData)](https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector)
-    * Detailed article focused on vectors and PostgreSQL
-    * Also: [Vector Similarity Search with PostgreSQL's pgvector (SeveralNines)](https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive)
-    * Also: [How to Store and Query Embeddings in PostgreSQL (Fastware)](https://www.postgresql.fastware.com/blog/how-to-store-and-query-embeddings-in-postgresql-without-losing-your-mind?utm_source=perplexity)
-    * Also: [Using pgvector with Python (TigerData)](https://www.tigerdata.com/learn/using-pgvector-with-python)
-
-* [Which RAG Chunking and Formatting Strategy is Best? (TigerData)](https://www.tigerdata.com/blog/which-rag-chunking-and-formatting-strategy-is-best?utm_source=perplexity)
-    * RAG data chunking
-    * Also: [Chunking and Embedding (Mastra AI)](https://mastra.ai/en/docs/rag/chunking-and-embedding)
-
-* [Building LLM Applications with Vector Databases (Neptune AI)](https://neptune.ai/blog/building-llm-applications-with-vector-databases)
-    * How to build apps using RAG
-
-* [Question Answering Using Embeddings (OpenAI Cookbook)](https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb)
-    * Using embeddings in prompts
+* [AI Engineering | Chip Huyen](https://www.oreilly.com/library/view/ai-engineering/9781098166298/)
+* [Introduction to Text Embeddings with the OpenAI API | DataCamp](https://www.datacamp.com/tutorial/introduction-to-text-embeddings-with-the-open-ai-api)
+* [A Beginner’s Guide to Vector Embeddings | TigerData](https://www.tigerdata.com/blog/a-beginners-guide-to-vector-embeddings)
+* [Vector Similarity Search with PostgreSQL's pgvector | SeveralNines](https://severalnines.com/blog/vector-similarity-search-with-postgresqls-pgvector-a-deep-dive)
+* [PostgreSQL as a Vector Database Using pgvector | TigerData](https://www.tigerdata.com/blog/postgresql-as-a-vector-database-using-pgvector)
+* [Chunking Strategies to Improve Your RAG Performance](https://weaviate.io/blog/chunking-strategies-for-rag)
+* [Question Answering Using Embeddings | OpenAI Cookbook on GitHub](https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb)
