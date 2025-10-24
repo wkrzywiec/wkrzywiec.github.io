@@ -6,10 +6,16 @@
 defaultContentLanguage = "en"
 
 enableRobotsTXT = true
-paginate = 10
 summaryLength = 100
+
+[pagination]
+pagerSize = 10
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
-googleAnalytics = "G-1XW1RWJPXH"
+[frontmatter]
+  cover = ["*abcde*"] # ovverdie the default Congo front matter for cover images
+
+[params.googleAnalytics]
+id = "G-1XW1RWJPXH"

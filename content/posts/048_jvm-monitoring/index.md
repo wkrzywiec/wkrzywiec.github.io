@@ -11,7 +11,7 @@ canonicalUrl: "https://wkrzywiec.medium.com/how-to-set-up-monitoring-tools-for-j
 This article was originally published on [Medium](https://wkrzywiec.medium.com/how-to-set-up-monitoring-tools-for-java-application-322d14c191e4).
 {{< /alert >}}
 
-{{< imgh src="cover.jpg" alt="Cover" >}}
+{{< imgh src="main.jpg" alt="Cover" >}}
 
 > Cover image by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999) on [Unsplash](https://unsplash.com)
 

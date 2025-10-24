@@ -102,8 +102,8 @@
   {{/* Schema */}}
   {{ partial "schema.html" . }}
   {{/* Me */}}
-  {{ with .Site.Author.name }}<meta name="author" content="{{ . }}" />{{ end }}
-  {{ with .Site.Author.links }}
+  {{ with .Site.Params.author.name }}<meta name="author" content="{{ . }}" />{{ end }}
+  {{ with .Site.Params.author.links }}
     {{ range $links := . }}
       {{ range $name, $url := $links }}<link href="{{ $url }}" rel="me" />{{ end }}
     {{ end }}

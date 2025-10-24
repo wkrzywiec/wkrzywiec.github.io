@@ -6,7 +6,7 @@ description: "This post provides a practical, hands-on guide on deciphering a wi
 tags: ["java", "jvm", "performance", "garbage-collector", "cpu", "memory", "class-loader", "monitoring", "prometheus", "grafana", "micrometer"]
 ---
 
-{{< imgh src="cover.jpg" alt="Cover" >}}
+{{< imgh src="main.jpg" alt="Cover" >}}
 
 > Photo generated with [Leonardo Ai](https://leonardo.ai/)
 

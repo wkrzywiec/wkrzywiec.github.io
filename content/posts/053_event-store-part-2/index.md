@@ -8,7 +8,7 @@ tags: ["events", "event-sourcing", "event-store", "java", "craftmanship", "archi
 
 *You have decided that event sourcing is a great fit for your project and meets all your needs. The next step is to figure out how to persist events. While there are several tools available off the shelf, what if you could build your own event store technology? In this article, I will cover how to build the very first version of such a solution based on PostgreSQL, which can be utilized in Java applications.*
 
-![cover](cover.jpg)
+![cover](main.jpg)
 
 The key element in event sourcing are (surprise, surprise) events. These events are created after each business action is performed on a domain object (aggregate) and need to be persisted somewhere. They are also used to rebuild the state of domain objects, but first, they need to be fetched from some kind of storage. For these (and other) reasons, the central piece of an event sourcing system is the **event store** which will be built through out this post.
 
