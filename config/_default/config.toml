@@ -19,3 +19,8 @@ pagerSize = 10
 
 [params.googleAnalytics]
 id = "G-1XW1RWJPXH"
+
+[privacy.googleAnalytics]
+  anonymizeIP = true
+  respectDoNotTrack = true
+  useSessionStorage = false

@@ -8,3 +8,106 @@
   integrity="{{ $jsFslightbox.Data.Integrity }}"
 ></script>
 
+{{ if hugo.IsProduction }}
+<script>
+window.addEventListener('load', function(){
+    var cc = initCookieConsent();
+    cc.run({
+        current_lang: 'en',
+        autoclear_cookies: true,
+        page_scripts: true,
+
+        onFirstAction: function(user_preferences, cookie){
+            if(user_preferences.level.includes('analytics')) {
+                enableGoogleAnalytics();
+            }
+        },
+
+        onAccept: function (cookie) {
+            if(cookie.level.includes('analytics')) {
+                enableGoogleAnalytics();
+            }
+        },
+
+        onChange: function (cookie, changed_preferences) {
+            if(changed_preferences.includes('analytics')) {
+                if(cookie.level.includes('analytics')) {
+                    enableGoogleAnalytics();
+                } else {
+                    disableGoogleAnalytics();
+                }
+            }
+        },
+
+        languages: {
+            'en': {
+                consent_modal: {
+                    title: 'We use cookies!',
+                    description: 'This website uses cookies to ensure you get the best experience and to understand how visitors interact with the website. <button type="button" data-cc="c-settings" class="cc-link">Let me choose</button>',
+                    primary_btn: {
+                        text: 'Accept all',
+                        role: 'accept_all'
+                    },
+                    secondary_btn: {
+                        text: 'Reject all',
+                        role: 'accept_necessary'
+                    }
+                },
+                settings_modal: {
+                    title: 'Cookie preferences',
+                    save_settings_btn: 'Save settings',
+                    accept_all_btn: 'Accept all',
+                    reject_all_btn: 'Reject all',
+                    close_btn_label: 'Close',
+                    blocks: [
+                        {
+                            title: 'Cookie usage',
+                            description: 'This website uses cookies to ensure the basic functionalities and to enhance your online experience. You can choose for each category to opt-in/out whenever you want.'
+                        }, {
+                            title: 'Strictly necessary cookies',
+                            description: 'These cookies are essential for the proper functioning of the website. Without these cookies, the website would not work properly.',
+                            toggle: {
+                                value: 'necessary',
+                                enabled: true,
+                                readonly: true
+                            }
+                        }, {
+                            title: 'Analytics cookies',
+                            description: 'These cookies help understand how visitors interact with the website by collecting and reporting information anonymously. The data collected includes number of visitors, source of traffic, and pages visited.',
+                            toggle: {
+                                value: 'analytics',
+                                enabled: false,
+                                readonly: false
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    });
+
+    function enableGoogleAnalytics() {
+        if (!window._gaInitialized) {
+            window._gaInitialized = true;
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-1XW1RWJPXH', {
+                'anonymize_ip': true
+            });
+
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=G-1XW1RWJPXH';
+            document.head.appendChild(script);
+        }
+    }
+
+    function disableGoogleAnalytics() {
+        window['ga-disable-G-1XW1RWJPXH'] = true;
+    }
+});
+</script>
+{{ end }}
+
