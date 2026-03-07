@@ -19,14 +19,14 @@
       <div class="gallery-albums mt-8">
         {{ range $pages }}
           {{ $images := .Resources.ByType "image" }}
-          {{ $cover := index $images 0 }}
           <a href="{{ .RelPermalink }}" class="gallery-album-card" title="{{ .Title }}">
             <div class="gallery-album-cover">
-              {{ if $cover }}
+              {{ with $images }}
+                {{ $cover := index . 0 }}
                 {{ $thumb := $cover.Fill "600x400 smart" }}
                 <img
                   src="{{ $thumb.RelPermalink }}"
-                  alt="{{ .Title }}"
+                  alt="{{ $.Title }}"
                   loading="lazy"
                   decoding="async"
                 />
