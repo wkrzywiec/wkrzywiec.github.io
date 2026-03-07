@@ -112,7 +112,6 @@
    Wider overall page container
    ============================================= */
 
-/* Wider overall page container */
 body.max-w-7xl {
    max-width: 90rem !important;
 }
