@@ -23,8 +23,8 @@ dateFormat = "2 January 2006"
   { medium = "https://medium.com/@wkrzywiec" },
   { dev = "https://dev.to/wkrzywiec" },
   { twitter = "https://twitter.com/wkrzywiec" },
-  { flickr = "https://www.flickr.com/photos/foidek/" },
-  
+  { instagram = "https://instagram.com/foidek08" },
+
 
   #   { email = "mailto:hello@your_domain.com" },
   #   { link = "https://link-to-some-website.com/" },
@@ -39,7 +39,7 @@ dateFormat = "2 January 2006"
   #   { gitlab = "https://gitlab.com/username" },
   #   { google = "https://www.google.com/" },
   #   { hashnode = "https://username.hashnode.dev" },
-  #   { instagram = "https://instagram.com/username" },
+  #   { flickr = "https://www.flickr.com/photos/foidek/" },
   #   { keybase = "https://keybase.io/username" },
   #   { kickstarter = "https://www.kickstarter.com/profile/username" },
   #   { lastfm = "https://lastfm.com/user/username" },
