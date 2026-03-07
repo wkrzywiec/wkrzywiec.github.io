@@ -1,0 +1,19 @@
+{{/*
+  WORKAROUND: This file overrides congo/layouts/_partials/functions/warnings.html
+  to remove the `.Author` check (original line 10-12) which crashes on Hugo v0.157.0+
+  because `*page.siteWrapper` no longer exposes the `.Author` field.
+
+  Revisit when upgrading the congo theme to check if the upstream fix has been released,
+  at which point this override can be deleted entirely.
+
+  Ref: https://github.com/jpanther/congo/blob/v2.13.0/layouts/_partials/functions/warnings.html
+*/}}
+{{ if ne .Params.showAppearanceSwitcher nil }}
+  {{ warnf "[CONGO] Theme parameter `showAppearanceSwitcher` has been renamed to `footer.showAppearanceSwitcher`. Please update your site configuration." }}
+{{ end }}
+{{ if ne .Params.showScrollToTop nil }}
+  {{ warnf "[CONGO] Theme parameter `showScrollToTop` has been renamed to `footer.showScrollToTop`. Please update your site configuration." }}
+{{ end }}
+{{ if ne .Params.logo nil }}
+  {{ warnf "[CONGO] Theme parameter `logo` has been renamed to `header.logo`. Please update your site configuration." }}
+{{ end }}
