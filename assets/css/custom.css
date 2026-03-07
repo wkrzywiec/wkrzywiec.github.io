@@ -1,4 +1,117 @@
-/* Wider overall page container */
+/* =============================================
+   Photo Gallery - Justified Grid Layout
+   ============================================= */
+
+/* Album list grid on the photos section page */
+.gallery-albums {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.gallery-album-card {
+  display: block;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gallery-album-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-album-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.gallery-album-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.gallery-album-card:hover .gallery-album-cover img {
+  transform: scale(1.04);
+}
+
+.gallery-album-info {
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.gallery-album-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}
+
+.gallery-album-count {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+/* Justified photo grid inside an album */
+.pswp-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2rem 0;
+}
+
+/* Each <a> tag carries the flex-grow ratio set inline via Hugo template */
+.pswp-gallery a {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 2px;
+  background: #111;
+}
+
+.pswp-gallery a img {
+  display: block;
+  /* fill the full flex width; height follows naturally from the image's aspect ratio */
+  width: 100%;
+  height: auto;
+  vertical-align: bottom;
+  transition: opacity 0.2s ease;
+}
+
+.pswp-gallery a:hover img {
+  opacity: 0.85;
+}
+
+/* Cap last item so an incomplete row doesn't stretch to fill the whole line */
+.pswp-gallery a:last-child {
+  flex-grow: 0 !important;
+  max-width: 33%;
+}
+
+/* On very small screens fall back to a simple 2-column grid */
+@media (max-width: 480px) {
+  .pswp-gallery {
+    gap: 3px;
+  }
+  .pswp-gallery a {
+    flex-grow: unset !important;
+    width: calc(50% - 2px);
+    max-width: none !important;
+  }
+}
+
+/* =============================================
+   Wider overall page container
+   ============================================= */
+
 body.max-w-7xl {
    max-width: 90rem !important;
 }

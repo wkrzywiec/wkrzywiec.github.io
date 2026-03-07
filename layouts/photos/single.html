@@ -1,0 +1,118 @@
+{{/* layouts/photos/single.html - Displays a single photo album with PhotoSwipe */}}
+{{ define "main" }}
+  {{ $images := .Resources.ByType "image" }}
+
+  <div class="flex flex-col grow">
+    <header class="mb-6">
+      {{ if .Title }}
+        <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+          {{ .Title | emojify }}
+        </h1>
+      {{ end }}
+      <div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+        <span>{{ .Date.Format "January 2, 2006" }}</span>
+        <span>&middot;</span>
+        <span>{{ len $images }} {{ if eq (len $images) 1 }}photo{{ else }}photos{{ end }}</span>
+      </div>
+      {{ with .Description }}
+        <p class="mt-3 text-neutral-600 dark:text-neutral-400">{{ . }}</p>
+      {{ end }}
+      {{ with .Content }}
+        <div class="prose dark:prose-invert mt-4">
+          {{ . }}
+        </div>
+      {{ end }}
+    </header>
+
+    {{ if $images }}
+      {{/* Justified gallery grid */}}
+      <div
+        class="pswp-gallery"
+        id="pswp-gallery--{{ anchorize .Title }}"
+        itemscope
+        itemtype="http://schema.org/ImageGallery"
+      >
+        {{ range $images }}
+          {{/* Full-size image for lightbox (max 2400px wide) */}}
+          {{ $full := .Resize "2400x" }}
+          {{/* Thumbnail for grid: resized to a common height, preserving aspect ratio */}}
+          {{ $thumb := .Resize "x480" }}
+          {{/* Compute CSS flex-grow ratio from aspect ratio for justified layout */}}
+          {{ $ratio := div (float $thumb.Width) (float $thumb.Height) }}
+
+          <a
+            href="{{ $full.RelPermalink }}"
+            data-pswp-width="{{ $full.Width }}"
+            data-pswp-height="{{ $full.Height }}"
+            target="_blank"
+            rel="noopener"
+            itemprop="contentUrl"
+            style="flex-grow: {{ printf "%.4f" $ratio }};"
+          >
+            <img
+              src="{{ $thumb.RelPermalink }}"
+              alt="{{ .Title }}"
+              width="{{ $thumb.Width }}"
+              height="{{ $thumb.Height }}"
+              loading="lazy"
+              decoding="async"
+              itemprop="thumbnail"
+            />
+          </a>
+        {{ end }}
+      </div>
+
+    {{ else }}
+      <p class="text-neutral-400 mt-4">No photos in this album yet.</p>
+    {{ end }}
+
+    {{/* Back link */}}
+    <div class="mt-8">
+      <a
+        href="{{ .Parent.RelPermalink }}"
+        class="flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+      >
+        &larr; Back to Photos
+      </a>
+    </div>
+  </div>
+
+  {{/* PhotoSwipe initialisation - only on this page */}}
+  {{ if $images }}
+    {{ $pswpCSS := resources.Get "css/photoswipe.css" | resources.Minify | resources.Fingerprint "sha512" }}
+    {{ $pswpCore := resources.Get "js/photoswipe.umd.min.js" | resources.Fingerprint "sha512" }}
+    {{ $pswpLightbox := resources.Get "js/photoswipe-lightbox.umd.min.js" | resources.Fingerprint "sha512" }}
+
+    <link
+      rel="stylesheet"
+      href="{{ $pswpCSS.RelPermalink }}"
+      integrity="{{ $pswpCSS.Data.Integrity }}"
+    />
+    <script
+      src="{{ $pswpCore.RelPermalink }}"
+      integrity="{{ $pswpCore.Data.Integrity }}"
+    ></script>
+    <script
+      src="{{ $pswpLightbox.RelPermalink }}"
+      integrity="{{ $pswpLightbox.Data.Integrity }}"
+    ></script>
+    <script>
+      (function () {
+        var lightbox = new PhotoSwipeLightbox({
+          gallery: '#pswp-gallery--{{ anchorize .Title }}',
+          children: 'a',
+          pswpModule: PhotoSwipe,
+          // Show zoom button on desktop
+          zoom: true,
+          // Smooth animations
+          showHideAnimationType: 'zoom',
+          // Counter in top-left
+          counter: true,
+          // Padding around the image
+          padding: { top: 20, bottom: 20, left: 20, right: 20 },
+        });
+        lightbox.init();
+      })();
+    </script>
+  {{ end }}
+{{ end }}
