@@ -1,3 +1,24 @@
+/* Wider overall page container */
+body.max-w-7xl {
+   max-width: 90rem !important;
+}
+
+/* Reduce body padding on large screens */
+@media (min-width: 1024px) {
+   body.lg\:px-32 {
+      padding-left: 4rem !important;
+      padding-right: 4rem !important;
+   }
+}
+
+/* Wider post content */
 .max-w-prose {
-   max-width: 85ch;
+   max-width: 110ch;
+}
+
+/* Wider table of contents on large screens */
+@media (min-width: 1024px) {
+   .prose .order-first.lg\:order-last {
+      max-width: 28rem !important;
+   }
 }
