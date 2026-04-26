@@ -3,10 +3,10 @@ title: "Building AI-Powered Software: Streaming responses"
 date: 2026-04-18
 summary: "Learn how to build AI agentic software that utilizes a RAG, vectorized knowledge database."
 description: "This post provides a hands-on guide to building an AI-powered application using Retrieval-Augmented Generation (RAG), showing step-by-step how to convert your own data into vector embeddings and integrate them into a real Spring Boot project."
-tags: ["ai", "ai-agents", "ai-series", "generative-ai", "model-embeddings", "openai", "rag", "retrieval-augmented-generation", "java", "kotlin", "spring-boot", "python", "database", "postgresql", "vectors", "pgvector" ]
+tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "websockets", "ndjson", "grpc", "chainlit" , "java", "kotlin", "spring-boot"]
 ---
 
-## Did it crashed?
+## Why it is taking so long? Did it crash?
 
 In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) I have prepared a simple endpoint that returns a curated by LLM list of recipes that are based on user input. The results is a nice structured response but in order to get it we need to wait even couple of seconds. The reason for that is the entire process of generating a response involves couple of slower steps like embedding a user input or waiting for a response from LLM. And the more complicated the process becomes the more time user may wait for a final result.
 
@@ -73,6 +73,19 @@ Today the SSE is the most popular mechanism for AI chats simply because OpenAI i
 Therefore the SSE is the best option if we would like to integrate our app with popular chat UIs, like [Open WebUI](https://openwebui.com/), [Chainlit](https://chainlit.io/), [Ollama Desktop App](https://ollama.com/) or [Jan.ai](https://www.jan.ai/).
 
 #### NDJSON
+
+The NDJSON stand for Newline Delimited JSON which is a data format of multiple of JSON object separated by a newline character `\n`. Each line is a valid JSON and can be treated as a sequence of separated objects/events. This is very simple format, very close to returning a single JSON which is an industry-standard which makes it easier to integrate with already existing tools.
+
+Similarly to the SSE, NDJSON relays on a HTTP with a long-living connection in which each line, JSON is sent. Unlike SSE this format enforces to send data in a structured way which upfront informs that data is sent in certain structure, making it easier to maintain.
+
+For example, here is how an exemplary response could looke like (the `Content-Type` HTTP header would be `application/x-ndjson`):
+
+```json
+{ "id": 1, "event": "start", "data": "Hello"}
+{ "id": 2, "event": "add", "data": "there!"}
+```
+
+The NDJSON format is a bit of a niche but it's used in some systems like Ollama and can be an alternative for SSE.
 
 #### Websockets
 
