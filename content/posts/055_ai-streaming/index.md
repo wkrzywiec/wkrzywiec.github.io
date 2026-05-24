@@ -172,16 +172,19 @@ To visulize it, let's say that a final response for a meal planner AI agent look
 }
 ```
 
-It is a large JSON, with lots of information in it. In order to have a seamless experience a proper strategy for making such responses smaller chunks should be picked, so they can be then streamed to a client. Here are couple patterns to select from:
+It is a large JSON, with lots of information in it. In order to have a seamless experience a proper strategy for making such responses smaller chunks should be picked, so they can be then streamed to a client. Here are couple patterns to select from (not sure if there are any "official" names for them, so I've made them up):
 
-* snowballing final response - 
-* incrementally emit JSON parts - a full response is send token by token starting from the first character until the last one. !!!  Client must handle partial/incomplete JSON
-* incrementally emit JSON structured parts - like previously but more constrained - each chunk returns the structured part of a JSON, i.e only one field at a time (or message/event types)
-* delta patching - Each chunk is a diff/patch applied to the previous state
+* Snowballing raw response - each chunk re-sends the full accumulated response,
+* Snowballing full object - raw JSON emitted token-by-token,
+* Structured field streaming - one complete JSON field per chunk,
+* Events streaming - distinguish payload kinds,
+* Delta patching - each chunk is a typed diff/operation applied to prior state.
 
-#### Snowballing final response
+#### Snowballing raw response
 
-```sse
+The first, naive pattern is pretty straigthforward. Agentic system is emitting a response in the token-by-token manner. Every new chunk contains the previous and newly added parts. So with every message it grows and grows. Here is an example to visualize it (in this, and all other example I'll stick to the SSE protocol):
+
+```json
 data: {"response":
 
 
@@ -191,38 +194,57 @@ data: {"response": "Thank you
 data: {"response": "Thank you for your
 ```
 
+As you can see, emitted information are not strucuted in any mean. They are sent in the token-by-token manner and it's up to a client to decide if received data is a properly shaped JSON or not. This may be quite inconvenient and waste of compute power and does not differ to much from non-streamed respones (after all client needs to wait until it gets all the token to serialize a response). This problem is addressed by the next approach.
 
-#### Incrementally emit JSON parts
+#### Snowballing full object
+
+Wouldn't it be good to structured everytime
+
+```json
+data: {"response": "", "suggestedFollowUps": [], "recipes": []}
 
 
-```sse
-data: {"response":
+data: {"response": "Thank you ", "suggestedFollowUps": [], "recipes": []}
 
 
-data:  "Thank you 
-
-
-data: for your
+data: {"response": "Thank you for your", "suggestedFollowUps": [], "recipes": []}
 ```
 
-#### Emit structured JSON parts (events)
+#### Structured field streaming
 
-```sse
-event: response
+- like previously but more constrained - each chunk returns the structured part of a JSON, i.e only one field at a time (or message/event types)
+
+```json
 data: {"response": "Thank you for your meal planning request for healthy and fulfilling meals."}
 
 
-event: suggestedFollowUps
 data: {"suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
 
-event: recipe
+
 data: {"recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
 ```
 
+#### Events streaming
+
+```json
+event: rationale
+data: {"id": 1, "response": "Thank you for your meal planning request for healthy and fulfilling meals."}
+
+
+event: suggestedFollowUps
+data: {"id": 2, "suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
+
+event: recipe
+data: {"id": 3, "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
+```
+
+
 #### Delta patching
 
+- Each chunk is a diff/patch applied to the previous state
 
-```sse
+
+```json
 data: {"type":"response.token","payload":"Thank you"}
 
 
@@ -274,6 +296,7 @@ różnicówka - perplexity
 
 * [Server-sent events | HTML: The Living Standard](https://html.spec.whatwg.org/multipage/server-sent-events.html#server-sent-events)
 * [Create a model response | OpenAI API Reference](https://developers.openai.com/api/reference/resources/responses/methods/create)
+* [Writing WebSocket servers | mdn_](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers)
 
 
 Is splitting into 3 LLM calls a good idea?
