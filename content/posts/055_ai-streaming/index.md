@@ -133,13 +133,107 @@ In the AI agentic world websockets are used in various products. For example, I 
 
 The `ping`/`pong` messages are so-called heartbeats - this a simple mechanism for client and server to make sure that connection is still operating. The others are the "regular" messages sent between client and server.
 
-### Response structure
+### Shaping response structure
 
-* pełne chunki
-* przyrostowo chunki
-* chunki różnicowo - tekstowe
-* budowanie skomplikowanej odpowiedzi różnicowo - jak chatgpt
-  * `{"v": [{"p": "/message/content/parts/0", "o": "append", "v": " systems combine:\n\n```\nSemantic chunking"}, {"p": "/message/metadata/token_count", "o": "replace", "v": 1018}]}`
+Once a transportation mechnism is picked there is one more thing that must be selected - how a final response will be streamed to a client. By that I mean a strategy for picking on how AI agent will be sending parts of a a final structurted output in every chunk.
+
+To visulize it, let's say that a final response for a meal planner AI agent looks like this:
+
+```json
+{
+    "response": "Thank you for your meal planning request for healthy and fulfilling meals.",
+    "suggestedFollowUps": [
+        "Prepare a shopping list for the ingredients needed for the selected recipes."
+    ],
+    "recipes": [
+        {
+            "recipe": {
+                "id": "6464b6f5-17bf-4744-90f6-dbaab3af9983",
+                "name": "Mexican Quinoa",
+                "description": "...",
+                "ingredients": [
+                    {
+                        "section": "all",
+                        "ingredients": [...]
+                    }
+                ],
+                "instructions": [...],
+                "sourceUrl": "https://www.bbcgoodfood.com/",
+                "source": "bbc_good_food",
+                "imageUrl": "https://www.bbcgoodfood.com/quinoa.jpg",
+                "servings": "2 portions",
+                "tags": [
+                    "Lunch",
+                ],
+                "similarityScore": 0.6430065
+            }
+        }
+    ]
+}
+```
+
+It is a large JSON, with lots of information in it. In order to have a seamless experience a proper strategy for making such responses smaller chunks should be picked, so they can be then streamed to a client. Here are couple patterns to select from:
+
+* snowballing final response - 
+* incrementally emit JSON parts - a full response is send token by token starting from the first character until the last one. !!!  Client must handle partial/incomplete JSON
+* incrementally emit JSON structured parts - like previously but more constrained - each chunk returns the structured part of a JSON, i.e only one field at a time (or message/event types)
+* delta patching - Each chunk is a diff/patch applied to the previous state
+
+#### Snowballing final response
+
+```sse
+data: {"response":
+
+
+data: {"response": "Thank you 
+
+
+data: {"response": "Thank you for your
+```
+
+
+#### Incrementally emit JSON parts
+
+
+```sse
+data: {"response":
+
+
+data:  "Thank you 
+
+
+data: for your
+```
+
+#### Emit structured JSON parts (events)
+
+```sse
+event: response
+data: {"response": "Thank you for your meal planning request for healthy and fulfilling meals."}
+
+
+event: suggestedFollowUps
+data: {"suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
+
+event: recipe
+data: {"recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
+```
+
+#### Delta patching
+
+
+```sse
+data: {"type":"response.token","payload":"Thank you"}
+
+
+data: {"type":"response.token","payload":"for your"}
+```
+
+Or even more complicated
+
+* `{"v": [{"p": "/message/content/parts/0", "o": "append", "v": " systems combine:\n\n```\nSemantic chunking"}, {"p": "/message/metadata/token_count", "o": "replace", "v": 1018}]}`
+* `[{"op": "add", "path": "/chunks/2", "value": " up?"}]}}]`
+
 
 * zobaczyć jak sa wysyłane
   * chatgpt
