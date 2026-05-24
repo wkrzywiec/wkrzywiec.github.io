@@ -32,15 +32,16 @@ trzeba utrzymywać po
 
 First decision that we have to make is which communication protocol we would want to select. Or in other worlds how we would like to stream chunks from server to a client.
 
-There are several options:
+Options we have:
 
 * standard **HTTP** - which may be realized with following mechanisms:
   * **Server-Sent Events** - SSE
   * **Newline Delimited JSON** - NDJSON
 * **Websockets**
-* **gRPC**
 
 All approaches allows to have a long-living connection with a server and are able to send messages in chunks.
+
+Apart from mentioned protocols we could count the **gRPC** as well but the strengths of this protocol shines the most in cross-agent communication of multi-agent system, when one agent needs to interact with another one. Therefore I'll skip this protocol for this post.
 
 #### Server-Sent Events
 
@@ -68,7 +69,7 @@ event: add
 data: there!
 ```
 
-Today the SSE is the most popular mechanism for AI chats simply because OpenAI is using it in their streaming API. OpenAI was the first, widely used LLM chat, every company/tool wanted to integrated with it so they adopted the SSE on their side which made the SSE the de facto standard in the AI chat industry.
+Today the SSE is the most popular mechanism for AI chats simply because OpenAI is using it in their streaming API. OpenAI was the first, widely used LLM chat, every company/tool wanted to integrated with it so they adopted the SSE on their side which made the SSE the de facto standard in the AI chat industry. [!!!! Perplexity]
 
 Therefore the SSE is the best option if we would like to integrate our app with popular chat UIs, like [Open WebUI](https://openwebui.com/), [Chainlit](https://chainlit.io/), [Ollama Desktop App](https://ollama.com/) or [Jan.ai](https://www.jan.ai/).
 
@@ -89,16 +90,48 @@ The NDJSON format is a bit of a niche but it's used in some systems like Ollama 
 
 #### Websockets
 
-#### gRPC
+Sometimes one-way communication, from server to client only, is too limiting. For instance, systems where AI agent needs to interact with human e.g. to ask permissions or ask to review plan/task progress (human-in-the-loop). Such systems require to send data from server to client and vice-versa all the time so it's beneficial to establish long-lived, bi-directional communication. This way a burden of having plethora of HTTP requests can be avoided for a single communication channel. It's a great protocol not only for chats but alos in plethora real-time collaboration system, like *Miro* or *Figma*.
 
+Both HTTP and websockets protocols are built on the same fundation - TCP (Transmission Control Protocol) which is a core protocol of the Internet. Websocket communication starts with an HTTP handshake in which client asks server to upgrade the connection to long-lasting websocket communication. If server agrees the same TCP channel remains open and is replaced to websoocket connection. It last until client or server terminates it. In HTTP client opens TCP connection, sends data and once it receives data back from server the connection is often closed.
 
-* zobaczyć jak sa wysyłane
-  * chatgpt
-    * różnicówka
-    * event stream
-  * perplexity
-  * my
-  * inne?
+{{< mermaid >}}
+sequenceDiagram
+    participant Client
+    participant Server
+    Client->>Server: HTTP Upgrade Request
+    Server-->>Client: 101 Switching Protocols
+    Note over Client,Server: WebSocket Connection Established
+    Client->>Server: send("Hello")
+    Server-->>Client: send("Hello back")
+    Client->>Server: send("Data payload")
+    Server-->>Client: send("Acknowledged")
+    Client->>Server: Close Frame
+    Server-->>Client: Close Frame
+    Note over Client,Server: Connection Closed
+{{< /mermaid >}}
+
+Websocket supports various data types and the most interesting for us is a simple text type which allows to shape messages that are sent back and forth from client and server wherever we like. Here is another example of message exchange for chat application, this time messages are sent in the JSON format.
+
+In the AI agentic world websockets are used in various products. For example, I saw that Perplexity is using it to give completion suggestions to what user is typing - when I hit a letter on a keyboard Perplexity is already suggesting me what i may want to type.
+
+```json
+// Client -> Server
+{"type":"join", "room":"general", "user":"wojtek"}
+
+// Client -> Server
+{"type":"chat", "room":"general", "user":"wojtek", "message":"hello everyone"}
+
+// Server -> Client
+{"type":"chat", "room":"general", "user":"alice", "message":"hello Wojtek", "timestamp":"2026-05-12T10:15:00Z"}
+
+// Server -> Client
+{"type":"ping"}
+
+// Client -> Server
+{"type":"pong"}
+```
+
+The `ping`/`pong` messages are so-called heartbeats - this a simple mechanism for client and server to make sure that connection is still operating. The others are the "regular" messages sent between client and server.
 
 ### Response structure
 
@@ -115,6 +148,15 @@ The NDJSON format is a bit of a niche but it's used in some systems like Ollama 
   * perplexity
   * my
   * inne?
+
+
+różnicówka - perplexity
+
+```json
+{"backend_uuid": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "context_uuid": "3f405c77-e998-4410-99f7-84a2f2604ba1", "uuid": "9a2a69c1-efc2-4337-9e28-ea1842f1986a", "frontend_context_uuid": "45e6802a-7b84-4c5d-8f25-cdad4b3a1dfb", "display_model": "turbo", "mode": "CONCISE", "search_focus": "internet", "source": "default", "attachments": [], "read_write_token": "e0e17cb3-445e-4038-9243-d1600baa4eaf", "thread_url_slug": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "expect_search_results": "false", "gpt4": false, "text_completed": false, "blocks": [{"intended_usage": "ask_text_0_markdown", "diff_block": {"field": "markdown_block", "patches": [{"op": "replace", "path": "", "value": {"progress": "IN_PROGRESS", "chunks": ["hey there \ud83d\ude42 "], "chunk_starting_offset": 0, "answer": null, "media_items": null, "inline_token_annotations": []}}]}}, {"intended_usage": "ask_text", "diff_block": {"field": "markdown_block", "patches": [{"op": "replace", "path": "", "value": {"progress": "IN_PROGRESS", "chunks": ["hey there \ud83d\ude42 "], "chunk_starting_offset": 0, "answer": null, "media_items": null, "inline_token_annotations": null}}]}}], "message_mode": "STREAMING", "answer_modes": [{"answer_mode_type": "SEARCH", "has_preview": false}, {"answer_mode_type": "IMAGE", "has_preview": false}], "structured_answer_block_usages": ["ask_text_0_markdown"], "reconnectable": true, "image_completions": [], "cursor": "06a03510-e96d-71cb-8000-c52ea8abf774", "classifier_results": {"personal_search": false, "skip_search": true, "widget_type": "GENERAL", "hide_nav": false, "hide_sources": false, "image_generation": false, "time_widget": false, "mhe_predictions": {"skip_search": true, "image_generation_intent": false, "time_widget": false, "places_search_intent": false, "shopping_intent": false, "movie_lists_intent": false, "image_preview": false, "video_preview": false, "nav_intent": false, "personal_search": false, "weather_widget": false, "finance_widget_gating": false, "calculator_widget": false, "comet_nav_widget_combined_target": false, "finance_agent_gating": false}, "mhe_predictions_full": {"skip_search": {"is_true": true, "probability": 0.93359375, "threshold": 0.4}, "image_generation_intent": {"is_true": false, "probability": 0.00023078918, "threshold": 0.98}, "time_widget": {"is_true": false, "probability": 1.4722347e-05, "threshold": 0.8}, "places_search_intent": {"is_true": false, "probability": 0.004211426, "threshold": 0.85}, "shopping_intent": {"is_true": false, "probability": 5.4836273e-05, "threshold": 0.8}, "movie_lists_intent": {"is_true": false, "probability": 0.0008544922, "threshold": 0.65}, "image_preview": {"is_true": false, "probability": 0.0018692017, "threshold": 0.42}, "video_preview": {"is_true": false, "probability": 0.0013275146, "threshold": 0.5}, "nav_intent": {"is_true": false, "probability": 0.0005531311, "threshold": 0.5}, "personal_search": {"is_true": false, "probability": 0.00390625, "threshold": 0.050000000000000044}, "skip_personal_search": {"is_true": true, "probability": 0.99609375, "threshold": 0.95}, "weather_widget": {"is_true": false, "probability": 0.00031471252, "threshold": 0.4}, "finance_widget_gating": {"is_true": false, "probability": 0.0018081665, "threshold": 0.53}, "calculator_widget": {"is_true": false, "probability": 3.5017729e-06, "threshold": 0.3}, "comet_nav_widget_combined_target": {"is_true": false, "probability": 0.012817383, "threshold": 0.5}, "domain_subdomain": {"label": "OTHER/OTHER", "probability": 0.98046875}, "finance_agent_gating": {"is_true": false, "probability": 2.4318695e-05, "threshold": 0.7}}}, "search_implementation_mode": "fast", "telemetry_data": {"has_displayed_search_results": false, "has_first_output_token": true, "has_first_token": true, "country": "PL", "is_followup": false, "source": "default", "engine_mode": "auto", "search_implementation_mode": "fast", "has_widget_data": false, "has_useful_renderable_content": true, "region": "us-east-1", "has_nav_results": false, "early_nav_v3_call": false}, "search_mode": "SEARCH", "status": "PENDING", "final_sse_message": false}
+
+{"backend_uuid": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "context_uuid": "3f405c77-e998-4410-99f7-84a2f2604ba1", "uuid": "9a2a69c1-efc2-4337-9e28-ea1842f1986a", "frontend_context_uuid": "45e6802a-7b84-4c5d-8f25-cdad4b3a1dfb", "display_model": "turbo", "mode": "CONCISE", "search_focus": "internet", "source": "default", "attachments": [], "read_write_token": "e0e17cb3-445e-4038-9243-d1600baa4eaf", "thread_url_slug": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "expect_search_results": "false", "gpt4": false, "text_completed": true, "blocks": [{"intended_usage": "ask_text_0_markdown", "diff_block": {"field": "markdown_block", "patches": [{"op": "add", "path": "/chunks/2", "value": " up?"}]}}, {"intended_usage": "ask_text", "diff_block": {"field": "markdown_block", "patches": [{"op": "add", "path": "/chunks/2", "value": " up?"}]}}], "message_mode": "STREAMING", "answer_modes": [{"answer_mode_type": "SEARCH", "has_preview": false}, {"answer_mode_type": "IMAGE", "has_preview": false}], "structured_answer_block_usages": ["ask_text_0_markdown"], "reconnectable": true, "image_completions": [], "cursor": "06a03510-eb5e-7d7b-8000-d498cc241797", "classifier_results": {"personal_search": false, "skip_search": true, "widget_type": "GENERAL", "hide_nav": false, "hide_sources": false, "image_generation": false, "time_widget": false, "mhe_predictions": {"skip_search": true, "image_generation_intent": false, "time_widget": false, "places_search_intent": false, "shopping_intent": false, "movie_lists_intent": false, "image_preview": false, "video_preview": false, "nav_intent": false, "personal_search": false, "weather_widget": false, "finance_widget_gating": false, "calculator_widget": false, "comet_nav_widget_combined_target": false, "finance_agent_gating": false}, "mhe_predictions_full": {"skip_search": {"is_true": true, "probability": 0.93359375, "threshold": 0.4}, "image_generation_intent": {"is_true": false, "probability": 0.00023078918, "threshold": 0.98}, "time_widget": {"is_true": false, "probability": 1.4722347e-05, "threshold": 0.8}, "places_search_intent": {"is_true": false, "probability": 0.004211426, "threshold": 0.85}, "shopping_intent": {"is_true": false, "probability": 5.4836273e-05, "threshold": 0.8}, "movie_lists_intent": {"is_true": false, "probability": 0.0008544922, "threshold": 0.65}, "image_preview": {"is_true": false, "probability": 0.0018692017, "threshold": 0.42}, "video_preview": {"is_true": false, "probability": 0.0013275146, "threshold": 0.5}, "nav_intent": {"is_true": false, "probability": 0.0005531311, "threshold": 0.5}, "personal_search": {"is_true": false, "probability": 0.00390625, "threshold": 0.050000000000000044}, "skip_personal_search": {"is_true": true, "probability": 0.99609375, "threshold": 0.95}, "weather_widget": {"is_true": false, "probability": 0.00031471252, "threshold": 0.4}, "finance_widget_gating": {"is_true": false, "probability": 0.0018081665, "threshold": 0.53}, "calculator_widget": {"is_true": false, "probability": 3.5017729e-06, "threshold": 0.3}, "comet_nav_widget_combined_target": {"is_true": false, "probability": 0.012817383, "threshold": 0.5}, "domain_subdomain": {"label": "OTHER/OTHER", "probability": 0.98046875}, "finance_agent_gating": {"is_true": false, "probability": 2.4318695e-05, "threshold": 0.7}}}, "search_implementation_mode": "fast", "search_mode": "SEARCH", "status": "PENDING", "final": true, "final_sse_message": false}
+```
 
 ## Solution selection
 
