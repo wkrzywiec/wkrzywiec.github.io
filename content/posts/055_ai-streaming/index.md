@@ -135,9 +135,11 @@ The `ping`/`pong` messages are so-called heartbeats - this a simple mechanism fo
 
 ### Shaping response structure
 
-Once a transportation mechnism is picked there is one more thing that must be selected - how a final response will be streamed to a client. By that I mean a strategy for picking on how AI agent will be sending parts of a a final structurted output in every chunk.
+Once a transportation mechnism is picked there is one more thing that must be selected - if we would like to send a structured response from an agent. If we're building a simple chat application we may stick to a markdown format which may produce nice looking results. But if we would add any graphic bells and whistles (like cards, animations or any other complicated UI components) we would need to structure a response.
 
-To visulize it, let's say that a final response for a meal planner AI agent looks like this:
+In essence it does not differ much from the "standard" approach. We define the response schema (e.g. in OpenAPI specification) and server returns the result. Now the trick is how to stream such object. In all other application server is always returning a full JSON object all at once. In the agentic application we may want to send only small parts of a huge JSON once the LLM produce them.
+
+But first, let's visulize it on an example, let's say that a final response for a meal planner AI agent looks like this:
 
 ```json
 {
@@ -175,7 +177,8 @@ To visulize it, let's say that a final response for a meal planner AI agent look
 It is a large JSON, with lots of information in it. In order to have a seamless experience a proper strategy for making such responses smaller chunks should be picked, so they can be then streamed to a client. Here are couple patterns to select from (not sure if there are any "official" names for them, so I've made them up):
 
 * Snowballing raw response - each chunk re-sends the full accumulated response,
-* Snowballing full object - raw JSON emitted token-by-token,
+* Snowballing structured object - accumulated, valid JSON is emitted token-by-token,
+* Full-schema delta streaming - stream deltas within a stable schema,
 * Structured field streaming - one complete JSON field per chunk,
 * Events streaming - distinguish payload kinds,
 * Delta patching - each chunk is a typed diff/operation applied to prior state.
@@ -194,11 +197,11 @@ data: {"response": "Thank you
 data: {"response": "Thank you for your
 ```
 
-As you can see, emitted information are not strucuted in any mean. They are sent in the token-by-token manner and it's up to a client to decide if received data is a properly shaped JSON or not. This may be quite inconvenient and waste of compute power and does not differ to much from non-streamed respones (after all client needs to wait until it gets all the token to serialize a response). This problem is addressed by the next approach.
+As you can see, emitted information are not strucuted in any mean. They are sent in the token-by-token manner and it's up to a client to decide if received data is a properly shaped JSON or not. This  does not differ to much from non-streamed respones as a client needs to wait until it gets all the token to serialize a response. This problem is addressed by the next approach.
 
-#### Snowballing full object
+#### Snowballing structured object
 
-Wouldn't it be good to structured everytime
+Variation of a previous approach would be to have a template JSON with an empty fields. Each time LLM generates a token it is inserted into one of a fields of the JSON object. Each time an app sends an accumulated response that holds a newly created part and previous ones. Here is an exampl to viusualize it:
 
 ```json
 data: {"response": "", "suggestedFollowUps": [], "recipes": []}
@@ -210,9 +213,29 @@ data: {"response": "Thank you ", "suggestedFollowUps": [], "recipes": []}
 data: {"response": "Thank you for your", "suggestedFollowUps": [], "recipes": []}
 ```
 
+This approach allows to render a screen on every incomming token making it more responsive for a user. Every chunk is a valid JSON so UI may be rendered on arrival of each one of them. The drawback is that a same data is sent again and again where only a tiny bit of a whole changes at a time making it inefficient as those JSON responses may become bigger and bigger.
+
+#### Full-schema delta streaming
+
+This problem could be tackled by sending only tokens that were just generated. Again, each time a full JSON object is sent but previous responses do not accumulate so only one field holds a part of the output token:
+
+```json
+data: {"response": "", "suggestedFollowUps": [], "recipes": []}
+
+
+data: {"response": "Thank you ", "suggestedFollowUps": [], "recipes": []}
+
+
+data: {"response": "for your", "suggestedFollowUps": [], "recipes": []}
+```
+
+This way each chunk may arrive earlier since each message is a way smaller than an accumulated ones from a previous approach.
+
+The bad side of such approach is that clients needs to cache ever chunk and combine them on their end. Moreover such approach works great for a string fields but it may be tricky for a complex ones, like arrays or objects.
+
 #### Structured field streaming
 
-- like previously but more constrained - each chunk returns the structured part of a JSON, i.e only one field at a time (or message/event types)
+A problem of non-string fields can be address by sending content of a entire field in one chunk. Each one of them is complete field of a larger JSON:
 
 ```json
 data: {"response": "Thank you for your meal planning request for healthy and fulfilling meals."}
@@ -221,28 +244,35 @@ data: {"response": "Thank you for your meal planning request for healthy and ful
 data: {"suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
 
 
-data: {"recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
+data: {"recipe": {"id": 1234,"name": "Mexican Quinoa", ... }
 ```
+
+A cost of this approach is that time between chunks may increase, especially if an object/array contains a lot of data.
 
 #### Events streaming
 
+Variation of a previous approach would be to send couple fields that are logically conected instead of a single one. Response time for each chunk may increase in compare to a previous one but in return we get consistent response from agent application. We could make even one step more and treat each chunk as an event/message that application is sending to a client. A message with an id, type which would makes easier to be parse on a client side and also to monitor and debug on a server side:
+
 ```json
 event: rationale
-data: {"id": 1, "response": "Thank you for your meal planning request for healthy and fulfilling meals."}
+data: {"id": 1, "type":"rationale", "response": "Thank you for your meal planning request for healthy and fulfilling meals."}
 
 
 event: suggestedFollowUps
-data: {"id": 2, "suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
+data: {"id": 2, "type": "suggestedFollowUps", "suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
+
 
 event: recipe
-data: {"id": 3, "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
+data: {"id": 3, "type": "recipe", "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
 ```
-
 
 #### Delta patching
 
-- Each chunk is a diff/patch applied to the previous state
+In many cases previous approach is good enough but especially for system that we don't want to let users to wait for each chunk. For applications that needs to send a lot of data but at the same time between chunk should be minimal a variation of *Full-schema delta streaming* and *Events streaming* can be applied.
 
+> !!!!! connected data - jak to zmienić?
+
+As in *Events streaming* each chunk is a separate event but this time event is not gathering connected data into a single chunk. Instead those events are representing which part of a JSON is generated by providing a field location and value that should be added to it. This way string fields may be send in a token-by-token manner like it is in *Full-schema delta streaming* while complex fields may be send as they are in a single go:
 
 ```json
 data: {"type":"response.token","payload":"Thank you"}
@@ -251,27 +281,20 @@ data: {"type":"response.token","payload":"Thank you"}
 data: {"type":"response.token","payload":"for your"}
 ```
 
-Or even more complicated
+It may go even more complicated if more complex cases should be covered. For instance adding an item to a list or replacing previous chunk with another (e.g. because agent's guard rails detected that incorrect chunk after it was sent). In such cases app builds a final response using several approach, one of which may be sending events as JSONs that consists of 3 fields that describes the operation, location and value:
 
-* `{"v": [{"p": "/message/content/parts/0", "o": "append", "v": " systems combine:\n\n```\nSemantic chunking"}, {"p": "/message/metadata/token_count", "o": "replace", "v": 1018}]}`
-* `[{"op": "add", "path": "/chunks/2", "value": " up?"}]}}]`
+* `o` - `operation` what action should be applied to accumulated response, e.g. `new`, `append`, `replace`, `add`, etc.
+* `p` - `path` references a location where the action should be applied, sth like JSON Path or other notation, e.g. `/message/parts/0` ( which may translates to the first item of the `parts` array that is inside the `message` object)
+* `v` - `value` of a change (what should be added, replaced, removed, etc.)
 
-
-* zobaczyć jak sa wysyłane
-  * chatgpt
-    * różnicówka
-    * event stream
-  * perplexity
-  * my
-  * inne?
-
-
-różnicówka - perplexity
+Examples:
 
 ```json
-{"backend_uuid": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "context_uuid": "3f405c77-e998-4410-99f7-84a2f2604ba1", "uuid": "9a2a69c1-efc2-4337-9e28-ea1842f1986a", "frontend_context_uuid": "45e6802a-7b84-4c5d-8f25-cdad4b3a1dfb", "display_model": "turbo", "mode": "CONCISE", "search_focus": "internet", "source": "default", "attachments": [], "read_write_token": "e0e17cb3-445e-4038-9243-d1600baa4eaf", "thread_url_slug": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "expect_search_results": "false", "gpt4": false, "text_completed": false, "blocks": [{"intended_usage": "ask_text_0_markdown", "diff_block": {"field": "markdown_block", "patches": [{"op": "replace", "path": "", "value": {"progress": "IN_PROGRESS", "chunks": ["hey there \ud83d\ude42 "], "chunk_starting_offset": 0, "answer": null, "media_items": null, "inline_token_annotations": []}}]}}, {"intended_usage": "ask_text", "diff_block": {"field": "markdown_block", "patches": [{"op": "replace", "path": "", "value": {"progress": "IN_PROGRESS", "chunks": ["hey there \ud83d\ude42 "], "chunk_starting_offset": 0, "answer": null, "media_items": null, "inline_token_annotations": null}}]}}], "message_mode": "STREAMING", "answer_modes": [{"answer_mode_type": "SEARCH", "has_preview": false}, {"answer_mode_type": "IMAGE", "has_preview": false}], "structured_answer_block_usages": ["ask_text_0_markdown"], "reconnectable": true, "image_completions": [], "cursor": "06a03510-e96d-71cb-8000-c52ea8abf774", "classifier_results": {"personal_search": false, "skip_search": true, "widget_type": "GENERAL", "hide_nav": false, "hide_sources": false, "image_generation": false, "time_widget": false, "mhe_predictions": {"skip_search": true, "image_generation_intent": false, "time_widget": false, "places_search_intent": false, "shopping_intent": false, "movie_lists_intent": false, "image_preview": false, "video_preview": false, "nav_intent": false, "personal_search": false, "weather_widget": false, "finance_widget_gating": false, "calculator_widget": false, "comet_nav_widget_combined_target": false, "finance_agent_gating": false}, "mhe_predictions_full": {"skip_search": {"is_true": true, "probability": 0.93359375, "threshold": 0.4}, "image_generation_intent": {"is_true": false, "probability": 0.00023078918, "threshold": 0.98}, "time_widget": {"is_true": false, "probability": 1.4722347e-05, "threshold": 0.8}, "places_search_intent": {"is_true": false, "probability": 0.004211426, "threshold": 0.85}, "shopping_intent": {"is_true": false, "probability": 5.4836273e-05, "threshold": 0.8}, "movie_lists_intent": {"is_true": false, "probability": 0.0008544922, "threshold": 0.65}, "image_preview": {"is_true": false, "probability": 0.0018692017, "threshold": 0.42}, "video_preview": {"is_true": false, "probability": 0.0013275146, "threshold": 0.5}, "nav_intent": {"is_true": false, "probability": 0.0005531311, "threshold": 0.5}, "personal_search": {"is_true": false, "probability": 0.00390625, "threshold": 0.050000000000000044}, "skip_personal_search": {"is_true": true, "probability": 0.99609375, "threshold": 0.95}, "weather_widget": {"is_true": false, "probability": 0.00031471252, "threshold": 0.4}, "finance_widget_gating": {"is_true": false, "probability": 0.0018081665, "threshold": 0.53}, "calculator_widget": {"is_true": false, "probability": 3.5017729e-06, "threshold": 0.3}, "comet_nav_widget_combined_target": {"is_true": false, "probability": 0.012817383, "threshold": 0.5}, "domain_subdomain": {"label": "OTHER/OTHER", "probability": 0.98046875}, "finance_agent_gating": {"is_true": false, "probability": 2.4318695e-05, "threshold": 0.7}}}, "search_implementation_mode": "fast", "telemetry_data": {"has_displayed_search_results": false, "has_first_output_token": true, "has_first_token": true, "country": "PL", "is_followup": false, "source": "default", "engine_mode": "auto", "search_implementation_mode": "fast", "has_widget_data": false, "has_useful_renderable_content": true, "region": "us-east-1", "has_nav_results": false, "early_nav_v3_call": false}, "search_mode": "SEARCH", "status": "PENDING", "final_sse_message": false}
+data: { "o": "append", "p": "/message/content",, "v": "Thank you"}
 
-{"backend_uuid": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "context_uuid": "3f405c77-e998-4410-99f7-84a2f2604ba1", "uuid": "9a2a69c1-efc2-4337-9e28-ea1842f1986a", "frontend_context_uuid": "45e6802a-7b84-4c5d-8f25-cdad4b3a1dfb", "display_model": "turbo", "mode": "CONCISE", "search_focus": "internet", "source": "default", "attachments": [], "read_write_token": "e0e17cb3-445e-4038-9243-d1600baa4eaf", "thread_url_slug": "b1fc625d-8db1-431b-a84e-a2d38ce56276", "expect_search_results": "false", "gpt4": false, "text_completed": true, "blocks": [{"intended_usage": "ask_text_0_markdown", "diff_block": {"field": "markdown_block", "patches": [{"op": "add", "path": "/chunks/2", "value": " up?"}]}}, {"intended_usage": "ask_text", "diff_block": {"field": "markdown_block", "patches": [{"op": "add", "path": "/chunks/2", "value": " up?"}]}}], "message_mode": "STREAMING", "answer_modes": [{"answer_mode_type": "SEARCH", "has_preview": false}, {"answer_mode_type": "IMAGE", "has_preview": false}], "structured_answer_block_usages": ["ask_text_0_markdown"], "reconnectable": true, "image_completions": [], "cursor": "06a03510-eb5e-7d7b-8000-d498cc241797", "classifier_results": {"personal_search": false, "skip_search": true, "widget_type": "GENERAL", "hide_nav": false, "hide_sources": false, "image_generation": false, "time_widget": false, "mhe_predictions": {"skip_search": true, "image_generation_intent": false, "time_widget": false, "places_search_intent": false, "shopping_intent": false, "movie_lists_intent": false, "image_preview": false, "video_preview": false, "nav_intent": false, "personal_search": false, "weather_widget": false, "finance_widget_gating": false, "calculator_widget": false, "comet_nav_widget_combined_target": false, "finance_agent_gating": false}, "mhe_predictions_full": {"skip_search": {"is_true": true, "probability": 0.93359375, "threshold": 0.4}, "image_generation_intent": {"is_true": false, "probability": 0.00023078918, "threshold": 0.98}, "time_widget": {"is_true": false, "probability": 1.4722347e-05, "threshold": 0.8}, "places_search_intent": {"is_true": false, "probability": 0.004211426, "threshold": 0.85}, "shopping_intent": {"is_true": false, "probability": 5.4836273e-05, "threshold": 0.8}, "movie_lists_intent": {"is_true": false, "probability": 0.0008544922, "threshold": 0.65}, "image_preview": {"is_true": false, "probability": 0.0018692017, "threshold": 0.42}, "video_preview": {"is_true": false, "probability": 0.0013275146, "threshold": 0.5}, "nav_intent": {"is_true": false, "probability": 0.0005531311, "threshold": 0.5}, "personal_search": {"is_true": false, "probability": 0.00390625, "threshold": 0.050000000000000044}, "skip_personal_search": {"is_true": true, "probability": 0.99609375, "threshold": 0.95}, "weather_widget": {"is_true": false, "probability": 0.00031471252, "threshold": 0.4}, "finance_widget_gating": {"is_true": false, "probability": 0.0018081665, "threshold": 0.53}, "calculator_widget": {"is_true": false, "probability": 3.5017729e-06, "threshold": 0.3}, "comet_nav_widget_combined_target": {"is_true": false, "probability": 0.012817383, "threshold": 0.5}, "domain_subdomain": {"label": "OTHER/OTHER", "probability": 0.98046875}, "finance_agent_gating": {"is_true": false, "probability": 2.4318695e-05, "threshold": 0.7}}}, "search_implementation_mode": "fast", "search_mode": "SEARCH", "status": "PENDING", "final": true, "final_sse_message": false}
+data: {"o": "add", "p": "/recipes/0", "v": "Crêpe"}
+
+data: {"o": "replace", "p": "/token_count",  "v": 1018}
 ```
 
 ## Solution selection
