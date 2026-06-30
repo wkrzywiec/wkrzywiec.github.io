@@ -201,6 +201,8 @@ As you can see, emitted information are not strucuted in any mean. They are sent
 
 #### Snowballing structured object
 
+> Used in: *LangGraph* (with default streaming mode - `values`)
+
 Variation of a previous approach would be to have a template JSON with an empty fields. Each time LLM generates a token it is inserted into one of a fields of the JSON object. Each time an app sends an accumulated response that holds a newly created part and previous ones. Here is an exampl to viusualize it:
 
 ```json
@@ -216,6 +218,8 @@ data: {"response": "Thank you for your", "suggestedFollowUps": [], "recipes": []
 This approach allows to render a screen on every incomming token making it more responsive for a user. Every chunk is a valid JSON so UI may be rendered on arrival of each one of them. The drawback is that a same data is sent again and again where only a tiny bit of a whole changes at a time making it inefficient as those JSON responses may become bigger and bigger.
 
 #### Full-schema delta streaming
+
+> Used in: OpenAI Chat Completions
 
 This problem could be tackled by sending only tokens that were just generated. Again, each time a full JSON object is sent but previous responses do not accumulate so only one field holds a part of the output token:
 
@@ -251,6 +255,8 @@ A cost of this approach is that time between chunks may increase, especially if 
 
 #### Events streaming
 
+> Used in: Gemini Interactions API
+
 Variation of a previous approach would be to send couple fields that are logically conected instead of a single one. Response time for each chunk may increase in compare to a previous one but in return we get consistent response from agent application. We could make even one step more and treat each chunk as an event/message that application is sending to a client. A message with an id, type which would makes easier to be parse on a client side and also to monitor and debug on a server side:
 
 ```json
@@ -267,6 +273,8 @@ data: {"id": 3, "type": "recipe", "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaa
 ```
 
 #### Delta patching
+
+> Used in: ChatGPT's and Perplexity's web UI
 
 In many cases previous approach is good enough but especially for system that we don't want to let users to wait for each chunk. For applications that needs to send a lot of data but at the same time between chunk should be minimal a variation of *Full-schema delta streaming* and *Events streaming* can be applied.
 
@@ -292,12 +300,22 @@ Examples:
 ```json
 data: { "o": "append", "p": "/message/content",, "v": "Thank you"}
 
+
 data: {"o": "add", "p": "/recipes/0", "v": "Crêpe"}
+
 
 data: {"o": "replace", "p": "/token_count",  "v": 1018}
 ```
 
 ## Solution selection
+
+* zobaczyć jak sa wysyłane
+  * chatgpt
+    * różnicówka
+    * event stream
+  * perplexity
+  * my
+  * inne?
 
 * wybór strategii
   * kontrakt bliski chatgpt - aby można było użyć w chainlit, czy innego rozwiązania
