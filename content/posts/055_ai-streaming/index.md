@@ -12,7 +12,7 @@ In my previous article in this series (here is a [link](https://wkrzywiec.is-a.d
 
 Here is how it looks now:
 
-!!! ADDDD video !!!!!
+![non-streaming](non-streaming.gif)
 
 As you spot on, an entire response is returned after completing the entire process. In a meantime there are no fast feedback send to a user what's going on so user may think that something have crashed.
 
@@ -309,29 +309,21 @@ data: {"o": "replace", "p": "/token_count",  "v": 1018}
 
 ## Solution selection
 
-* zobaczyć jak sa wysyłane
-  * chatgpt
-    * różnicówka
-    * event stream
-  * perplexity
-  * my
-  * inne?
+From earlier section we can tell - there are lot options to choose from. And for sure their are not limited to these only! So which one I've chosen for my meal planner project?
 
-* wybór strategii
-  * kontrakt bliski chatgpt - aby można było użyć w chainlit, czy innego rozwiązania
+My main goal is to learn on how to create and tune AI agent and less about visual aspect of a project. Of course it would be great to have lovely UI so working on a plan would be effortless and fun. This is additional work on which I don't want to focus on but on the other hand it I don't want to read only JSONs, I want some visualzations.
 
+After waighting the arguments I decided to use the [Chainlit](https://chainlit.io/) for UI parts. It is an open-source app used to build a AI conversatial solution. It allows to build apps similar to ChatGPT or Claude web applications but it also allows for customizations and creating own building-blocks (like custom views, cards, elements, etc), which I cared about the most.
+
+So in order to integrate with *Chainlit* app my meal planner had to expose endpoint compliant with the one the OpenAI has. Therefore I have decided to go with HTTP and SSE as transportation protocol. Where each chunk is sent as a whole except for a simple text - this one is streamed.
 
 ## Implementation
 
-### Spring boot SSE
-
-### Alternative solutions
-
-#### spring boot - streamingresponsebody
-
-#### spring boot - websocket
-
-#### reactive spring
+* flow, co robi agent krok po kroku
+* ogólne architektura z callbackami
+* rodzaje chunków
+* callbacki - dzięki nim mogę mieć kilka endpointów
+  * pokazać zwykłego jsona i ndjson
 
 ## References
 
