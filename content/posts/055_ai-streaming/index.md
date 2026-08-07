@@ -319,9 +319,106 @@ So in order to integrate with *Chainlit* app my meal planner had to expose endpo
 
 ## Implementation
 
-* flow, co robi agent krok po kroku
+### Agent Flow
+
+Here is how a logic of my agent look like:
+
+{{< mermaid >}}
+---
+title: Agent Flow
+---
+flowchart TB
+    id1(User sends query) --> id2(Agent acknowledges received request)
+    id2(Agent acknowledges received request) --> id3(Agent searches for recipies)
+    id3(Agent searches for recipies) --> id4(Agent selects best matching recipies)
+    id4(Agent selects best matching recipies) --> id5(Recipies are returned to user)
+    id5(Recipies are returned to user) --> id6(Rationale about selected recipies is returned)
+    id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
+{{< /mermaid >}}
+
+Before searching any recipie app sends ackownledgment to user that it has receives a request and it starts to process it. It consists of 2 phases - with and without use of LLM. First one, without LLM, it's just to let user know that request was accepted and is processed as quickly as possible. In the case of *nutri-chef-ai* it's in a shape of 2 static chunks:
+
+!!!!! pozbyc sie `ts` z payloadu statycznego - podwójne pole
+
+```json
+data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
+
+data:{"type":"status","ts":"2026-08-06T05:27:06.540703300Z","payload":{"phase":"llm","message":"Calling LLM (acknowledgement)"}}
+```
+
+Next part involves LLM in generating more human-like answer, indicating how the request was understood. This one is streamed token-by-token, so it looks like this:
+
+```json
+data:{"type":"response.token","ts":"...","payload":"Thank"}
+
+data:{"type":"response.token","ts":"...","payload":" you"}
+
+data:{"type":"response.token","ts":"...","payload":" for"}
+
+data:{"type":"response.token","ts":"...","payload":" your"}
+
+data:{"type":"response.token","ts":"...","payload":" meal"}
+
+data:{"type":"response.token","ts":"...","payload":" planning"}
+
+data:{"type":"response.token","ts":"...","payload":" request"}
+
+// full answer: Thank you for your meal planning request for healthy fullfiling meals. I now search for suitable recipies.
+```
+
+Once that is returned agent is looking for matching recipies that are in a RAG database. It informs about all the steps along the way.
+
+```json
+data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Searching for matching recipes"}}
+
+data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Found 100 matching recipes"}}
+
+data:{"type":"status","ts":"...","payload":{"phase":"llm","message":"Calling LLM (recipe-selection)"}}
+```
+
+Every step is send in a single chunk as well as every recipie. The entire structure (shorten below) is send in one go:
+
+```json
+data:{"type":"recipe.selected","ts":"...","payload":{"recipeId":"c01...","name":"Power bowl with sweet potato","ingredients":[...],"instructions":[...], "imageUrl":"https://...jpg", "similarityScore":0.6263648178902887}}
+
+data:{"type":"recipe.selected","ts":"...","payload":{"recipeId":"646..","name":"Mexican Quinoa","ingredients":[...],"instructions":[...],"imageUrl":"https://...jpg","similarityScore":0.6429639599585675}}
+```
+
+Every recipies selection is finialized with rationale why these were selected and again it's an LLM job to present it.
+
+```json
+data:{"type":"status","ts":"...","payload":{"phase":"llm","message":"Calling LLM (rationale)"}}
+
+data:{"type":"response.token","ts":"...","payload":"These"}
+
+data:{"type":"response.token","ts":"...","payload":" reci"}
+
+data:{"type":"response.token","ts":"...","payload":"pies"}
+
+data:{"type":"response.token","ts":"...","payload":" ans"}
+
+data:{"type":"response.token","ts":"...","payload":"wer "}
+
+data:{"type":"response.token","ts":"...","payload":"the "}
+
+data:{"type":"response.token","ts":"...","payload":"query"}
+
+//These recipes answer the query "healthy fulfilling meals", because they combine complete sources of protein, ...
+```
+
+!!! rationale jest po polsku
+
+### Code structure - callback approach
+
+* odesparowanie domeny od dto
 * ogólne architektura z callbackami
+
+### Chunks
+
 * rodzaje chunków
+
+### Server-Sent Events & NDJSON
+
 * callbacki - dzięki nim mogę mieć kilka endpointów
   * pokazać zwykłego jsona i ndjson
 
