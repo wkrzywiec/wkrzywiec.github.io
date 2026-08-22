@@ -6,21 +6,21 @@ description: "This post provides a hands-on guide to building an AI-powered appl
 tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "websockets", "ndjson", "grpc", "chainlit" , "java", "kotlin", "spring-boot"]
 ---
 
-## Why it is taking so long? Did it crash?
+## Why is it taking so long? Did it crash?
 
-In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) I have prepared a simple endpoint that returns a curated by LLM list of recipes that are based on user input. The results is a nice structured response but in order to get it we need to wait even couple of seconds. The reason for that is the entire process of generating a response involves couple of slower steps like embedding a user input or waiting for a response from LLM. And the more complicated the process becomes the more time user may wait for a final result.
+In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) I prepared a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured response, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result.
 
 Here is how it looks now:
 
 ![non-streaming](non-streaming.gif)
 
-As you spot on, an entire response is returned after completing the entire process. In a meantime there are no fast feedback send to a user what's going on so user may think that something have crashed.
+As you can see, the entire response is returned only after the whole process completes. In the meantime there is no quick feedback to the user about what's happening, so they may think the application has crashed.
 
-It would be better to send a notification to a user what actually is going on. Something like "Hey, we got your input and working on it" and then followed something like "We found some delicious recipes, in a moment we give the best ones". This way we can avoid the feeling from a user that something stucked.
+It would be better to send the user a notification about what's happening — something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment." This avoids the impression that the app is stuck.
 
-Additionally, in case of long text outputs produced by LLM it would be good to not wait until everything is generated but return it as it comes from LLM.
+Additionally, for long text outputs produced by an LLM, it's better not to wait until everything is generated but to return tokens as they arrive.
 
-All of that will be addressed and explained in this article but before that let's dive into two aspects of solution that will be picked.
+All of that will be addressed in this article. Before that, let's dive into two aspects of the solution we'll pick.
 
 ## Streaming chunks
 
@@ -30,33 +30,33 @@ trzeba utrzymywać po
 
 ### Protocols
 
-First decision that we have to make is which communication protocol we would want to select. Or in other worlds how we would like to stream chunks from server to a client.
+The first decision we have to make is which communication protocol to select — in other words, how we'd like to stream chunks from server to client.
 
 Options we have:
 
-* standard **HTTP** - which may be realized with following mechanisms:
-  * **Server-Sent Events** - SSE
-  * **Newline Delimited JSON** - NDJSON
+* standard **HTTP** — which can be realized with the following mechanisms:
+  * **Server-Sent Events** — SSE
+  * **Newline Delimited JSON** — NDJSON
 * **Websockets**
 
-All approaches allows to have a long-living connection with a server and are able to send messages in chunks.
+All approaches allow a long-lived connection with the server and can send messages in chunks.
 
-Apart from mentioned protocols we could count the **gRPC** as well but the strengths of this protocol shines the most in cross-agent communication of multi-agent system, when one agent needs to interact with another one. Therefore I'll skip this protocol for this post.
+We could also consider **gRPC**, but its strengths shine in cross-agent communication within multi-agent systems, when one agent interacts with another. Therefore I'll skip it for this post.
 
 #### Server-Sent Events
 
-Server-Sent Events is mechanism of uni-direction communication between server and client. It means that only server is able to send data to client. Opposit direction of communication is not possible.
+Server-Sent Events is a mechanism of unidirectional communication between server and client. That means only the server can send data to the client; the opposite direction is not supported.
 
-In order to get SSE response client first need to make a standard HTTP call with `Accept: text/event-stream` header, after which an open connection will be established. It will persist until one of the sides (client or server) close it. During the connection server is pushing messages in whatever text form. It could be JSON, but it does not need to be. It can be simple string.
+To receive an SSE stream the client first needs to make a standard HTTP request with the `Accept: text/event-stream` header, after which an open connection is established. It will persist until one side (client or server) closes it. During the connection the server pushes messages in plain text; these can be JSON, but they don't have to be.
 
-Technically speaking there are no constraints on how a response should be structured. However there is a convention that most clients and servers are following, in order to adhere to it server needs to send:
+Technically there are no constraints on how messages are structured. However, conventions most clients and servers follow include:
 
 * a double line (`"\n\n"`) between each message/chunk,
-* a message in a format `data: <message>`,
-* an optional `event: <event type>` field that describes an event type (like `add`, `remove` but it may be also more business-centric like `addedToCart`, etc.),
-* an optional `id: <event id>` field with message identifier
+* a message in the format `data: <message>`,
+* an optional `event: <event type>` field that describes the event (like `add`, `remove`, or business-centric types like `addedToCart`),
+* an optional `id: <event id>` field with a message identifier
 
-So the response, with 2 events, may look like this:
+So the response, with two events, may look like this:
 
 ```sse
 id: 1
@@ -69,30 +69,30 @@ event: add
 data: there!
 ```
 
-Today the SSE is the most popular mechanism for AI chats simply because OpenAI is using it in their streaming API. OpenAI was the first, widely used LLM chat, every company/tool wanted to integrated with it so they adopted the SSE on their side which made the SSE the de facto standard in the AI chat industry. [!!!! Perplexity]
+SSE is currently the most popular mechanism for AI chats because OpenAI uses it in their streaming API. OpenAI was the first widely used LLM chat provider, and many companies and tools adopted SSE as a result — it has become the de facto standard in the AI chat industry.
 
-Therefore the SSE is the best option if we would like to integrate our app with popular chat UIs, like [Open WebUI](https://openwebui.com/), [Chainlit](https://chainlit.io/), [Ollama Desktop App](https://ollama.com/) or [Jan.ai](https://www.jan.ai/).
+Therefore SSE is a good option if you want to integrate your app with popular chat UIs, like [Open WebUI](https://openwebui.com/), [Chainlit](https://chainlit.io/), [Ollama Desktop App](https://ollama.com/) or [Jan.ai](https://www.jan.ai/).
 
 #### NDJSON
 
-The NDJSON stand for Newline Delimited JSON which is a data format of multiple of JSON object separated by a newline character `\n`. Each line is a valid JSON and can be treated as a sequence of separated objects/events. This is very simple format, very close to returning a single JSON which is an industry-standard which makes it easier to integrate with already existing tools.
+NDJSON stands for Newline Delimited JSON. It's a format where multiple JSON objects are separated by newline characters (`\n`). Each line is a valid JSON object and can be treated as a sequence of separate objects/events. This simple format is close to a single JSON array, which makes it easier to integrate with existing tools.
 
-Similarly to the SSE, NDJSON relays on a HTTP with a long-living connection in which each line, JSON is sent. Unlike SSE this format enforces to send data in a structured way which upfront informs that data is sent in certain structure, making it easier to maintain.
+Like SSE, NDJSON relies on an HTTP long-lived connection in which each line (a JSON object) is sent. Unlike SSE, the NDJSON format enforces structured data, which can make it easier to maintain and integrate.
 
-For example, here is how an exemplary response could looke like (the `Content-Type` HTTP header would be `application/x-ndjson`):
+For example, here is how an exemplary response could look (the `Content-Type` HTTP header would be `application/x-ndjson`):
 
 ```json
 { "id": 1, "event": "start", "data": "Hello"}
 { "id": 2, "event": "add", "data": "there!"}
 ```
 
-The NDJSON format is a bit of a niche but it's used in some systems like Ollama and can be an alternative for SSE.
+The NDJSON format is a bit of a niche but it's used in some systems like Ollama and can be an alternative to SSE.
 
 #### Websockets
 
-Sometimes one-way communication, from server to client only, is too limiting. For instance, systems where AI agent needs to interact with human e.g. to ask permissions or ask to review plan/task progress (human-in-the-loop). Such systems require to send data from server to client and vice-versa all the time so it's beneficial to establish long-lived, bi-directional communication. This way a burden of having plethora of HTTP requests can be avoided for a single communication channel. It's a great protocol not only for chats but alos in plethora real-time collaboration system, like *Miro* or *Figma*.
+Sometimes one-way communication (server to client only) is too limiting. For instance, systems where an AI agent needs to interact with a human (e.g., to ask for permission or to review plan/task progress — human-in-the-loop) require two-way communication. Such systems benefit from long-lived, bi-directional connections, which avoid a flood of HTTP requests for a single communication channel. WebSocket is useful not only for chats but also for many real-time collaboration systems like *Miro* or *Figma*.
 
-Both HTTP and websockets protocols are built on the same fundation - TCP (Transmission Control Protocol) which is a core protocol of the Internet. Websocket communication starts with an HTTP handshake in which client asks server to upgrade the connection to long-lasting websocket communication. If server agrees the same TCP channel remains open and is replaced to websoocket connection. It last until client or server terminates it. In HTTP client opens TCP connection, sends data and once it receives data back from server the connection is often closed.
+Both HTTP and WebSockets are built on the same foundation — TCP (Transmission Control Protocol). WebSocket communication starts with an HTTP handshake in which the client asks the server to upgrade the connection to a long-lived WebSocket. If the server accepts, the same TCP channel remains open and is upgraded to a WebSocket connection; it lasts until either side closes it. In standard HTTP, the client opens a TCP connection, sends a request, and the connection is often closed after the response.
 
 {{< mermaid >}}
 sequenceDiagram
@@ -110,9 +110,9 @@ sequenceDiagram
     Note over Client,Server: Connection Closed
 {{< /mermaid >}}
 
-Websocket supports various data types and the most interesting for us is a simple text type which allows to shape messages that are sent back and forth from client and server wherever we like. Here is another example of message exchange for chat application, this time messages are sent in the JSON format.
+WebSocket supports various data types; the most useful for us is the text type, which allows us to send structured messages (for example JSON) back and forth between client and server. Here is an example of message exchange for a chat application, with messages in JSON format.
 
-In the AI agentic world websockets are used in various products. For example, I saw that Perplexity is using it to give completion suggestions to what user is typing - when I hit a letter on a keyboard Perplexity is already suggesting me what i may want to type.
+In the AI-agent world, WebSockets are used in various products. For example, Perplexity uses WebSockets to give completion suggestions while the user is typing — when I hit a letter, Perplexity often already suggests what I might want to type.
 
 ```json
 // Client -> Server
@@ -131,15 +131,15 @@ In the AI agentic world websockets are used in various products. For example, I 
 {"type":"pong"}
 ```
 
-The `ping`/`pong` messages are so-called heartbeats - this a simple mechanism for client and server to make sure that connection is still operating. The others are the "regular" messages sent between client and server.
+The `ping`/`pong` messages are heartbeats — a simple mechanism for client and server to ensure the connection is still alive. The others are the regular messages exchanged between client and server.
 
 ### Shaping response structure
 
-Once a transportation mechnism is picked there is one more thing that must be selected - if we would like to send a structured response from an agent. If we're building a simple chat application we may stick to a markdown format which may produce nice looking results. But if we would add any graphic bells and whistles (like cards, animations or any other complicated UI components) we would need to structure a response.
+Once a transport mechanism is chosen, there is one more decision: do we want to send structured responses from the agent? For a simple chat application, markdown may be sufficient. But if you want UI elements (cards, animations, or other components) you need a structured response.
 
-In essence it does not differ much from the "standard" approach. We define the response schema (e.g. in OpenAPI specification) and server returns the result. Now the trick is how to stream such object. In all other application server is always returning a full JSON object all at once. In the agentic application we may want to send only small parts of a huge JSON once the LLM produce them.
+In essence, this is similar to the standard approach: define a response schema (for example in OpenAPI) and the server returns the result. The trick here is how to stream such an object. In most applications the server returns the full JSON object at once; in an agentic application we may want to send only small parts of a large JSON as the LLM produces them.
 
-But first, let's visulize it on an example, let's say that a final response for a meal planner AI agent looks like this:
+But first, let's visualize it with an example. Say the final response for a meal-planner AI agent looks like this:
 
 ```json
 {
@@ -165,7 +165,7 @@ But first, let's visulize it on an example, let's say that a final response for 
                 "imageUrl": "https://www.bbcgoodfood.com/quinoa.jpg",
                 "servings": "2 portions",
                 "tags": [
-                    "Lunch",
+                    "Lunch"
                 ],
                 "similarityScore": 0.6430065
             }
@@ -174,36 +174,36 @@ But first, let's visulize it on an example, let's say that a final response for 
 }
 ```
 
-It is a large JSON, with lots of information in it. In order to have a seamless experience a proper strategy for making such responses smaller chunks should be picked, so they can be then streamed to a client. Here are couple patterns to select from (not sure if there are any "official" names for them, so I've made them up):
+This is a large JSON with a lot of information. To provide a seamless experience, you should pick a strategy to split the response into smaller chunks that can be streamed to the client. Here are a few patterns to choose from (these names are informal):
 
-* Snowballing raw response - each chunk re-sends the full accumulated response,
-* Snowballing structured object - accumulated, valid JSON is emitted token-by-token,
-* Full-schema delta streaming - stream deltas within a stable schema,
-* Structured field streaming - one complete JSON field per chunk,
-* Events streaming - distinguish payload kinds,
-* Delta patching - each chunk is a typed diff/operation applied to prior state.
+* Snowballing raw response — each chunk re-sends the full accumulated response
+* Snowballing structured object — accumulated, valid JSON is emitted token-by-token
+* Full-schema delta streaming — stream deltas within a stable schema
+* Structured field streaming — one complete JSON field per chunk
+* Events streaming — distinguish payload kinds
+* Delta patching — each chunk is a typed diff/operation applied to prior state
 
 #### Snowballing raw response
 
-The first, naive pattern is pretty straigthforward. Agentic system is emitting a response in the token-by-token manner. Every new chunk contains the previous and newly added parts. So with every message it grows and grows. Here is an example to visualize it (in this, and all other example I'll stick to the SSE protocol):
+The first, naive pattern is straightforward. The agentic system emits the response token-by-token. Every new chunk contains the previous content plus the newly added parts, so the message grows with each chunk. Here is an example (I'll stick to the SSE protocol in these examples):
 
 ```json
 data: {"response":
 
 
-data: {"response": "Thank you 
+data: {"response": "Thank you "
 
 
-data: {"response": "Thank you for your
+data: {"response": "Thank you for your"
 ```
 
-As you can see, emitted information are not strucuted in any mean. They are sent in the token-by-token manner and it's up to a client to decide if received data is a properly shaped JSON or not. This  does not differ to much from non-streamed respones as a client needs to wait until it gets all the token to serialize a response. This problem is addressed by the next approach.
+As you can see, the emitted information is not structured in any meaningful way. It is sent token-by-token and it's up to the client to decide whether the received data forms a valid JSON. This doesn't differ much from a non-streamed response, since the client often has to wait for all tokens to arrive before deserializing. The next approach addresses this.
 
 #### Snowballing structured object
 
-> Used in: *LangGraph* (with default streaming mode - `values`)
+> Used in: *LangGraph* (with default streaming mode — `values`)
 
-Variation of a previous approach would be to have a template JSON with an empty fields. Each time LLM generates a token it is inserted into one of a fields of the JSON object. Each time an app sends an accumulated response that holds a newly created part and previous ones. Here is an exampl to viusualize it:
+A variation of the previous approach is to have a template JSON with empty fields. Each time the LLM generates a token it is inserted into one of the JSON fields. The app sends the accumulated response, containing the newly created parts and the previous ones. Here is an example to visualize it:
 
 ```json
 data: {"response": "", "suggestedFollowUps": [], "recipes": []}
@@ -215,13 +215,13 @@ data: {"response": "Thank you ", "suggestedFollowUps": [], "recipes": []}
 data: {"response": "Thank you for your", "suggestedFollowUps": [], "recipes": []}
 ```
 
-This approach allows to render a screen on every incomming token making it more responsive for a user. Every chunk is a valid JSON so UI may be rendered on arrival of each one of them. The drawback is that a same data is sent again and again where only a tiny bit of a whole changes at a time making it inefficient as those JSON responses may become bigger and bigger.
+This approach allows rendering on every incoming token, making the UI feel more responsive. Every chunk is a valid JSON so the UI can update as each chunk arrives. The drawback is that the same data is sent repeatedly while only a small portion changes, making it inefficient as the JSON responses grow.
 
 #### Full-schema delta streaming
 
 > Used in: OpenAI Chat Completions
 
-This problem could be tackled by sending only tokens that were just generated. Again, each time a full JSON object is sent but previous responses do not accumulate so only one field holds a part of the output token:
+This problem can be tackled by sending only the tokens that were just generated. Again, each message is a JSON object, but previous responses do not accumulate — only the field that is being generated contains new tokens:
 
 ```json
 data: {"response": "", "suggestedFollowUps": [], "recipes": []}
@@ -233,13 +233,13 @@ data: {"response": "Thank you ", "suggestedFollowUps": [], "recipes": []}
 data: {"response": "for your", "suggestedFollowUps": [], "recipes": []}
 ```
 
-This way each chunk may arrive earlier since each message is a way smaller than an accumulated ones from a previous approach.
+This way each chunk is smaller and can arrive earlier than the accumulated ones in the previous approach.
 
-The bad side of such approach is that clients needs to cache ever chunk and combine them on their end. Moreover such approach works great for a string fields but it may be tricky for a complex ones, like arrays or objects.
+The downside is that clients need to cache every chunk and combine them on their end. This approach works well for string fields but can be tricky for complex fields like arrays or objects.
 
 #### Structured field streaming
 
-A problem of non-string fields can be address by sending content of a entire field in one chunk. Each one of them is complete field of a larger JSON:
+The problem of non-string fields can be addressed by sending the entire field content in one chunk. Each chunk contains a complete field of the larger JSON:
 
 ```json
 data: {"response": "Thank you for your meal planning request for healthy and fulfilling meals."}
@@ -248,16 +248,16 @@ data: {"response": "Thank you for your meal planning request for healthy and ful
 data: {"suggestedFollowUps": ["Prepare a shopping list for the ingredients needed for the selected recipes."]}
 
 
-data: {"recipe": {"id": 1234,"name": "Mexican Quinoa", ... }
+data: {"recipe": {"id": 1234, "name": "Mexican Quinoa", ... }}
 ```
 
-A cost of this approach is that time between chunks may increase, especially if an object/array contains a lot of data.
+A cost of this approach is that the time between chunks may increase, especially if an object or array contains a lot of data.
 
 #### Events streaming
 
 > Used in: Gemini Interactions API
 
-Variation of a previous approach would be to send couple fields that are logically conected instead of a single one. Response time for each chunk may increase in compare to a previous one but in return we get consistent response from agent application. We could make even one step more and treat each chunk as an event/message that application is sending to a client. A message with an id, type which would makes easier to be parse on a client side and also to monitor and debug on a server side:
+A variation of the previous approach is to send several fields that are logically connected instead of a single one. The response time for each chunk may increase compared to the previous approach, but in return we get a more consistent response from the agent. We can treat each chunk as an event/message sent to the client, with an id and type, which makes it easier to parse on the client side and to monitor and debug on the server side:
 
 ```json
 event: rationale
@@ -269,18 +269,18 @@ data: {"id": 2, "type": "suggestedFollowUps", "suggestedFollowUps": ["Prepare a 
 
 
 event: recipe
-data: {"id": 3, "type": "recipe", "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }
+data: {"id": 3, "type": "recipe", "recipe": {"id": "6464b6f5-17bf-4744-90f6-dbaab3af9983","name": "Mexican Quinoa", ... }}
 ```
 
 #### Delta patching
 
 > Used in: ChatGPT's and Perplexity's web UI
 
-In many cases previous approach is good enough but especially for system that we don't want to let users to wait for each chunk. For applications that needs to send a lot of data but at the same time between chunk should be minimal a variation of *Full-schema delta streaming* and *Events streaming* can be applied.
+In many cases the previous approach is good enough, but for systems where we don't want users to wait for each chunk, a variation of *Full-schema delta streaming* and *Events streaming* can be applied. This is useful for applications that send a lot of data while keeping the per-chunk size minimal.
 
 > !!!!! connected data - jak to zmienić?
 
-As in *Events streaming* each chunk is a separate event but this time event is not gathering connected data into a single chunk. Instead those events are representing which part of a JSON is generated by providing a field location and value that should be added to it. This way string fields may be send in a token-by-token manner like it is in *Full-schema delta streaming* while complex fields may be send as they are in a single go:
+As in *Events streaming*, each chunk is a separate event, but this time the event doesn't gather related data into a single chunk. Instead, events represent which part of the JSON was generated by providing a field location and the value to add. This way string fields can be sent token-by-token as in *Full-schema delta streaming*, while complex fields can be sent in one go:
 
 ```json
 data: {"type":"response.token","payload":"Thank you"}
@@ -289,39 +289,39 @@ data: {"type":"response.token","payload":"Thank you"}
 data: {"type":"response.token","payload":"for your"}
 ```
 
-It may go even more complicated if more complex cases should be covered. For instance adding an item to a list or replacing previous chunk with another (e.g. because agent's guard rails detected that incorrect chunk after it was sent). In such cases app builds a final response using several approach, one of which may be sending events as JSONs that consists of 3 fields that describes the operation, location and value:
+It can get more complicated for operations like adding an item to a list or replacing a previous chunk (e.g., if guard rails detect an incorrect chunk after it was sent). In such cases the app builds a final response using several approaches, one of which is sending events as JSON that consist of three fields describing the operation, location and value:
 
-* `o` - `operation` what action should be applied to accumulated response, e.g. `new`, `append`, `replace`, `add`, etc.
-* `p` - `path` references a location where the action should be applied, sth like JSON Path or other notation, e.g. `/message/parts/0` ( which may translates to the first item of the `parts` array that is inside the `message` object)
-* `v` - `value` of a change (what should be added, replaced, removed, etc.)
+* `o` - `operation`: what action should be applied to the accumulated response, e.g. `new`, `append`, `replace`, `add`, etc.
+* `p` - `path`: references a location where the action should be applied (something like JSON Path), e.g. `/message/parts/0` (which may translate to the first item of the `parts` array inside the `message` object)
+* `v` - `value`: the change (what should be added, replaced, removed, etc.)
 
 Examples:
 
 ```json
-data: { "o": "append", "p": "/message/content",, "v": "Thank you"}
+data: { "o": "append", "p": "/message/content", "v": "Thank you"}
 
 
 data: {"o": "add", "p": "/recipes/0", "v": "Crêpe"}
 
 
-data: {"o": "replace", "p": "/token_count",  "v": 1018}
+data: {"o": "replace", "p": "/token_count", "v": 1018}
 ```
 
 ## Solution selection
 
-From earlier section we can tell - there are lot options to choose from. And for sure their are not limited to these only! So which one I've chosen for my meal planner project?
+From the earlier sections we can tell there are many options to choose from, and they aren't limited to the ones described here. So which one did I choose for my meal-planner project?
 
-My main goal is to learn on how to create and tune AI agent and less about visual aspect of a project. Of course it would be great to have lovely UI so working on a plan would be effortless and fun. This is additional work on which I don't want to focus on but on the other hand it I don't want to read only JSONs, I want some visualzations.
+My main goal is to learn how to create and tune an AI agent, not to focus on the visual aspects of the project. Of course a nice UI would make working with the plan effortless and fun, but that's additional work I don't want to focus on right now. On the other hand, I don't want to view only raw JSON — I want some visualizations.
 
-After waighting the arguments I decided to use the [Chainlit](https://chainlit.io/) for UI parts. It is an open-source app used to build a AI conversatial solution. It allows to build apps similar to ChatGPT or Claude web applications but it also allows for customizations and creating own building-blocks (like custom views, cards, elements, etc), which I cared about the most.
+After weighing the arguments, I decided to use [Chainlit](https://chainlit.io/) for the UI. It's an open-source app for building AI conversational solutions. It allows you to create apps similar to ChatGPT or Claude and supports customizations and custom building blocks (views, cards, elements), which mattered most to me.
 
-So in order to integrate with *Chainlit* app my meal planner had to expose endpoint compliant with the one the OpenAI has. Therefore I have decided to go with HTTP and SSE as transportation protocol. Where each chunk is sent as a whole except for a simple text - this one is streamed.
+To integrate with Chainlit, my meal planner had to expose an endpoint compatible with OpenAI's streaming API. Therefore I chose HTTP and SSE as the transport protocol. Most chunks are sent as whole events; simple text is streamed token-by-token.
 
 ## Implementation
 
 ### Agent Flow
 
-Here is how a logic of my agent look like:
+Here is how the logic of my agent looks:
 
 {{< mermaid >}}
 ---
@@ -336,7 +336,7 @@ flowchart TB
     id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
-Before searching any recipie app sends ackownledgment to user that it has receives a request and it starts to process it. It consists of 2 phases - with and without use of LLM. First one, without LLM, it's just to let user know that request was accepted and is processed as quickly as possible. In the case of *nutri-chef-ai* it's in a shape of 2 static chunks:
+Before searching any recipe, the app sends an acknowledgment to the user that it has received the request and has started processing it. It consists of two phases — with and without use of an LLM. The first phase (without the LLM) simply lets the user know the request was accepted and is being processed. In *nutri-chef-ai* this takes the shape of two static chunks:
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
@@ -344,7 +344,7 @@ data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting 
 data:{"type":"status","ts":"2026-08-06T05:27:06.540703300Z","payload":{"phase":"llm","message":"Calling LLM (acknowledgement)"}}
 ```
 
-Next part involves LLM in generating more human-like answer, indicating how the request was understood. This one is streamed token-by-token, so it looks like this:
+The next part involves the LLM in generating a more human-like answer that indicates how the request was understood. This is streamed token-by-token, so it looks like this:
 
 ```json
 data:{"type":"response.token","ts":"...","payload":"Thank"}
@@ -361,10 +361,10 @@ data:{"type":"response.token","ts":"...","payload":" planning"}
 
 data:{"type":"response.token","ts":"...","payload":" request"}
 
-// full answer: Thank you for your meal planning request for healthy fullfiling meals. I now search for suitable recipies.
+// full answer: Thank you for your meal planning request for healthy fulfilling meals. I now search for suitable recipes.
 ```
 
-Once that is returned agent is looking for matching recipies that are in a RAG database. It informs about all the steps along the way.
+Once that is returned, the agent searches for matching recipes in the RAG database and informs the user about the steps along the way.
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Searching for matching recipes"}}
@@ -374,7 +374,7 @@ data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Found 10
 data:{"type":"status","ts":"...","payload":{"phase":"llm","message":"Calling LLM (recipe-selection)"}}
 ```
 
-Every step is send in a single chunk as well as every recipie. The entire structure (shorten below) is send in one go:
+Every step is sent in a single chunk, as is each recipe. The entire structure (shortened below) is sent in one go:
 
 ```json
 data:{"type":"recipe.selected","ts":"...","payload":{"recipeId":"c01...","name":"Power bowl with sweet potato","ingredients":[...],"instructions":[...], "imageUrl":"https://...jpg", "similarityScore":0.6263648178902887}}
@@ -382,7 +382,7 @@ data:{"type":"recipe.selected","ts":"...","payload":{"recipeId":"c01...","name":
 data:{"type":"recipe.selected","ts":"...","payload":{"recipeId":"646..","name":"Mexican Quinoa","ingredients":[...],"instructions":[...],"imageUrl":"https://...jpg","similarityScore":0.6429639599585675}}
 ```
 
-Every recipies selection is finialized with rationale why these were selected and again it's an LLM job to present it.
+Each recipe selection is finalized with a rationale explaining why it was chosen; again, the LLM generates this.
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"llm","message":"Calling LLM (rationale)"}}
@@ -406,7 +406,7 @@ data:{"type":"response.token","ts":"...","payload":"query"}
 
 !!! rationale jest po polsku
 
-The last part of a response are follow-ups - suggestions for a next question or more detailed rationale:
+The last part of the response is follow-ups — suggestions for next actions or more detailed rationale:
 
 ```json
 data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","payload":["Prepare a weekly meal plan and grocery list for a two-person household.","Check other recipes with similar ingredients to enrich my diet."]}
@@ -414,9 +414,9 @@ data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","paylo
 
 ### Code structure - callback approach
 
-Let's talk about how code is organized. I like to keep a logic of entire flow in a domain services and means. It means I don't want to have any framework depenencies in it. If communication with external thing is required (like another service, database, etc.) it happens via interface (ports), which may have couple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
+Let's talk about how the code is organized. I like to keep the core logic in domain services and primitives, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports), which can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
 
-The `proposeMealStreaming(...)` method of `MealPlanner` class defines the entire flow of each response. In each step it uses specialized classes to execute certain task. Agents to produce specific output based on an input (it may be user input, but iy also may be output from another agent). Facade for performing complicated actions - like searching for recipies in vector database.
+The `proposeMealStreaming(...)` method of the `MealPlanner` class defines the entire flow for each response. At each step it uses specialized classes to execute a specific task: agents to produce output based on input (user input or output from another agent), and facades for more complicated actions such as searching for recipes in the vector database.
 
 ```kotlin
 data class RecipeProposals(
@@ -451,9 +451,10 @@ class MealPlanner(
 
         ...
     }
+}
 ```
 
-The crucial part of the `fun proposeMealStreaming(...)` function is callback `onEvent: (AiAgentEvent) -> Unit`. It is used to communicate with outer (controller) layer of an application. Whenever a certain point of a workflow is reached (e.g. recipies have been selected by an agent) the `onEvent(...)` callback is executed to singal other parts of an application. These signals may be than mapped in controller to DTOs and be sent to a user.
+The crucial part of the `fun proposeMealStreaming(...)` function is the callback `onEvent: (AiAgentEvent) -> Unit`. It is used to communicate with the outer (controller) layer of the application. Whenever a certain point in the workflow is reached (e.g., recipes have been selected by an agent), the `onEvent(...)` callback is executed to signal other parts of the application. These signals can then be mapped in the controller to DTOs and sent to the user.
 
 ```kotlin
 @RestController
@@ -483,13 +484,14 @@ class MealPlannerController(
             .header("X-Accel-Buffering", "no")
             .body(sseEmitter)
     }
+}
 ```
 
-This is an elegant approach for handling an asynchronous nature of entire communication. This way we're able to send data to client when they are ready and there is no need to wait until entire workflow finishes.
+This is an elegant approach for handling the asynchronous nature of the communication. This way we can send data to the client as it becomes available, without waiting for the entire workflow to finish.
 
 ### Chunks
 
-Focusing on a logic in `MealPlanner` class:
+Focusing on the logic in `MealPlanner` class:
 
 * opisać rodzaje chunków
 * opisać agentów
