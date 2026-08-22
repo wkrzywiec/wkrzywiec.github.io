@@ -338,8 +338,6 @@ flowchart TB
 
 Before searching any recipie app sends ackownledgment to user that it has receives a request and it starts to process it. It consists of 2 phases - with and without use of LLM. First one, without LLM, it's just to let user know that request was accepted and is processed as quickly as possible. In the case of *nutri-chef-ai* it's in a shape of 2 static chunks:
 
-!!!!! pozbyc sie `ts` z payloadu statycznego - podwójne pole
-
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
 
@@ -408,19 +406,100 @@ data:{"type":"response.token","ts":"...","payload":"query"}
 
 !!! rationale jest po polsku
 
+The last part of a response are follow-ups - suggestions for a next question or more detailed rationale:
+
+```json
+data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","payload":["Prepare a weekly meal plan and grocery list for a two-person household.","Check other recipes with similar ingredients to enrich my diet."]}
+```
+
 ### Code structure - callback approach
 
-* odesparowanie domeny od dto
-* ogólne architektura z callbackami
+Let's talk about how code is organized. I like to keep a logic of entire flow in a domain services and means. It means I don't want to have any framework depenencies in it. If communication with external thing is required (like another service, database, etc.) it happens via interface (ports), which may have couple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
+
+The `proposeMealStreaming(...)` method of `MealPlanner` class defines the entire flow of each response. In each step it uses specialized classes to execute certain task. Agents to produce specific output based on an input (it may be user input, but iy also may be output from another agent). Facade for performing complicated actions - like searching for recipies in vector database.
+
+```kotlin
+data class RecipeProposals(
+    val response: String,
+    val suggestedFollowUps: List<String>,
+    val recipes: List<RecipeEntry>,
+)
+
+data class RecipeEntry(
+    val recipe: Recipe?,
+)
+
+@Service
+class MealPlanner(
+    private val recipeSearch: RecipeSearchFacade,
+    private val acknowledgementAgent: AcknowledgementAgent,
+    private val recipeSelectionAgent: RecipeSelectionAgent,
+    private val rationaleAgent: RationaleAgent,
+    private val suggestedFollowUpsAgent: SuggestedFollowUpsAgent,
+) {
+    companion object {
+        private val log = logger {}
+        private const val RECIPE_FETCH_LIMIT = 100
+    }
+
+    fun proposeMealStreaming(
+        userPrompt: String,
+        onEvent: (AiAgentEvent) -> Unit,
+    ) {
+        log.info { "Streaming meal proposals for prompt '$userPrompt'" }
+        onEvent(AiAgentEvent.PlanningStarted(userPrompt))
+
+        ...
+    }
+```
+
+The crucial part of the `fun proposeMealStreaming(...)` function is callback `onEvent: (AiAgentEvent) -> Unit`. It is used to communicate with outer (controller) layer of an application. Whenever a certain point of a workflow is reached (e.g. recipies have been selected by an agent) the `onEvent(...)` callback is executed to singal other parts of an application. These signals may be than mapped in controller to DTOs and be sent to a user.
+
+```kotlin
+@RestController
+@RequestMapping("/api/planner")
+class MealPlannerController(
+    private val mealPlanner: MealPlanner,
+    private val mapper: AiAgentEventMapper,
+) {
+
+    @GetMapping(
+        path = ["/single"],
+        produces = [MediaType.TEXT_EVENT_STREAM_VALUE],
+    )
+    fun proposeMealSse(
+        @RequestParam prompt: String,
+    ): ResponseEntity<SseEmitter> {
+
+        mealPlanner.proposeMealStreaming(prompt) { event ->
+            val sseEventDto = mapper.toSseEvent(event)
+            // send sseEventDto
+        }
+
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.TEXT_EVENT_STREAM)
+            .header("Cache-Control", "no-cache")
+            .header("X-Accel-Buffering", "no")
+            .body(sseEmitter)
+    }
+```
+
+This is an elegant approach for handling an asynchronous nature of entire communication. This way we're able to send data to client when they are ready and there is no need to wait until entire workflow finishes.
 
 ### Chunks
 
-* rodzaje chunków
+Focusing on a logic in `MealPlanner` class:
+
+* opisać rodzaje chunków
+* opisać agentów
+* poprawić flow, patrząc w chainlit
 
 ### Server-Sent Events & NDJSON
 
+
 * callbacki - dzięki nim mogę mieć kilka endpointów
-  * pokazać zwykłego jsona i ndjson
+  * pokazać sse i ndjson
 
 ## References
 
