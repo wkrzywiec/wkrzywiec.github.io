@@ -727,7 +727,15 @@ Unlike SSE events, NDJSON response format is not supported out-of-the-box in , s
 
 ## Raw response and Chainlit UI
 
-!!! dodać nagrania - raw response oraz chainlit (ale nie wdrawać sie w szczegóły)
+Here is the end result of how the agent responses. Every chunk is send to a client right after it is produced, so it is not waiting until everything is ready to be sent in a single, large JSON:
+
+!!! dodać nagrania - raw response
+
+To make it even more sweet, I have integrated with a *Chainlit*, so I no longer need to read all the chunks. Instead I have a nice looking UI that can even show me images of recipies.
+
+!!! dodać nagrania - chainlit (ale nie wdrawać sie w szczegóły)
+
+I've picked *Chainlit* because it allows to easily customize the UI. If you're interested on how I've done it, go check the codebase of this project (link is in the *Summary* section).
 
 ## Summary
 
