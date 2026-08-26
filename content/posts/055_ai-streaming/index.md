@@ -336,7 +336,7 @@ flowchart TB
     id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
-Before searching any recipe, the app sends an acknowledgment to the user that it has received the request and has started processing it. It consists of two phases — with and without use of an LLM. The first phase (without the LLM) simply lets the user know the request was accepted and is being processed. In *nutri-chef-ai* this takes the shape of a staic chunk:
+Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases — one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
@@ -408,11 +408,11 @@ The last part of the response is follow-ups — suggestions for next actions or 
 data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","payload":["Prepare a weekly meal plan and grocery list for a two-person household.","Check other recipes with similar ingredients to enrich my diet."]}
 ```
 
-### Code structure - callback approach
+### Code structure — callback approach
 
-Let's talk about how the code is organized. I like to keep the core logic in domain services and primitives, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports), which can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
+How the code is organized: I keep core logic in domain services and primitives, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports) that can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
 
-The `proposeMealStreaming(...)` method of the `MealPlanner` class defines the entire flow for each response. At each step it uses specialized classes to execute a specific task: agents to produce output based on input (user input or output from another agent), and facades for more complicated actions such as searching for recipes in the vector database.
+The `proposeMealStreaming(...)` method of the `MealPlanner` class defines the flow for each response. At each step it uses specialized classes to execute a specific task: agents to produce output based on input (user input or output from another agent), and facades for more complex actions such as searching the vector database.
 
 ```kotlin
 data class RecipeProposals(
@@ -518,7 +518,7 @@ class MealPlanner(
         // Step 2: LLM selects the best recipes
         val selectedRecipes = recipeSelectionAgent.execute(userPrompt, recipes)
         if (selectedRecipes.isEmpty()) {
-            onEvent(AiAgentEvent.PlanFailed("Failed to found matching recipes. Please try again."))
+            onEvent(AiAgentEvent.PlanFailed("Failed to find matching recipes. Please try again."))
             return
         }
         selectedRecipes.forEach { entry ->
@@ -542,13 +542,13 @@ class MealPlanner(
     }
 ```
 
-As mentioned earlier agent response is divided into steps. Most steps can be reduced to:
+As mentioned earlier, the agent response is divided into steps. Most steps reduce to:
 
-1. acknowledgment what next step of a "thought" process it,
-2. executing a method specialized agent or class for recipe search,
-3. sending a result of a step.
+1. an acknowledgment that indicates the next step in the agent's "thought" process,
+2. executing a specialized agent or class method (e.g., recipe search),
+3. sending the result of the step.
 
-Both acknowledgment and results are send as domain event via `onEvent(...)` function. Each event is an implementation of an interface `AiAgentEvent`:
+Both acknowledgements and results are sent as domain events via the `onEvent(...)` function. Each event implements the `AiAgentEvent` interface:
 
 ```kotlin
 sealed interface AiAgentEvent {
@@ -585,11 +585,11 @@ sealed interface AiAgentEvent {
 }
 ```
 
-They are representing different responses and are send to the controller layer which serialized them to apropiate format.
+They represent different responses and are sent to the controller layer, which serializes them into the appropriate format.
 
 ### Server-Sent Events & NDJSON controllers
 
-Let's look how events send with `onEvent(...)` method are consumed and pushed to a client. Here is an implementation for the endpoint that produces SSE:
+Let's look at how events emitted with the `onEvent(...)` method are consumed and pushed to a client. Here is an implementation for the endpoint that produces SSE:
 
 ```kotlin
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
@@ -638,7 +638,7 @@ class MealPlannerController(
 }
 ```
 
-Every `AiAgentEvent` is consumed, mapped to SSE event and then send with `SseEmitter`. It's a Spring's class that is a subclass of `ResponseBodyEmitter` that allows to send multiple object. Together with `Executor.execute(...)`, which wraps entire logic of a controller, they enable streaming to run off the HTTP request thread. Here is definition of the `Executor` bean:
+Every `AiAgentEvent` is consumed, mapped to an SSE event, and then sent using `SseEmitter`. `SseEmitter` is a Spring class (a subclass of `ResponseBodyEmitter`) that allows sending multiple objects. Together with `Executor.execute(...)`, which wraps the controller logic, this enables streaming to run off the HTTP request thread. Here is the `Executor` bean definition:
 
 ```kotlin
 @Configuration
@@ -649,7 +649,7 @@ class ExecutorConfig {
 }
 ```
 
-SSE events require to send certain fields in it - `type` , `ts` and `payload` - a mapper is used to translate domain events into them, which are represented as `AgentResponseDto`:
+SSE events should include certain fields — `type`, `ts`, and `payload`. A mapper translates domain events into this envelope, represented as `AgentResponseDto`:
 
 ```kotlin
 @Component
@@ -689,9 +689,9 @@ class AiAgentEventMapper(
 }
 ```
 
-To keep it short I have limited the number of events to couple examples to give an idea of how they are mapped.
+To keep it short, I limited the number of events to a couple of examples to show how they are mapped.
 
-Besides SSE events my app supports the NDJSON response format. Implementation of it is very similar to the previous endpoint. Application's domain is communicating with domain events so it's easy to consumed it the same way but change the way how DTO events are sent:
+Besides SSE, the app supports the NDJSON response format. Its implementation is similar to the previous endpoint. Because the application's domain communicates via domain events, it's easy to consume events the same way and change only how DTOs are sent:
 
 ```kotlin
 @GetMapping(
@@ -723,25 +723,27 @@ Besides SSE events my app supports the NDJSON response format. Implementation of
     }
 ```
 
-Unlike SSE events, NDJSON response format is not supported out-of-the-box in , so there are not customer emmiter. Luckily it could be realized by using the generic `StreamingResponseBody` interface.
+Unlike SSE, NDJSON is not supported out-of-the-box by Spring MVC, so there is no custom emitter. Fortunately, it can be implemented using the generic `StreamingResponseBody` interface.
 
 ## Raw response and Chainlit UI
 
-Here is the end result of how the agent responses. Every chunk is send to a client right after it is produced, so it is not waiting until everything is ready to be sent in a single, large JSON:
+Here is the end result of how the agent responds. Every chunk is sent to the client as it is produced, so the client doesn't have to wait for a single large JSON:
 
 !!! dodać nagrania - raw response
 
-To make it even more sweet, I have integrated with a *Chainlit*, so I no longer need to read all the chunks. Instead I have a nice looking UI that can even show me images of recipies.
+To make it nicer, I integrated with *Chainlit*, so I don't have to read raw chunks. Instead I get a polished UI that can even show recipe images.
 
 !!! dodać nagrania - chainlit (ale nie wdrawać sie w szczegóły)
 
-I've picked *Chainlit* because it allows to easily customize the UI. If you're interested on how I've done it, go check the codebase of this project (link is in the *Summary* section).
+I picked *Chainlit* because it allows easy UI customization. If you're interested in how I did it, check the project codebase (link in the *Summary* section).
 
 ## Summary
 
-After this article I hope you get an idea on how to build a responsive endpoint with Spring MVC that may be utilized to build an agentic application.
+## Summary
 
-If you're looking for the entire code for this project go check it on my GitHub - [wkrzywiec/nutri-chef-ai](https://github.com/wkrzywiec/nutri-chef-ai). Or specifically this [tag](https://github.com/wkrzywiec/nutri-chef-ai/tree/article-streaming-55) that is from time when I was writting this article (the implementation of this project may drifted).
+I hope this article gave you a clear idea of how to build a responsive Spring MVC endpoint suitable for an agentic application.
+
+If you want the full project code, check my GitHub: [wkrzywiec/nutri-chef-ai](https://github.com/wkrzywiec/nutri-chef-ai). See the tag [article-streaming-55] for the code that matches this article (the main branch may have drifted since then).
 
 ## References
 
@@ -751,20 +753,27 @@ If you're looking for the entire code for this project go check it on my GitHub 
 
 
 Is splitting into 3 LLM calls a good idea?
-Short answer: no, not for this use case. Here's why:
-Problems with 3 separate calls:
-- Each call re-sends the full recipe list in the system prompt — 3x the token cost
-- Each call is a cold start with no shared context — the recipe selection in call 1 must be re-explained to calls 2 and 3 via prompt engineering, introducing drift risk (call 2 might pick different recipes than call 1 selected)
-- Total latency is 3× serial LLM round-trips
-- Rationale quality degrades when the model doesn't "remember" why it picked a recipe — you'd have to paste the selection back in as context
-Better approach: one call with streaming, parse tokens as they arrive.
-Spring AI's ChatClient supports streaming via .stream().content() which returns a Flux<String> (one element per token). You buffer the accumulating JSON string and emit domain events as soon as recognizable boundaries are crossed in the partial JSON.
-However, parsing partial streaming JSON reliably is non-trivial. The cleanest practical solution given your desired event flow is:
-One streaming call, two-phase token routing:
-Phase 1 — stream "response" field tokens  → emit ResponseToken events
-Phase 2 — accumulate recipe list silently → once complete, emit RecipesSelected + per-recipe RationaleToken streams
-Phase 3 — return nextActions as final event
-This keeps one LLM call but gives you the progressive UX you want. The trick is restructuring the JSON schema so streamable fields come first:
+Short answer: No — not for this use case. Here's why.
+
+Problems with three separate calls:
+
+- Each call re-sends the full recipe list in the system prompt — 3× the token cost.
+- Each call is a cold start with no shared context. The recipe selection from call 1 must be re-explained to calls 2 and 3 via prompt engineering, which introduces drift risk (call 2 might pick different recipes than call 1).
+- Total latency is 3× serial LLM round-trips.
+- Rationale quality degrades when the model doesn't "remember" why it picked a recipe — you'd have to paste the selection back in as context.
+
+Better approach: one streaming call, parsing tokens as they arrive.
+
+Spring AI's ChatClient supports streaming via `.stream().content()`, which returns a `Flux<String>` (one element per token). Buffer the accumulating JSON and emit domain events as soon as recognizable boundaries are crossed in the partial JSON.
+
+However, parsing partial streaming JSON reliably is non-trivial. The cleanest practical solution given the desired event flow is a single streaming call with phased token routing:
+
+1. Phase 1 — stream `response` field tokens → emit ResponseToken events.
+2. Phase 2 — accumulate the recipe list silently; once complete, emit RecipesSelected and per-recipe RationaleToken streams.
+3. Phase 3 — emit nextActions as the final event.
+
+This keeps one LLM call while providing the progressive UX you want. The trick is to structure the JSON so streamable fields come first:
+
 {
   "response": "...streamed token by token...",
   "recipes": [
@@ -773,4 +782,5 @@ This keeps one LLM call but gives you the progressive UX you want. The trick is 
   ],
   "nextActions": ["...", "..."]
 }
-With this ordering the LLM generates response first (stream tokens), then recipes (buffer until each } boundary, emit per recipe), then nextActions (emit whole).
+
+With this ordering, the LLM generates the `response` first (stream tokens), then the `recipes` (buffer until each `}` boundary, emit per recipe), and finally `nextActions` (emit whole).
