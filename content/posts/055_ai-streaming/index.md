@@ -336,12 +336,10 @@ flowchart TB
     id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
-Before searching any recipe, the app sends an acknowledgment to the user that it has received the request and has started processing it. It consists of two phases — with and without use of an LLM. The first phase (without the LLM) simply lets the user know the request was accepted and is being processed. In *nutri-chef-ai* this takes the shape of two static chunks:
+Before searching any recipe, the app sends an acknowledgment to the user that it has received the request and has started processing it. It consists of two phases — with and without use of an LLM. The first phase (without the LLM) simply lets the user know the request was accepted and is being processed. In *nutri-chef-ai* this takes the shape of a staic chunk:
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
-
-data:{"type":"status","ts":"2026-08-06T05:27:06.540703300Z","payload":{"phase":"llm","message":"Calling LLM (acknowledgement)"}}
 ```
 
 The next part involves the LLM in generating a more human-like answer that indicates how the request was understood. This is streamed token-by-token, so it looks like this:
@@ -370,8 +368,6 @@ Once that is returned, the agent searches for matching recipes in the RAG databa
 data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Searching for matching recipes"}}
 
 data:{"type":"status","ts":"...","payload":{"phase":"search","message":"Found 100 matching recipes"}}
-
-data:{"type":"status","ts":"...","payload":{"phase":"llm","message":"Calling LLM (recipe-selection)"}}
 ```
 
 Every step is sent in a single chunk, as is each recipe. The entire structure (shortened below) is sent in one go:
@@ -491,17 +487,253 @@ This is an elegant approach for handling the asynchronous nature of the communic
 
 ### Chunks
 
-Focusing on the logic in `MealPlanner` class:
+Focusing on the heart of the *nutri-chef-ai* - the `MealPlanner` class:
 
-* opisać rodzaje chunków
-* opisać agentów
-* poprawić flow, patrząc w chainlit
+```kotlin
+class MealPlanner(
+    private val recipeSearch: RecipeSearchFacade,
+    private val acknowledgementAgent: AcknowledgementAgent,
+    private val recipeSelectionAgent: RecipeSelectionAgent,
+    private val rationaleAgent: RationaleAgent,
+    private val suggestedFollowUpsAgent: SuggestedFollowUpsAgent,
+) {
 
-### Server-Sent Events & NDJSON
+    fun proposeMealStreaming(
+        userPrompt: String,
+        onEvent: (AiAgentEvent) -> Unit,
+    ) {
+        
+         log.info { "Streaming meal proposals for prompt '$userPrompt'" }
 
+        // Step 0: stream a brief acknowledgement so the user knows the input was received
+        onEvent(AiAgentEvent.PlanningStarted(userPrompt))
+        acknowledgementAgent.execute(userPrompt) { token -> onEvent(AiAgentEvent.ResponseToken(token)) }
 
-* callbacki - dzięki nim mogę mieć kilka endpointów
-  * pokazać sse i ndjson
+        // Step 1: fetch candidate recipes
+        onEvent(AiAgentEvent.SearchingRecipes())
+        val recipes = recipeSearch.findRecipes(userPrompt, RECIPE_FETCH_LIMIT)
+        log.info { "Found ${recipes.size} recipes" }
+        onEvent(AiAgentEvent.RecipesFound(recipes.size))
+
+        // Step 2: LLM selects the best recipes
+        val selectedRecipes = recipeSelectionAgent.execute(userPrompt, recipes)
+        if (selectedRecipes.isEmpty()) {
+            onEvent(AiAgentEvent.PlanFailed("Failed to found matching recipes. Please try again."))
+            return
+        }
+        selectedRecipes.forEach { entry ->
+            entry.recipe?.let { onEvent(AiAgentEvent.RecipeSelected(it.id, it)) }
+        }
+
+        // Step 3: LLM streams the rationale for the selected recipes
+        val rationaleRecipes = selectedRecipes.mapNotNull { it.recipe }
+        rationaleAgent.execute(userPrompt, rationaleRecipes) { token -> onEvent(AiAgentEvent.ResponseToken(token)) }
+
+        // Step 4: LLM suggests follow-up actions
+        val suggestedFollowUps = suggestedFollowUpsAgent.execute(userPrompt, rationaleRecipes)
+        onEvent(AiAgentEvent.SuggestedFollowUps(suggestedFollowUps))
+        onEvent(
+            AiAgentEvent.PlanReady(
+                RecipeProposals(
+                    recipes = selectedRecipes,
+                ),
+            ),
+        )
+    }
+```
+
+As mentioned earlier agent response is divided into steps. Most steps can be reduced to:
+
+1. acknowledgment what next step of a "thought" process it,
+2. executing a method specialized agent or class for recipe search,
+3. sending a result of a step.
+
+Both acknowledgment and results are send as domain event via `onEvent(...)` function. Each event is an implementation of an interface `AiAgentEvent`:
+
+```kotlin
+sealed interface AiAgentEvent {
+    data class PlanningStarted(
+        val prompt: String,
+    ) : AiAgentEvent
+    
+    data class ResponseToken(
+        val token: String,
+    ) : AiAgentEvent
+
+    class SearchingRecipes : AiAgentEvent
+
+    data class RecipesFound(
+        val count: Int,
+    ) : AiAgentEvent
+
+    data class RecipeSelected(
+        val recipeId: UUID,
+        val recipe: Recipe?,
+    ) : AiAgentEvent
+
+    data class SuggestedFollowUps(
+        val suggestions: List<String>,
+    ) : AiAgentEvent
+
+    data class PlanReady(
+        val proposals: RecipeProposals,
+    ) : AiAgentEvent
+
+    data class PlanFailed(
+        val reason: String,
+    ) : AiAgentEvent
+}
+```
+
+They are representing different responses and are send to the controller layer which serialized them to apropiate format.
+
+### Server-Sent Events & NDJSON controllers
+
+Let's look how events send with `onEvent(...)` method are consumed and pushed to a client. Here is an implementation for the endpoint that produces SSE:
+
+```kotlin
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+
+@RestController
+@RequestMapping("/api/planner")
+class MealPlannerController(
+    private val mealPlanner: MealPlanner,
+    private val mapper: AiAgentEventMapper,
+    @Qualifier("mealPlannerExecutor") private val executor: Executor,
+) {
+
+    @GetMapping(
+        path = ["/single"],
+        produces = [MediaType.TEXT_EVENT_STREAM_VALUE],
+    )
+    fun proposeMealSse(
+        @RequestParam prompt: String,
+    ): ResponseEntity<SseEmitter> {
+        val sseEmitter = SseEmitter(0L)
+        executor.execute {
+            try {
+                mealPlanner.proposeMealStreaming(prompt) { event ->
+                    sseEmitter.send(mapper.toSseEvent(event))
+                }
+            } catch (e: Exception) {
+                log.warn(e) { "SSE stream failed" }
+                try {
+                    sseEmitter.send(mapper.toSseEvent(AiAgentEvent.PlanFailed(e.message ?: "Unknown error")))
+                } catch (sendException: Exception) {
+                    log.error(sendException) { "Failed to send SSE error event after stream failure" }
+                }
+            } finally {
+                sseEmitter.complete()
+            }
+        }
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.TEXT_EVENT_STREAM)
+            .header("Cache-Control", "no-cache")
+            .header("X-Accel-Buffering", "no")
+            .body(sseEmitter)
+    }
+}
+```
+
+Every `AiAgentEvent` is consumed, mapped to SSE event and then send with `SseEmitter`. It's a Spring's class that is a subclass of `ResponseBodyEmitter` that allows to send multiple object. Together with `Executor.execute(...)`, which wraps entire logic of a controller, they enable streaming to run off the HTTP request thread. Here is definition of the `Executor` bean:
+
+```kotlin
+@Configuration
+class ExecutorConfig {
+    @Bean(destroyMethod = "shutdown")
+    fun mealPlannerExecutor(): ExecutorService =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+}
+```
+
+SSE events require to send certain fields in it - `type` , `ts` and `payload` - a mapper is used to translate domain events into them, which are represented as `AgentResponseDto`:
+
+```kotlin
+@Component
+class AiAgentEventMapper(
+    private val clock: Clock,
+) {
+    data class StatusEvent(
+        val ts: Instant,
+        val phase: String,
+        val message: String,
+    )
+
+    private data class AgentResponseDto(
+        val type: String,
+        val ts: Instant,
+        val payload: Any,
+    )
+
+    fun toSseEvent(event: AiAgentEvent): SseEmitter.SseEventBuilder =
+        SseEmitter.event().data(toAgentResponseDto(event).toString(Charsets.UTF_8).trimEnd())
+
+    fun toAgentResponseDto(event: AiAgentEvent): ByteArray {
+        val now = clock.instant()
+        val envelope =
+            when (event) {
+                is AiAgentEvent.PlanningStarted ->
+                    AgentResponseDto(
+                        "status",
+                        ts = now,
+                        payload = StatusEvent(ts = now, phase = "start", message = "Starting meal proposal for: ${event.prompt}"),
+                    )
+                is AiAgentEvent.ResponseToken -> AgentResponseDto("response.token", ts = now, payload = event.token)
+                is AiAgentEvent.SuggestedFollowUps -> AgentResponseDto("suggested.follow.ups", ts = now, payload = event.suggestions)
+            }
+        return "${envelope.toJson()}\n".toByteArray(Charsets.UTF_8)
+    }
+}
+```
+
+To keep it short I have limited the number of events to couple examples to give an idea of how they are mapped.
+
+Besides SSE events my app supports the NDJSON response format. Implementation of it is very similar to the previous endpoint. Application's domain is communicating with domain events so it's easy to consumed it the same way but change the way how DTO events are sent:
+
+```kotlin
+@GetMapping(
+        path = ["/single"],
+        produces = ["application/x-ndjson"],
+    )
+    fun proposeMealNdJson(
+        @RequestParam prompt: String,
+    ): ResponseEntity<StreamingResponseBody> {
+        val body =
+            StreamingResponseBody { out: OutputStream ->
+                try {
+                    mealPlanner.proposeMealStreaming(prompt) { event ->
+                        out.write(mapper.toAgentResponseDto(event))
+                        out.flush()
+                    }
+                } catch (e: Exception) {
+                    log.warn(e) { "NDJSON stream failed" }
+                    out.write(mapper.toAgentResponseDto(AiAgentEvent.PlanFailed(e.message ?: "Unknown error")))
+                    out.flush()
+                }
+            }
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType("application/x-ndjson"))
+            .header("Cache-Control", "no-cache")
+            .header("X-Accel-Buffering", "no")
+            .body(body)
+    }
+```
+
+Unlike SSE events, NDJSON response format is not supported out-of-the-box in , so there are not customer emmiter. Luckily it could be realized by using the generic `StreamingResponseBody` interface.
+
+## Raw response and Chainlit UI
+
+!!! dodać nagrania - raw response oraz chainlit (ale nie wdrawać sie w szczegóły)
+
+## Summary
+
+After this article I hope you get an idea on how to build a responsive endpoint with Spring MVC that may be utilized to build an agentic application.
+
+If you're looking for the entire code for this project go check it on my GitHub - [wkrzywiec/nutri-chef-ai](https://github.com/wkrzywiec/nutri-chef-ai). Or specifically this [tag](https://github.com/wkrzywiec/nutri-chef-ai/tree/article-streaming-55) that is from time when I was writting this article (the implementation of this project may drifted).
 
 ## References
 
