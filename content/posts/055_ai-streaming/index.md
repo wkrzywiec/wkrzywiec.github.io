@@ -1,16 +1,16 @@
 ---
 title: "Building AI-Powered Software: Streaming responses"
 date: 2026-04-18
-summary: "Learn how to build AI agentic that sends output in small chunks."
-description: "This post provides a hands-on guide to building an AI-powered application that stream response in smaller chunks based on a real Spring Boot project."
+summary: "Learn how to build agentic AI that sends output in small chunks."
+description: "This post provides a hands-on guide to building an AI-powered application that streams responses in smaller chunks, based on a real Spring Boot project."
 tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "ndjson", "websockets", "chainlit" , "java", "kotlin", "spring-boot"]
 ---
 
-*This is the 2nd part of the 'Building AI-Powered Software' which focuses on improving fundamental user experience with the app by enforcing quick return of small pieces of the entire response. So your user won't wonder if your app crashed or it need more time, because they will be getting constant information that magic is happening behind the scenes.*
+*This is the second part of the "Building AI-Powered Software" which focuses on improving the app's core user experience by returning small pieces of the response quickly. That way, users won't wonder whether the app has crashed or needs more time, because they receive constant feedback that work is progressing behind the scenes.*
 
 ## Why is it taking so long? Did it crash?
 
-In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) there was presented a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result. For a very complex processes it may even taken hours!
+In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) there was presented a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result. For very complex processes it may even taken hours!
 
 Here is how it looks now:
 
@@ -18,16 +18,16 @@ Here is how it looks now:
 
 As you can see, the entire response is returned only after the whole process completes. In the meantime there is no quick feedback to the user about what's happening, so they may think the application has crashed.
 
-It would be better to send the user a notification about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment". Moreover if a task is to return multiple items (e.g. list of recipies, rational, suggested next action) it is good return them once they are produced. There is no need to wait untill all of them are finished. This avoids the impression that the app is stuck.
+It is better to notify the user about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment". Moreover if a task is to return multiple items (e.g. list of recipes, rational, suggested next action) it is good return them once they are produced. There is no need to wait untill all of them are finished. This avoids the impression that the app is stuck.
 
 ## Streaming chunks
 
-When interacting with most LLM products (ChatGPT, Gemini, etc.) we may notice that responses are returned to us like they were typed. It's not only the feature that looks nice, it's real optimalization of informing user about having a small piece of as quickly as possible without waiting for a full response.
+When interacting with most LLM products (ChatGPT, Gemini, etc.), we may notice that responses are returned to us like they were typed. It's not just a cosmetic effect, it's an optimization that informs the user of partial results as soon as they're available, without waiting for the full response.
 
-There are several solutions how streaming chunks (sending small pieces of the entire response) can be realized. There are lots of variantions that can be choosen but they all turn down to 2 major decisions:
+There are several solutions to implement streaming chunks (sending small pieces of the entire response). Many variations exist, but they all boil down to two major decisions:
 
-* which communication protocol to choose
-* how to structure each chunk
+* which communication protocol to choose,
+* how to structure each chunk.
 
 ### Protocols
 
@@ -330,11 +330,11 @@ title: Agent Flow
 ---
 flowchart TB
     id1(User sends query) --> id2(Agent acknowledges received request)
-    id2(Agent acknowledges received request) --> id3(Agent searches for recipies)
-    id3(Agent searches for recipies) --> id4(Agent selects best matching recipies)
-    id4(Agent selects best matching recipies) --> id5(Recipies are returned to user)
-    id5(Recipies are returned to user) --> id6(Rationale about selected recipies is returned)
-    id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
+    id2(Agent acknowledges received request) --> id3(Agent searches for recipes)
+    id3(Agent searches for recipes) --> id4(Agent selects best matching recipes)
+    id4(Agent selects best matching recipes) --> id5(recipes are returned to user)
+    id5(recipes are returned to user) --> id6(Rationale about selected recipes is returned)
+    id6(Rationale about selected recipes is returned) --> id7(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
 Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases - one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
