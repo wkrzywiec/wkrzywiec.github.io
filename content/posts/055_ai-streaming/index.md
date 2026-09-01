@@ -6,6 +6,8 @@ description: "This post provides a hands-on guide to building an AI-powered appl
 tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "websockets", "ndjson", "grpc", "chainlit" , "java", "kotlin", "spring-boot"]
 ---
 
+!!! intro
+
 ## Why is it taking so long? Did it crash?
 
 In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) I prepared a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured response, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result.
@@ -16,7 +18,7 @@ Here is how it looks now:
 
 As you can see, the entire response is returned only after the whole process completes. In the meantime there is no quick feedback to the user about what's happening, so they may think the application has crashed.
 
-It would be better to send the user a notification about what's happening — something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment." This avoids the impression that the app is stuck.
+It would be better to send the user a notification about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment." This avoids the impression that the app is stuck.
 
 Additionally, for long text outputs produced by an LLM, it's better not to wait until everything is generated but to return tokens as they arrive.
 
@@ -30,13 +32,13 @@ trzeba utrzymywać po
 
 ### Protocols
 
-The first decision we have to make is which communication protocol to select — in other words, how we'd like to stream chunks from server to client.
+The first decision we have to make is which communication protocol to select - in other words, how we'd like to stream chunks from server to client.
 
 Options we have:
 
-* standard **HTTP** — which can be realized with the following mechanisms:
-  * **Server-Sent Events** — SSE
-  * **Newline Delimited JSON** — NDJSON
+* standard **HTTP** - which can be realized with the following mechanisms:
+  * **Server-Sent Events** - SSE
+  * **Newline Delimited JSON** - NDJSON
 * **Websockets**
 
 All approaches allow a long-lived connection with the server and can send messages in chunks.
@@ -69,7 +71,7 @@ event: add
 data: there!
 ```
 
-SSE is currently the most popular mechanism for AI chats because OpenAI uses it in their streaming API. OpenAI was the first widely used LLM chat provider, and many companies and tools adopted SSE as a result — it has become the de facto standard in the AI chat industry.
+SSE is currently the most popular mechanism for AI chats because OpenAI uses it in their streaming API. OpenAI was the first widely used LLM chat provider, and many companies and tools adopted SSE as a result - it has become the de facto standard in the AI chat industry.
 
 Therefore SSE is a good option if you want to integrate your app with popular chat UIs, like [Open WebUI](https://openwebui.com/), [Chainlit](https://chainlit.io/), [Ollama Desktop App](https://ollama.com/) or [Jan.ai](https://www.jan.ai/).
 
@@ -90,9 +92,9 @@ The NDJSON format is a bit of a niche but it's used in some systems like Ollama 
 
 #### Websockets
 
-Sometimes one-way communication (server to client only) is too limiting. For instance, systems where an AI agent needs to interact with a human (e.g., to ask for permission or to review plan/task progress — human-in-the-loop) require two-way communication. Such systems benefit from long-lived, bi-directional connections, which avoid a flood of HTTP requests for a single communication channel. WebSocket is useful not only for chats but also for many real-time collaboration systems like *Miro* or *Figma*.
+Sometimes one-way communication (server to client only) is too limiting. For instance, systems where an AI agent needs to interact with a human (e.g., to ask for permission or to review plan/task progress - human-in-the-loop) require two-way communication. Such systems benefit from long-lived, bi-directional connections, which avoid a flood of HTTP requests for a single communication channel. WebSocket is useful not only for chats but also for many real-time collaboration systems like *Miro* or *Figma*.
 
-Both HTTP and WebSockets are built on the same foundation — TCP (Transmission Control Protocol). WebSocket communication starts with an HTTP handshake in which the client asks the server to upgrade the connection to a long-lived WebSocket. If the server accepts, the same TCP channel remains open and is upgraded to a WebSocket connection; it lasts until either side closes it. In standard HTTP, the client opens a TCP connection, sends a request, and the connection is often closed after the response.
+Both HTTP and WebSockets are built on the same foundation - TCP (Transmission Control Protocol). WebSocket communication starts with an HTTP handshake in which the client asks the server to upgrade the connection to a long-lived WebSocket. If the server accepts, the same TCP channel remains open and is upgraded to a WebSocket connection; it lasts until either side closes it. In standard HTTP, the client opens a TCP connection, sends a request, and the connection is often closed after the response.
 
 {{< mermaid >}}
 sequenceDiagram
@@ -112,7 +114,7 @@ sequenceDiagram
 
 WebSocket supports various data types; the most useful for us is the text type, which allows us to send structured messages (for example JSON) back and forth between client and server. Here is an example of message exchange for a chat application, with messages in JSON format.
 
-In the AI-agent world, WebSockets are used in various products. For example, Perplexity uses WebSockets to give completion suggestions while the user is typing — when I hit a letter, Perplexity often already suggests what I might want to type.
+In the AI-agent world, WebSockets are used in various products. For example, Perplexity uses WebSockets to give completion suggestions while the user is typing - when I hit a letter, Perplexity often already suggests what I might want to type.
 
 ```json
 // Client -> Server
@@ -131,7 +133,7 @@ In the AI-agent world, WebSockets are used in various products. For example, Per
 {"type":"pong"}
 ```
 
-The `ping`/`pong` messages are heartbeats — a simple mechanism for client and server to ensure the connection is still alive. The others are the regular messages exchanged between client and server.
+The `ping`/`pong` messages are heartbeats - a simple mechanism for client and server to ensure the connection is still alive. The others are the regular messages exchanged between client and server.
 
 ### Shaping response structure
 
@@ -176,12 +178,12 @@ But first, let's visualize it with an example. Say the final response for a meal
 
 This is a large JSON with a lot of information. To provide a seamless experience, you should pick a strategy to split the response into smaller chunks that can be streamed to the client. Here are a few patterns to choose from (these names are informal):
 
-* Snowballing raw response — each chunk re-sends the full accumulated response
-* Snowballing structured object — accumulated, valid JSON is emitted token-by-token
-* Full-schema delta streaming — stream deltas within a stable schema
-* Structured field streaming — one complete JSON field per chunk
-* Events streaming — distinguish payload kinds
-* Delta patching — each chunk is a typed diff/operation applied to prior state
+* Snowballing raw response - each chunk re-sends the full accumulated response
+* Snowballing structured object - accumulated, valid JSON is emitted token-by-token
+* Full-schema delta streaming - stream deltas within a stable schema
+* Structured field streaming - one complete JSON field per chunk
+* Events streaming - distinguish payload kinds
+* Delta patching - each chunk is a typed diff/operation applied to prior state
 
 #### Snowballing raw response
 
@@ -201,7 +203,7 @@ As you can see, the emitted information is not structured in any meaningful way.
 
 #### Snowballing structured object
 
-> Used in: *LangGraph* (with default streaming mode — `values`)
+> Used in: *LangGraph* (with default streaming mode - `values`)
 
 A variation of the previous approach is to have a template JSON with empty fields. Each time the LLM generates a token it is inserted into one of the JSON fields. The app sends the accumulated response, containing the newly created parts and the previous ones. Here is an example to visualize it:
 
@@ -221,7 +223,7 @@ This approach allows rendering on every incoming token, making the UI feel more 
 
 > Used in: OpenAI Chat Completions
 
-This problem can be tackled by sending only the tokens that were just generated. Again, each message is a JSON object, but previous responses do not accumulate — only the field that is being generated contains new tokens:
+This problem can be tackled by sending only the tokens that were just generated. Again, each message is a JSON object, but previous responses do not accumulate - only the field that is being generated contains new tokens:
 
 ```json
 data: {"response": "", "suggestedFollowUps": [], "recipes": []}
@@ -311,7 +313,7 @@ data: {"o": "replace", "p": "/token_count", "v": 1018}
 
 From the earlier sections we can tell there are many options to choose from, and they aren't limited to the ones described here. So which one did I choose for my meal-planner project?
 
-My main goal is to learn how to create and tune an AI agent, not to focus on the visual aspects of the project. Of course a nice UI would make working with the plan effortless and fun, but that's additional work I don't want to focus on right now. On the other hand, I don't want to view only raw JSON — I want some visualizations.
+My main goal is to learn how to create and tune an AI agent, not to focus on the visual aspects of the project. Of course a nice UI would make working with the plan effortless and fun, but that's additional work I don't want to focus on right now. On the other hand, I don't want to view only raw JSON - I want some visualizations.
 
 After weighing the arguments, I decided to use [Chainlit](https://chainlit.io/) for the UI. It's an open-source app for building AI conversational solutions. It allows you to create apps similar to ChatGPT or Claude and supports customizations and custom building blocks (views, cards, elements), which mattered most to me.
 
@@ -336,7 +338,7 @@ flowchart TB
     id6(Rationale about selected recipies is returned) --> id7(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
-Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases — one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
+Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases - one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
 
 ```json
 data:{"type":"status","ts":"...","payload":{"phase":"start","message":"Starting meal proposal for: healthy fulfilling meals"}}
@@ -402,13 +404,13 @@ data:{"type":"response.token","ts":"...","payload":"query"}
 
 !!! rationale jest po polsku
 
-The last part of the response is follow-ups — suggestions for next actions or more detailed rationale:
+The last part of the response is follow-ups - suggestions for next actions or more detailed rationale:
 
 ```json
 data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","payload":["Prepare a weekly meal plan and grocery list for a two-person household.","Check other recipes with similar ingredients to enrich my diet."]}
 ```
 
-### Code structure — callback approach
+### Code structure: callback approach
 
 How the code is organized: I keep core logic in domain services and primitives, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports) that can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
 
@@ -649,7 +651,7 @@ class ExecutorConfig {
 }
 ```
 
-SSE events should include certain fields — `type`, `ts`, and `payload`. A mapper translates domain events into this envelope, represented as `AgentResponseDto`:
+SSE events should include certain fields - `type`, `ts`, and `payload`. A mapper translates domain events into this envelope, represented as `AgentResponseDto`:
 
 ```kotlin
 @Component
@@ -729,15 +731,13 @@ Unlike SSE, NDJSON is not supported out-of-the-box by Spring MVC, so there is no
 
 Here is the end result of how the agent responds. Every chunk is sent to the client as it is produced, so the client doesn't have to wait for a single large JSON:
 
-!!! dodać nagrania - raw response
+![streaming-curl](streaming-curl.gif)
 
 To make it nicer, I integrated with *Chainlit*, so I don't have to read raw chunks. Instead I get a polished UI that can even show recipe images.
 
-!!! dodać nagrania - chainlit (ale nie wdrawać sie w szczegóły)
+![chainlit-demo](chainlit-demo.gif)
 
 I picked *Chainlit* because it allows easy UI customization. If you're interested in how I did it, check the project codebase (link in the *Summary* section).
-
-## Summary
 
 ## Summary
 
@@ -747,44 +747,11 @@ If you want the full project code, check my GitHub: [wkrzywiec/nutri-chef-ai](ht
 
 ## References
 
-* [Server-sent events | HTML: The Living Standard](https://html.spec.whatwg.org/multipage/server-sent-events.html#server-sent-events)
 * [Create a model response | OpenAI API Reference](https://developers.openai.com/api/reference/resources/responses/methods/create)
 * [Writing WebSocket servers | mdn_](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers)
+* [Server-sent events | HTML: The Living Standard](https://html.spec.whatwg.org/multipage/server-sent-events.html#server-sent-events)
+* [Server-Sent Events: A Comprehensive Guide | Medium](https://medium.com/@moali314/server-sent-events-a-comprehensive-guide-e4b15d147576)
+* [How to Implement Server-Sent Events (SSE) in Spring Boot | Medium](https://medium.com/@AlexanderObregon/how-to-implement-server-sent-events-sse-in-spring-boot-620024272ccb)
+* [Chainlit | GitHub](https://github.com/Chainlit/chainlit)
 
 > This article was written by me. ✨ AI was used only to proofread and correct grammar, punctuation, and typos - no content was generated by AI.
-
-
-
-
-Is splitting into 3 LLM calls a good idea?
-Short answer: No — not for this use case. Here's why.
-
-Problems with three separate calls:
-
-- Each call re-sends the full recipe list in the system prompt — 3× the token cost.
-- Each call is a cold start with no shared context. The recipe selection from call 1 must be re-explained to calls 2 and 3 via prompt engineering, which introduces drift risk (call 2 might pick different recipes than call 1).
-- Total latency is 3× serial LLM round-trips.
-- Rationale quality degrades when the model doesn't "remember" why it picked a recipe — you'd have to paste the selection back in as context.
-
-Better approach: one streaming call, parsing tokens as they arrive.
-
-Spring AI's ChatClient supports streaming via `.stream().content()`, which returns a `Flux<String>` (one element per token). Buffer the accumulating JSON and emit domain events as soon as recognizable boundaries are crossed in the partial JSON.
-
-However, parsing partial streaming JSON reliably is non-trivial. The cleanest practical solution given the desired event flow is a single streaming call with phased token routing:
-
-1. Phase 1 — stream `response` field tokens → emit ResponseToken events.
-2. Phase 2 — accumulate the recipe list silently; once complete, emit RecipesSelected and per-recipe RationaleToken streams.
-3. Phase 3 — emit nextActions as the final event.
-
-This keeps one LLM call while providing the progressive UX you want. The trick is to structure the JSON so streamable fields come first:
-
-{
-  "response": "...streamed token by token...",
-  "recipes": [
-    { "recipeId": "uuid", "rationale": "...streamed..." },
-    ...
-  ],
-  "nextActions": ["...", "..."]
-}
-
-With this ordering, the LLM generates the `response` first (stream tokens), then the `recipes` (buffer until each `}` boundary, emit per recipe), and finally `nextActions` (emit whole).
