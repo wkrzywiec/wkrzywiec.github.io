@@ -1,16 +1,16 @@
 ---
 title: "Building AI-Powered Software: Streaming responses"
 date: 2026-04-18
-summary: "Learn how to build AI agentic software that utilizes a RAG, vectorized knowledge database."
-description: "This post provides a hands-on guide to building an AI-powered application using Retrieval-Augmented Generation (RAG), showing step-by-step how to convert your own data into vector embeddings and integrate them into a real Spring Boot project."
-tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "websockets", "ndjson", "grpc", "chainlit" , "java", "kotlin", "spring-boot"]
+summary: "Learn how to build AI agentic that sends output in small chunks."
+description: "This post provides a hands-on guide to building an AI-powered application that stream response in smaller chunks based on a real Spring Boot project."
+tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "ndjson", "websockets", "chainlit" , "java", "kotlin", "spring-boot"]
 ---
 
-!!! intro
+*This is the 2nd part of the 'Building AI-Powered Software' which focuses on improving fundamental user experience with the app by enforcing quick return of small pieces of the entire response. So your user won't wonder if your app crashed or it need more time, because they will be getting constant information that magic is happening behind the scenes.*
 
 ## Why is it taking so long? Did it crash?
 
-In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) I prepared a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured response, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result.
+In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) there was presented a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result. For a very complex processes it may even taken hours!
 
 Here is how it looks now:
 
@@ -18,17 +18,16 @@ Here is how it looks now:
 
 As you can see, the entire response is returned only after the whole process completes. In the meantime there is no quick feedback to the user about what's happening, so they may think the application has crashed.
 
-It would be better to send the user a notification about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment." This avoids the impression that the app is stuck.
-
-Additionally, for long text outputs produced by an LLM, it's better not to wait until everything is generated but to return tokens as they arrive.
-
-All of that will be addressed in this article. Before that, let's dive into two aspects of the solution we'll pick.
+It would be better to send the user a notification about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment". Moreover if a task is to return multiple items (e.g. list of recipies, rational, suggested next action) it is good return them once they are produced. There is no need to wait untill all of them are finished. This avoids the impression that the app is stuck.
 
 ## Streaming chunks
 
-several chunks -> 
+When interacting with most LLM products (ChatGPT, Gemini, etc.) we may notice that responses are returned to us like they were typed. It's not only the feature that looks nice, it's real optimalization of informing user about having a small piece of as quickly as possible without waiting for a full response.
 
-trzeba utrzymywać po
+There are several solutions how streaming chunks (sending small pieces of the entire response) can be realized. There are lots of variantions that can be choosen but they all turn down to 2 major decisions:
+
+* which communication protocol to choose
+* how to structure each chunk
 
 ### Protocols
 
@@ -401,8 +400,6 @@ data:{"type":"response.token","ts":"...","payload":"query"}
 
 //These recipes answer the query "healthy fulfilling meals", because they combine complete sources of protein, ...
 ```
-
-!!! rationale jest po polsku
 
 The last part of the response is follow-ups - suggestions for next actions or more detailed rationale:
 
