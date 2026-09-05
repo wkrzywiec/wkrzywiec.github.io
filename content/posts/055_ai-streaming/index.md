@@ -482,7 +482,7 @@ class MealPlannerController(
 
 This is an elegant approach for handling the asynchronous nature of the communication. This way we can send data to the client as it becomes available, without waiting for the entire workflow to finish.
 
-> It's also worth to mention that in above code I'm using Spring MVC as I'm more familiar with it, like most software engineers who specialized in JVM ecosystem. There is however a more performant alternative - non-blocking, reactive approach with Spring WebFlux. For a high efficient systems I would consider picking this technology instead of Spring MVC.
+> It's also worth mentioning that in the above code I'm using Spring MVC as I'm more familiar with it, like many software engineers in the JVM ecosystem. There is however a more performant alternative - non-blocking, reactive approach with Spring WebFlux. For a highly efficient systems I would consider choosing WebFlux over Spring MVC.
 
 ### Chunks
 
