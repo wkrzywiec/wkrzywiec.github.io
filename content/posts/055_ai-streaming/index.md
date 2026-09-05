@@ -8,6 +8,8 @@ tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "
 
 *This is the second part of the "Building AI-Powered Software" which focuses on improving the app's core user experience by returning small pieces of the response quickly. That way, users won't wonder whether the app has crashed or needs more time, because they receive constant feedback that work is progressing behind the scenes.*
 
+![cover](main.jpg)
+
 ## Why is it taking so long? Did it crash?
 
 In my previous article in this series (here is a [link](https://wkrzywiec.is-a.dev/posts/054_vector-db/)) there was presented a simple endpoint that returns a list of recipes curated by an LLM based on user input. The result is a nicely structured, but to get it we sometimes have to wait a couple of seconds. Generating a response involves several slower steps, like embedding the user input or waiting for an LLM response. The more complicated the process, the longer the user may wait for the final result. For very complex processes it may even taken hours!
