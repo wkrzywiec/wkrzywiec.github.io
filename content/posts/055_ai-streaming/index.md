@@ -20,11 +20,11 @@ Here is how it looks now:
 
 As you can see, the entire response is returned only after the whole process completes. In the meantime there is no quick feedback to the user about what's happening, so they may think the application has crashed.
 
-It is better to notify the user about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment". Moreover if a task is to return multiple items (e.g. list of recipes, rational, suggested next action) it is good return them once they are produced. There is no need to wait untill all of them are finished. This avoids the impression that the app is stuck.
+It is better to notify the user about what's happening - something like "Hey, we got your input and we're working on it," followed by "We found some delicious recipes; we'll show the best ones in a moment". Moreover if a task is to return multiple items (e.g. list of recipes, rationale, suggested next action) it is good return them once they are produced. There is no need to wait untill all of them are finished. This avoids the impression that the app is stuck.
 
 ## Streaming chunks
 
-When interacting with most LLM products (ChatGPT, Gemini, etc.), we may notice that responses are returned to us like they were typed. It's not just a cosmetic effect, it's an optimization that informs the user of partial results as soon as they're available, without waiting for the full response.
+When interacting with most LLM products (ChatGPT, Gemini, etc.), we may notice that responses are returned to us look like they were typed. It's not just a cosmetic effect, it's an optimization that informs the user of partial results as soon as they're available, without waiting for the full response.
 
 There are several solutions to implement streaming chunks (sending small pieces of the entire response). Many variations exist, but they all boil down to two major decisions:
 
@@ -33,7 +33,7 @@ There are several solutions to implement streaming chunks (sending small pieces 
 
 ### Protocols
 
-The first decision we have to make is which communication protocol to select - in other words, how we'd like to stream chunks from server to client.
+The first decision we have to make is which communication protocol to select, or in other words, how we'd like to stream chunks from server to client.
 
 Options we have:
 
@@ -138,11 +138,11 @@ The `ping`/`pong` messages are heartbeats - a simple mechanism for client and se
 
 ### Shaping response structure
 
-Once a transport mechanism is chosen, there is one more decision: do we want to send structured responses from the agent? For a simple chat application, markdown may be sufficient. But if you want UI elements (cards, animations, or other components) you need a structured response.
+Once a transport mechanism is chosen, there is one more decision: do we want to send structured responses from the agent? For a simple chat application, markdown may be sufficient. But if you want UI elements (cards, animations, or other components) you need a structured one.
 
 In essence, this is similar to the standard approach: define a response schema (for example in OpenAPI) and the server returns the result. The trick here is how to stream such an object. In most applications the server returns the full JSON object at once; in an agentic application we may want to send only small parts of a large JSON as the LLM produces them.
 
-But first, let's visualize it with an example. Say the final response for a meal-planner AI agent looks like this:
+But first, let's visualize it with an example. Say the final response for a ***nutri-chef-ai*** agent looks like this:
 
 ```json
 {
@@ -179,16 +179,16 @@ But first, let's visualize it with an example. Say the final response for a meal
 
 This is a large JSON with a lot of information. To provide a seamless experience, you should pick a strategy to split the response into smaller chunks that can be streamed to the client. Here are a few patterns to choose from (these names are informal):
 
-* Snowballing raw response - each chunk re-sends the full accumulated response
-* Snowballing structured object - accumulated, valid JSON is emitted token-by-token
-* Full-schema delta streaming - stream deltas within a stable schema
-* Structured field streaming - one complete JSON field per chunk
-* Events streaming - distinguish payload kinds
-* Delta patching - each chunk is a typed diff/operation applied to prior state
+* [Snowballing raw response](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#snowballing-raw-response) - each chunk re-sends the full accumulated response
+* [Snowballing structured object](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#snowballing-structured-object) - accumulated, valid JSON is emitted token-by-token
+* [Full-schema delta streaming](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#full-schema-delta-streaming) - stream deltas within a stable schema
+* [Structured field streaming](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#structured-field-streaming) - one complete JSON field per chunk
+* [Events streaming](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#events-streaming) - distinguish payload kinds
+* [Delta patching](https://wkrzywiec.is-a.dev/posts/055_ai-streaming/#delta-patching) - each chunk is a typed diff/operation applied to prior state
 
 #### Snowballing raw response
 
-The first, naive pattern is straightforward. The agentic system emits the response token-by-token. Every new chunk contains the previous content plus the newly added parts, so the message grows with each chunk. Here is an example (I'll stick to the SSE protocol in these examples):
+The first, naive pattern is straightforward. The agentic system emits the response token-by-token. Every new chunk contains the previous content plus the newly added parts, so the message grows with each chunk. Here is an example (I'll stick to the SSE protocol in all examples):
 
 ```json
 data: {"response":
@@ -310,13 +310,13 @@ data: {"o": "replace", "p": "/token_count", "v": 1018}
 
 ## Solution selection
 
-From the earlier sections we can tell there are many options to choose from, and they aren't limited to the ones described here. So which one did I choose for my meal-planner project?
+From the earlier sections we can tell there are many options to choose from, and they aren't limited to the ones described here. So which one did I choose for my ***nutri-chef-ai*** project?
 
 My main goal is to learn how to create and tune an AI agent, not to focus on the visual aspects of the project. Of course a nice UI would make working with the plan effortless and fun, but that's additional work I don't want to focus on right now. On the other hand, I don't want to view only raw JSON - I want some visualizations.
 
 After weighing the arguments, I decided to use [Chainlit](https://chainlit.io/) for the UI. It's an open-source app for building AI conversational solutions. It allows you to create apps similar to ChatGPT or Claude and supports customizations and custom building blocks (views, cards, elements), which mattered most to me.
 
-To integrate with Chainlit, my meal planner had to expose an endpoint compatible with OpenAI's streaming API. Therefore I chose HTTP and SSE as the transport protocol. Most chunks are sent as whole events; simple text is streamed token-by-token.
+To integrate with *Chainlit*, my meal planner had to expose an endpoint compatible with OpenAI's streaming API. Therefore I chose HTTP and SSE as the transport protocol. Most chunks are sent as whole events; simple text is streamed token-by-token.
 
 ## Implementation
 
@@ -409,9 +409,9 @@ data:{"type":"suggested.follow.ups","ts":"2026-08-06T05:27:39.451857100Z","paylo
 
 ### Code structure: callback approach
 
-How the code is organized: I keep core logic in domain services and primitives, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports) that can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
+How the code is organized: I keep core logic in domain services, without framework dependencies. If communication with an external system (service, database, etc.) is required, it happens via interfaces (ports) that can have multiple implementations. This approach is known as *Ports & Adapters* or *Hexagonal architecture*.
 
-The `proposeMealStreaming(...)` method of the `MealPlanner` class defines the flow for each response. At each step it uses specialized classes to execute a specific task: agents to produce output based on input (user input or output from another agent), and facades for more complex actions such as searching the vector database.
+The `proposeMealStreaming(...)` method of the `MealPlanner` class defines the flow for each response. At each step it uses specialized classes to execute a specific task: agents to produce output based on input (from user or another agent), and facades for more complex actions such as searching the vector database.
 
 ```kotlin
 data class RecipeProposals(
@@ -488,7 +488,7 @@ This is an elegant approach for handling the asynchronous nature of the communic
 
 ### Chunks
 
-Focusing on the heart of the *nutri-chef-ai* - the `MealPlanner` class:
+Focusing on the heart of the *meal-planner* - the `MealPlanner` class:
 
 ```kotlin
 class MealPlanner(
