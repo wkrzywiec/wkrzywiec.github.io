@@ -482,6 +482,8 @@ class MealPlannerController(
 
 This is an elegant approach for handling the asynchronous nature of the communication. This way we can send data to the client as it becomes available, without waiting for the entire workflow to finish.
 
+> It's also worth to mention that in above code I'm using Spring MVC as I'm more familiar with it, like most software engineers who specialized in JVM ecosystem. There is however a more performant alternative - non-blocking, reactive approach with Spring WebFlux. For a high efficient systems I would consider picking this technology instead of Spring MVC.
+
 ### Chunks
 
 Focusing on the heart of the *nutri-chef-ai* - the `MealPlanner` class:
@@ -725,6 +727,12 @@ Unlike SSE, NDJSON is not supported out-of-the-box by Spring MVC, so there is no
 ## Raw response and Chainlit UI
 
 Here is the end result of how the agent responds. Every chunk is sent to the client as it is produced, so the client doesn't have to wait for a single large JSON:
+
+```bash
+curl -N -H "Accept: text/event-stream" "http://localhost:8080/api/planner/single?prompt=chocolate+cake"
+```
+
+And the result:
 
 ![streaming-curl](streaming-curl.gif)
 
