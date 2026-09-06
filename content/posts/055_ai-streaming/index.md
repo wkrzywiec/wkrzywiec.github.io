@@ -328,12 +328,35 @@ Here is how the logic of my agent looks:
 ---
 title: Agent Flow
 ---
-flowchart TB
-    id1(User sends query) --> id2(Agent acknowledges received request)
-    id2(Agent acknowledges received request) --> id3(Agent searches for recipes)
-    id3(Agent searches for recipes) --> id4(Agent selects best matching recipes)
-    id4(Agent selects best matching recipes) --> id5(Rationale about selected recipes is returned)
-    id5(Rationale about selected recipes is returned) --> id6(Suggested follow-up actions are returned)
+sequenceDiagram
+    participant Client
+    participant Agent
+    participant LLM as LLM Provider
+    participant RAG as RAG Database
+
+    Client->>Agent: query
+    Agent-->>Client: status (quick ack)
+    Agent->>LLM: acknowledge request
+    LLM-->>Agent: response tokens
+    Agent-->>Client: response.token × N (long ack)
+
+    Agent-->>Client: status (searching)
+    Agent->>RAG: search recipes
+    RAG-->>Agent: candidate recipes (max 100)
+    Agent-->>Client: status (found N recipes)
+
+    Agent->>LLM: select best recipes
+    LLM-->>Agent: selected recipes
+    Agent-->>Client: recipe.selected × N recipes
+
+    Agent-->>Client: status (rationale)
+    Agent->>LLM: generate rationale
+    LLM-->>Agent: response tokens
+    Agent-->>Client: response.token × N
+
+    Agent->>LLM: suggest follow-ups
+    LLM-->>Agent: follow-up suggestions
+    Agent-->>Client: suggested.follow.ups
 {{< /mermaid >}}
 
 Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases - one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
