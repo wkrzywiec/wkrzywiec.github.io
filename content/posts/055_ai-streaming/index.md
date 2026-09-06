@@ -1,6 +1,6 @@
 ---
 title: "Building AI-Powered Software: Streaming responses"
-date: 2026-04-18
+date: 2026-09-06
 summary: "Learn how to build agentic AI that sends output in small chunks."
 description: "This post provides a hands-on guide to building an AI-powered application that streams responses in smaller chunks, based on a real Spring Boot project."
 tags: ["ai", "ai-agents", "ai-series", "generative-ai", "openai", "streaming", "sse", "server-sent-events", "ndjson", "websockets", "chainlit" , "java", "kotlin", "spring-boot"]
