@@ -332,9 +332,8 @@ flowchart TB
     id1(User sends query) --> id2(Agent acknowledges received request)
     id2(Agent acknowledges received request) --> id3(Agent searches for recipes)
     id3(Agent searches for recipes) --> id4(Agent selects best matching recipes)
-    id4(Agent selects best matching recipes) --> id5(recipes are returned to user)
-    id5(recipes are returned to user) --> id6(Rationale about selected recipes is returned)
-    id6(Rationale about selected recipes is returned) --> id7(Suggested follow-up actions are returned)
+    id4(Agent selects best matching recipes) --> id5(Rationale about selected recipes is returned)
+    id5(Rationale about selected recipes is returned) --> id6(Suggested follow-up actions are returned)
 {{< /mermaid >}}
 
 Before searching for any recipe, the app acknowledges receipt and starts processing the request. There are two phases - one without an LLM and one with it. The first phase (without the LLM) simply notifies the user that the request was accepted and is being processed. In *nutri-chef-ai* this appears as a static chunk:
