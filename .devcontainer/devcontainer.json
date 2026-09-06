@@ -32,6 +32,7 @@
 				"bungcip.better-toml",
 				"davidanson.vscode-markdownlint",
 				"yzhang.markdown-all-in-one",
+				"bierner.markdown-mermaid",
 				"hediet.vscode-drawio"
 			]
 		}
